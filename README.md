@@ -44,10 +44,46 @@ Aplikasi ini ditujukan bagi pengguna yang ingin lebih mudah mengatur dan memaksi
 
 ---
 
+## Deskripsi Modul & Operasi CRUD
+
+| Nama Modul | Peran Pengguna | C (Create) | R (Read) | U (Update) | D (Delete) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Manajemen Akun & Autentikasi** | **Admin** | Membuat akun pengguna | Melihat daftar dan detail seluruh akun pengguna | Mengubah data/status akun pengguna | Menghapus akun pengguna |
+| | **User** | Membuat akun melalui registrasi | Melihat data/profil akun sendiri | Mengubah data/profil akun sendiri | Menghapus akun sendiri |
+| **Wardrobe Digital** | **User** | Menambahkan pakaian ke *wardrobe* | Melihat daftar dan detail pakaian pribadi | Mengubah informasi pakaian | Menghapus pakaian dari *wardrobe* |
+| **Outfit Calendar** | **User** | Menambahkan *outfit* (kombinasi pakaian) ke tanggal tertentu dengan memilih pakaian dari *wardrobe* | Melihat riwayat kombinasi pakaian (*outfit*) melalui *view calendar* | Mengubah *outfit* atau pakaian yang digunakan pada suatu tanggal | Menghapus catatan *outfit* dari *calendar* |
+| **Items for Swap** | **User** | Menambahkan pakaian dari *wardrobe* / langsung ke daftar pakaian yang ditawarkan untuk *swap* | Melihat *Items for Swap* milik sendiri maupun milik pengguna lain | Mengubah informasi atau status *Items for Swap* milik sendiri | Menghapus / menarik pakaian dari *Items for Swap* |
+| **Swap Request** | **User** | Mengajukan *swap request* terhadap *Items for Swap* milik pengguna lain | Melihat *request* yang diajukan maupun *request* yang diterima | Mengubah status *request* (menerima, menolak, atau membatalkan *request*) | Membatalkan / menghapus *swap request* yang masih dalam status tertentu |
+
+---
+
+## Atribut Data Modul
+
+| Nama Modul | Entitas | Input User (Wajib) | Input User (Opsional) | Otomatis Sistem | Detail / Atribut Spesifik |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Manajemen Akun** | User Profile | `username`, `password` | Foto profil, bio, preferensi ukuran pakaian (`top`, `bottom`, `shoes`), gender | Tanggal bergabung | - |
+| **Wardrobe Digital** | Pakaian | Foto, nama pakaian (keyword), kategori (`top`, `bottom`, dll), warna, ukuran, kondisi | Catatan, *style*, *pattern* | Status (*aman/direkomen buat swap*), tanggal ditambahkan, pemilik, `last_worn_date` | - `pemilik`: `ForeignKey(User)`<br>- `nama_pakaian`: `CharField(max_length=100)`<br>- `foto`: `ImageField`<br>- `kategori`: `CharField(choices: Top, Bottom, Outer, Dress, Shoes, Acc)`<br>- `warna_utama`: `CharField(choices: Neutral, Earth, Bright, Pastel)`<br>- `style`: `CharField(choices: Casual, Smart Casual, Formal, Sporty)`<br>- `pattern`: `CharField(choices: Solid, Striped, Patterned)`<br>- `ukuran`: `CharField(choices: XS, S, M, L, XL, XXL, All Size)`<br>- `kondisi`: `CharField(choices: Brand New, Like New, Good, Fair)`<br>- `catatan`: `TextField(blank=True)`<br>- `tanggal_ditambahkan`: `DateField(auto_now_add=True)`<br>- `last_worn_date`: `DateField(null=True, blank=True)`<br>- `is_idle`: `BooleanField(default=False)`<br>- `is_listed_for_swap`: `BooleanField(default=False)`<br><br>*Catatan Core Inventory:*<br>1. `last_worn_date` otomatis ter-update saat baju dimasukkan ke Outfit Calendar.<br>2. `is_idle` otomatis bernilai `True` jika `idle` > N hari (opsional).<br>3. `is_listed_for_swap` menandai apakah baju telah dipindahkan ke daftar pakaian yang mau di-swap. |
+| **Outfit Calendar** | Outfit (Kombinasi Pakaian) | Kombinasi 3 kategori pakaian (`top`, `bottom`, `shoes`), nama *outfit* (keyword), tanggal dipakai | Notes | Pemilik | Kombinasi dari 3 item pakaian yang ada di *wardrobe*. |
+| **Items for Swap** | Item Swap | Foto, nama pakaian (keyword), kategori (`top`, `bottom`, dll), kondisi, ukuran, warna, *meeting location* | Deskripsi, *style*, *pattern* | Status (`avail`, `sold`, `jumlah_request`), pemilik, tanggal di-post untuk *swap* | Item yang ditawarkan ke publik untuk ditukar. |
+| **Swap Request** | Swap Request Card | Pakaian yang ditawarkan (data seperti *Items for Swap* kecuali *meeting location* dan *status*) | Pesan | Pengaju, pemilik pakaian, pakaian yang diminta, status (`diterima`, `ditolak`, `menunggu`, `nego`), tanggal dibuat | Menghubungkan dua pihak yang ingin membarter barang. |
+
+---
+
+##  Daftar Fitur Aplikasi
+
+| Nama Fitur | Deskripsi & Hal yang Ditampilkan | Asal View Modul |
+| :--- | :--- | :--- |
+| **Profile Page** | Menu yang menampilkan halaman profil pengguna. | Manajemen Akun, Items for Swap |
+| **Home Page** | Menu yang menampilkan *Recommendation Feed* berupa foto/kartu pakaian yang diambil secara acak atau menggunakan algoritma rekomendasi (opsional). | Items for Swap (milik pengguna lain) |
+| **Bookmark** | Menu yang menampilkan kartu *Item for Swap* milik orang lain yang disimpan/ditandai (*bookmarked*). | Items for Swap |
+| **Outfit Matching** | Fitur *matching* pakaian interaktif berbasis *scroll* kanan-kiri (3 slot item: *tops*, *bottoms*, *shoes*). | Wardrobe Digital / Outfit Calendar |
+| **Swap Request** | Menu yang menampilkan daftar pengajuan tukar-menukar (*barter*), baik pengajuan pribadi maupun pengajuan dari pengguna lain. | Swap Request |
+| **Outfit Calendar** | Menu yang menampilkan riwayat kombinasi pakaian (*outfit*) dari *wardrobe* yang tersimpan pada tanggal tertentu dalam bentuk kalender. | Outfit Calendar |
+| **My Wardrobe** | Menu yang berisi daftar kartu pakaian milik sendiri di dalam lemari (hanya terlihat oleh pemilik akun). | Wardrobe Digital |
 ## 🌐 Public API
 
-* **[OpenStreetMap / Nominatim API](https://www.openstreetmap.org/#map=9/-1.095/114.033)**
-  Membantu pengguna mencari dan menentukan lokasi pertemuan saat melakukan pertukaran pakaian pada modul **Swap Request**, berdasarkan nama tempat atau alamat yang dipilih pengguna.
+* **[ API Wilayah Indonesia (emsifa.com)](https://www.emsifa.com/api-wilayah-indonesia/v2/provinces.json)**
+   Memfasilitasi pengguna dalam memilih dan menentukan lokasi pertemuan (meeting point) yang presisi untuk pertukaran pakaian pada modul Swap Request. Fitur ini memanfaatkan API statis data wilayah untuk menyajikan pilihan lokasi bertingkat mulai dari Provinsi, Kabupaten/Kota, Kecamatan, hingga Desa/Kelurahan. Selain itu, koordinat geografis (latitude/longitude) dari wilayah yang dipilih dapat dimanfaatkan untuk menampilkan titik pusat lokasi pada peta atau menghitung estimasi jarak antar-pengguna.
 
 ---
 
