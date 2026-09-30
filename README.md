@@ -6,7 +6,7 @@ KELOMPOK C12 PBP
 
 SwapMatch adalah aplikasi web yang membantu pengguna mengelola *wardrobe* digital, mencatat dan memadukan *outfit* sehari-hari, serta melakukan *swap*/barter pakaian bekas layak pakai dengan pengguna lain melalui *swap request* dan negosiasi. 
 
-Aplikasi ini ditujukan bagi pengguna yang ingin lebih mudah mengatur dan memaksimalkan pakaian yang dimiliki, sekaligus mengatasi masalah pakaian yang menumpuk, jarang digunakan, dan kebiasaan membeli pakaian baru. Melalui fitur *digital wardrobe*, *outfit calendar*, *outfit matching*, dan *clothing swap*, pengguna dapat melacak penggunaan pakaian, menemukan kombinasi *outfit*, serta menukar pakaian yang sudah jarang digunakan dengan pakaian milik pengguna lain. Dengan demikian, SwapMatch mendorong penggunaan pakaian yang lebih optimal dan berkelanjutan sekaligus membantu mengurangi pembelian pakaian baru dan limbah tekstil.
+Aplikasi ini ditujukan bagi pengguna yang ingikn lebih mudah mengatur dan memaksimalkan pakaian yang dimiliki, sekaligus mengatasi masalah pakaian yang menumpuk, jarang digunakan, dan kebiasaan membeli pakaian baru. Melalui fitur *digital wardrobe*, *outfit calendar*, *outfit matching*, dan *clothing swap*, pengguna dapat melacak penggunaan pakaian, menemukan kombinasi *outfit*, serta menukar pakaian yang sudah jarang digunakan dengan pakaian milik pengguna lain. Dengan demikian, SwapMatch mendorong penggunaan pakaian yang lebih optimal dan berkelanjutan sekaligus membantu mengurangi pembelian pakaian baru dan limbah tekstil.
 
 ---
 
