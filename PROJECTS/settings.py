@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'digital_wardrobe'
+
+    'digital_wardrobe',
     'accounts',
     'items_for_swap',
-    'swap_requests'
+    'swap_requests',
+    'outfit_calendar',
 ]
 
 MIDDLEWARE = [
