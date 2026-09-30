@@ -9,7 +9,7 @@ def register_user(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
+
         if not username or not password:
             return HttpResponse('Username and password are required', status=400)
         
@@ -18,7 +18,7 @@ def register_user(request):
         
         user = User.objects.create_user(username=username, password=password)
         return HttpResponse(f'User {user.username} created successfully', status=201)
-        
+
     return redirect('/')
 
 @csrf_exempt
