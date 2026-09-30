@@ -1,8 +1,8 @@
 KELOMPOK C12 PBP
 # PROYEK-TENGAH-SEMESTER-PBP
-# SwapMatch
+# SwapDrobe
 
-> **"Swap what you have, Match what you love"**
+> **"Swap what you have, keep it in the loop"**
 
 SwapMatch adalah aplikasi web yang membantu pengguna mengelola *wardrobe* digital, mencatat dan memadukan *outfit* sehari-hari, serta melakukan *swap*/barter pakaian bekas layak pakai dengan pengguna lain melalui *swap request* dan negosiasi. 
 
@@ -100,5 +100,5 @@ Orang-orang yang sering mengelola *fashion* mereka dan ingin memaksimalkan pakai
 
 ## 🔗 Tautan Penting
 
-* **Deployment PWS**: [https://stephanie-revalina-swapmatch.pws.cs.ui.ac.id/](https://stephanie-revalina-swapmatch.pws.cs.ui.ac.id/)
+* **Deployment PWS**: [https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id/](https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id/)
 * **Desain Low-Fi Figma**: [Figma Low-Fi Design SwapMatch](https://www.figma.com/design/gSqXDCz8gnHd5gXU26yzIn/Untitled?node-id=0-1&t=yVCVLg0Ne6LHcpLZ-1)
