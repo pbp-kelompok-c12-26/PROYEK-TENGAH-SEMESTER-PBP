@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto my-10 p-6 bg-white rounded-xl shadow-md border border-gray-100">
+    <!-- HEADER -->
+    <div class="flex justify-between items-center pb-6 border-b border-gray-200">
+        <h1 class="text-3xl font-bold text-gray-800">Account Management</h1>
+        <div id="authStatus" class="text-sm font-medium">
+            {% if user.is_authenticated %}
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full">Logged in as: <strong>{{ user.username }}</strong></span>
+            {% else %}
+                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full">Not Logged In</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- NOTIFICATION ALERT CONTAINER -->
+    <div id="alertBox" class="hidden my-4 p-4 rounded-lg text-sm transition-all"></div>
+
+    <!-- CONTROLS SECTION -->
+    <div class="mt-6">
+        {% if user.is_authenticated %}
+            <!-- USER DASHBOARD ACTIONS -->
+            <div id="authenticatedSection" class="space-y-6">
+                <div class="flex gap-4">
+                    <button onclick="loadProfile()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition">
+                        View Profile
+                    </button>
+                    <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition">
+                        Logout
+                    </button>
+                </div>
+
+                <!-- PROFILE DATA DISPLAY & EDIT FORM -->
+                <div id="profileContainer" class="hidden bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-700 mb-4">User Profile</h2>
+                    <form id="editProfileForm" onsubmit="handleEditProfile(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Username</label>
+                                <input type="text" id="profileUsername" disabled class="w-full bg-gray-200 text-gray-500 px-3 py-2 rounded-lg border border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Joined Date</label>
+                                <input type="text" id="profileJoined" disabled class="w-full bg-gray-200 text-gray-500 px-3 py-2 rounded-lg border border-gray-300">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">First Name</label>
+                                <input type="text" id="profileFirstName" name="first_name" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
+                                <input type="text" id="profileLastName" name="last_name" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+                            <input type="email" id="profileEmail" name="email" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+
+                        <div class="flex justify-between items-center pt-4">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2 rounded-lg transition">
+                                Save Profile Changes
+                            </button>
+                            <button type="button" onclick="handleDeleteAccount()" class="bg-gray-800 hover:bg-black text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+                                Delete Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <!-- GUEST / AUTH FORMS -->
+            <div id="guestSection" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- LOGIN FORM -->
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Login</h2>
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Username</label>
+                            <input type="text" name="username" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+                            <input type="password" name="password" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg transition">
+                            Login via AJAX
+                        </button>
+                    </form>
+                </div>
+
+                <!-- REGISTER FORM -->
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Register</h2>
+                    <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Username</label>
+                            <input type="text" name="username" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+                            <input type="password" name="password" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition">
+                            Register via AJAX
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC FOR AJAX -->
+<script>
+    // CSRF Token Global dari Django Template
+    const csrfToken = "{{ csrf_token }}";
+
+    // Helper untuk menampilkan alert pesan
+    function showAlert(message, isSuccess = true) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.innerText = message;
+        alertBox.className = `my-4 p-4 rounded-lg text-sm font-medium transition-all ${
+            isSuccess ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
+        }`;
+        alertBox.classList.remove('hidden');
+    }
+
+    // 1. AJAX REGISTER
+    async function handleRegister(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const response = await fetch("{% url 'accounts:register' %}", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            showAlert(data.message, true);
+            event.target.reset();
+        } else {
+            showAlert(data.message, false);
+        }
+    }
+
+    // 2. AJAX LOGIN
+    async function handleLogin(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const response = await fetch("{% url 'accounts:login' %}", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            showAlert(data.message, true);
+            setTimeout(() => window.location.reload(), 800);
+        } else {
+            showAlert(data.message, false);
+        }
+    }
+
+    // 3. AJAX LOGOUT
+    async function handleLogout() {
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const response = await fetch("{% url 'accounts:logout' %}", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            showAlert(data.message, true);
+            setTimeout(() => window.location.reload(), 800);
+        }
+    }
+
+    // 4. AJAX VIEW PROFILE (GET)
+    async function loadProfile() {
+        const response = await fetch("{% url 'accounts:view_profile' %}");
+        const result = await response.json();
+
+        if (response.ok && result.status === 'success') {
+            const data = result.data;
+            document.getElementById('profileUsername').value = data.username;
+            document.getElementById('profileJoined').value = data.date_joined;
+            document.getElementById('profileFirstName').value = data.first_name;
+            document.getElementById('profileLastName').value = data.last_name;
+            document.getElementById('profileEmail').value = data.email;
+
+            document.getElementById('profileContainer').classList.remove('hidden');
+        } else {
+            showAlert(result.message || 'Failed to fetch profile', false);
+        }
+    }
+
+    // 5. AJAX EDIT PROFILE
+    async function handleEditProfile(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const response = await fetch("{% url 'accounts:edit_profile' %}", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            showAlert(data.message, true);
+        } else {
+            showAlert(data.message, false);
+        }
+    }
+
+    // 6. AJAX DELETE ACCOUNT
+    async function handleDeleteAccount() {
+        if (!confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        const response = await fetch("{% url 'accounts:delete_account' %}", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            showAlert(data.message, false);
+        }
+    }
+</script>
+{% endblock %}
