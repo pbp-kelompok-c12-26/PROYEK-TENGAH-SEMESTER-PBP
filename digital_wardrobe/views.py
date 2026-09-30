@@ -3,6 +3,12 @@ from django.contrib.auth.decorators import login_required
 from .models import ClothingItem
 from .forms import ClothingItemForm
 
+def index(request):
+    """
+    Menampilkan halaman awal Digital Wardrobe tanpa memproses CRUD dulu.
+    """
+    return render(request, 'digital_wardrobe/index.html')
+
 # R -> Read: Melihat daftar pakaian pribadi
 @login_required
 def item_list(request):

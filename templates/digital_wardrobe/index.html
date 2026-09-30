@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Banner Header Digital Wardrobe -->
+    <div class="bg-gradient-to-r from-swRose/40 via-swOffWhite to-swBlue/20 rounded-3xl p-8 border border-swRose/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="px-3 py-1 bg-swBlue text-white text-xs font-bold rounded-full">Koleksi Kamu</span>
+                <span class="px-3 py-1 bg-swGreen text-white text-xs font-bold rounded-full">12 Items</span>
+            </div>
+            <h1 class="font-logo text-4xl text-swRed">Digital Wardrobe</h1>
+            <p class="text-swDark/70 text-sm mt-1">Kelola dan tata koleksi pakaian favoritmu dalam satu tempat.</p>
+        </div>
+        
+        <a href="#" class="px-6 py-3.5 bg-swRed text-white font-bold text-sm rounded-full shadow-md hover:bg-swBlue transition-all flex items-center gap-2">
+            <span>+</span> Tambah Pakaian
+        </a>
+    </div>
+
+    <!-- Empty State / Card Pakaian -->
+    <div class="bg-white rounded-3xl p-12 text-center border border-swRose/30 shadow-sm">
+        <div class="w-20 h-20 bg-swRose/30 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-swRed">
+            
+        </div>
+        <h2 class="font-logo text-3xl text-swRed mb-2">Lemari Kamu Masih Kosong</h2>
+        <p class="text-swDark/60 text-sm max-w-md mx-auto mb-6">
+            Mulai tambahkan pakaianmu ke Digital Wardrobe untuk mempermudah padu padan outfit harian!
+        </p>
+        <button class="px-6 py-3 bg-swGreen text-white font-bold text-sm rounded-full hover:opacity-90 transition-opacity">
+            Upload Pakaian Pertama
+        </button>
+    </div>
+
+</div>
+{% endblock %}

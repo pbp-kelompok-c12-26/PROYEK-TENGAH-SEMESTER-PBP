@@ -1,78 +1,106 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Swapdrobe{% endblock %}</title>
     
-    <!-- CDN Tailwind CSS -->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Shrikhand&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Config Warna Custom di Tailwind -->
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              popLime: '#E4FE91',
-              popFuchsia: '#E57BF7',
-              popAqua: '#95DFD3',
-              popBlue: '#3947F2',
-              popDark: '#121212',
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        logo: ['"Shrikhand"', 'cursive'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        // PALET WARNA RESMI SWAPDROBE
+                        swRose: '#F2CEE0',      // Rose Pink
+                        swRed: '#E13B30',       // Bubblegum Pink / Red
+                        swBlue: '#3462AE',      // Blueberry
+                        swGreen: '#0DA152',     // Granny Smith Green
+                        swOffWhite: '#FDEDD5',  // Off White Warm
+                        swDark: '#1E1E1E',       // Soft Charcoal
+                    }
+                }
             }
-          }
         }
-      }
     </script>
-    
-    {% block meta %}{% endblock %}
 </head>
-<body class="bg-[#F4F4F0] text-popDark font-sans flex flex-col min-h-screen border-t-8 border-popBlue">
+<body class="bg-swOffWhite/30 text-swDark font-sans min-h-screen flex flex-col antialiased">
 
-    <!-- NAVBAR POP STYLE -->
-    <nav class="bg-popLime border-b-4 border-popDark px-4 py-3 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
-            <!-- Logo -->
-            <a href="/" class="flex items-center gap-2 no-underline">
-                <span class="text-2xl font-black bg-popFuchsia text-white px-3 py-1 rounded-lg border-2 border-popDark shadow-[3px_3px_0px_#121212] -rotate-2 inline-block">
-                    SWAPDROBE
-                </span>
-            </a>
+    <!-- TOP BANNER -->
+    <div class="bg-swBlue text-white py-2.5 px-4 text-center text-xs sm:text-sm font-medium flex justify-center items-center gap-3">
+        <span>Swap & style your wardrobe effortlessly.</span>
+        <a href="{% url 'digital_wardrobe:index' %}" class="bg-swRose text-swDark px-3 py-1 rounded-full text-xs font-bold hover:bg-swRed hover:text-white transition-colors">
+            Explore Now
+        </a>
+    </div>
+
+    <!-- NAVBAR HEADER -->
+    <header class="border-b border-swRose/20 bg-white sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
             
-            <!-- Navigation Links -->
-            <div class="flex flex-wrap items-center gap-2 text-sm font-bold">
-                <a href="{% url 'accounts:index' %}" class="bg-white text-popDark px-3 py-1.5 rounded-lg border-2 border-popDark shadow-[2px_2px_0px_#121212] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all no-underline">
-                    👤 Accounts
-                </a>
-                <a href="{% url 'digital_wardrobe:index' %}" class="bg-popAqua text-popDark px-3 py-1.5 rounded-lg border-2 border-popDark shadow-[2px_2px_0px_#121212] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all no-underline">
-                    👗 Wardrobe
-                </a>
-                <a href="{% url 'items_for_swap:index' %}" class="bg-popFuchsia text-white px-3 py-1.5 rounded-lg border-2 border-popDark shadow-[2px_2px_0px_#121212] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all no-underline">
-                    🛍️ Catalog
-                </a>
-                <a href="{% url 'swap_request:index' %}" class="bg-popBlue text-white px-3 py-1.5 rounded-lg border-2 border-popDark shadow-[2px_2px_0px_#121212] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all no-underline">
-                    🔄 Swap
-                </a>
-                <a href="{% url 'outfit_calendar:index' %}" class="bg-white text-popDark px-3 py-1.5 rounded-lg border-2 border-popDark shadow-[2px_2px_0px_#121212] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all no-underline">
-                    📅 Calendar
-                </a>
-            </div>
-        </div>
-    </nav>
+            <div class="relative flex items-center justify-between min-h-[60px]">
+                <div class="w-32 hidden md:block"></div>
 
-    <!-- CONTENT AREA -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+                <!-- LOGO SWAPDROBE -->
+                <div class="mx-auto md:mx-0 md:absolute md:left-1/2 md:-translate-x-1/2 text-center">
+                    <a href="{% url 'accounts:index' %}" class="inline-block bg-swRose px-8 py-2.5 rounded-2xl font-logo text-4xl sm:text-5xl text-swRed hover:scale-105 transition-transform tracking-wide leading-none shadow-sm">
+                        Swapdrobe
+                    </a>
+                </div>
+
+                <!-- BUTTON SIGN IN / SWAP -->
+                <div class="flex items-center gap-2">
+                    <a href="{% url 'accounts:login' %}" class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-swOffWhite text-swDark hover:bg-swRose/40 transition-all">
+                        Sign In
+                    </a>
+                    <a href="{% url 'items_for_swap:index' %}" class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-swRed text-white hover:bg-swRed/90 shadow-sm transition-all">
+                        Swap Now
+                    </a>
+                </div>
+            </div>
+
+            <!-- NAV LINKS -->
+            <nav class="mt-5 pt-3 flex flex-wrap justify-center items-center gap-6 text-sm font-medium border-t border-swRose/10">
+                <a href="{% url 'accounts:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
+                    Accounts
+                </a>
+                <a href="{% url 'digital_wardrobe:index' %}" class="text-swDark hover:text-swRed font-semibold border-b-2 border-swRed py-1">
+                    Digital Wardrobe
+                </a>
+                <a href="{% url 'items_for_swap:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
+                    Items For Swap
+                </a>
+                <a href="{% url 'swap_requests:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
+                    Swap Requests
+                </a>
+                <a href="{% url 'outfit_calendar:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
+                    Outfit Calendar
+                </a>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 py-10 flex-grow w-full">
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- FOOTER POP STYLE -->
-    <footer class="bg-popDark text-white border-t-4 border-popDark py-6 text-center mt-10">
-        <p class="font-bold text-popLime">
-            &copy; 2026 SWAPDROBE <span class="text-popFuchsia">★</span> Match Your Outfit!
-        </p>
+    <!-- FOOTER -->
+    <footer class="border-t border-swRose/20 bg-white py-8 text-center text-swDark/60 text-xs font-medium">
+        &copy; Swapdrobe — Reimagining the future of fashion.
     </footer>
 
-    {% block script %}{% endblock %}
 </body>
 </html>
