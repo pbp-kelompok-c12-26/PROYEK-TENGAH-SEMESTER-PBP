@@ -5,7 +5,7 @@ app_name = 'digital_wardrobe'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('', views.item_list, name='item_list'),
+    path('items/', views.item_list, name='item_list'),
     path('add/', views.item_create, name='item_create'),
     path('<int:pk>/', views.item_detail, name='item_detail'),
     path('<int:pk>/edit/', views.item_update, name='item_update'),
