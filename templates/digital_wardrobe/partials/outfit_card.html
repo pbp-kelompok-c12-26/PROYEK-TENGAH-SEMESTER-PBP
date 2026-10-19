@@ -1,0 +1,34 @@
+<article id="outfit-{{ outfit.pk }}" class="bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col">
+    <a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="block rounded-xl overflow-hidden bg-swCream aspect-[4/3]">
+        {% if outfit.tiles %}
+        <div class="grid grid-cols-6 grid-rows-2 gap-1 w-full h-full">
+            {% for tile in outfit.tiles %}
+            <div class="{{ tile.span }} overflow-hidden bg-swBlush">
+                {% if tile.item.image %}
+                <img src="{{ tile.item.image.url }}" alt="{{ tile.item.name }}" loading="lazy" class="w-full h-full object-cover">
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-xs text-swSlate">Belum ada pakaian</div>
+        {% endif %}
+    </a>
+    <div class="pt-3 px-1 flex-grow">
+        <h3 class="font-bold text-sm text-swNavy leading-snug">
+            <a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="hover:text-swPlum">{{ outfit.name }}</a>
+        </h3>
+        <p class="text-xs text-swSlate mt-0.5">{{ outfit.item_total }} pakaian</p>
+    </div>
+    <div class="flex gap-2 pt-3 px-1 pb-1">
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_update' outfit.pk %}"
+                class="h-8 px-4 inline-flex items-center gap-1.5 rounded-full border border-swNavy/25 text-swNavy text-xs font-semibold hover:bg-swCream transition-colors">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
+            Edit
+        </button>
+        <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit"
+                class="h-8 px-4 inline-flex items-center rounded-full bg-swBerry text-white text-xs font-semibold hover:bg-swBerry/90 transition-colors">
+            Hapus
+        </button>
+    </div>
+</article>

@@ -19,11 +19,11 @@
             </div>
             <div class="bg-white rounded-2xl p-5 flex flex-col gap-3 min-h-[9rem]">
                 <p class="text-sm text-swSlate">Koleksi outfit kamu</p>
-                <p class="text-3xl font-bold text-swNavy">{{ total_outfits }}</p>
-                <a href="?tab=outfit"
-                   class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90 transition-colors">
+                <p class="text-3xl font-bold text-swNavy" data-total-outfits>{{ total_outfits }}</p>
+                <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
+                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90 transition-colors">
                     <span aria-hidden="true">+</span> Tambah Outfit
-                </a>
+                </button>
             </div>
             <div class="bg-white rounded-2xl p-5 flex flex-col gap-3 min-h-[9rem]">
                 <p class="text-sm text-swSlate">Tersedia untuk swap</p>
@@ -55,11 +55,39 @@
     </div>
 
     {% if tab == 'outfit' %}
-    <!-- KOLEKSI OUTFIT (dibangun di tahap berikutnya) -->
-    <div class="bg-white rounded-3xl p-10 text-center">
-        <h2 class="text-xl font-bold text-swNavy">Koleksi outfit segera hadir</h2>
-        <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Di sini kamu bisa memadukan sampai 5 pakaian dari lemarimu menjadi satu outfit.</p>
+    <!-- KOLEKSI OUTFIT -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <p class="text-sm text-swSlate">Padukan sampai 5 pakaian dari lemarimu menjadi satu outfit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
+                class="self-start sm:self-auto h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90">
+            <span aria-hidden="true">+</span> Buat outfit
+        </button>
     </div>
+
+    <div id="outfit-grid" class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 {% if not outfits %}hidden{% endif %}">
+        {% for outfit in outfits %}
+            {% include 'digital_wardrobe/partials/outfit_card.html' %}
+        {% endfor %}
+    </div>
+
+    {% if not outfits %}
+    <div id="outfit-empty-state" class="bg-white rounded-3xl p-10 sm:p-12 text-center">
+        <h2 class="text-xl font-bold text-swNavy">Belum ada outfit</h2>
+        {% if total_items %}
+        <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Pilih beberapa pakaian dari lemarimu dan simpan sebagai outfit favorit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
+                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90">
+            <span aria-hidden="true">+</span> Buat outfit pertama
+        </button>
+        {% else %}
+        <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Tambahkan pakaian ke lemarimu dulu, baru padu-padankan jadi outfit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
+                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swForest text-white text-sm font-semibold hover:bg-swForest/90">
+            <span aria-hidden="true">+</span> Tambah pakaian
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
     {% else %}
 
     <!-- FILTER -->
@@ -113,7 +141,7 @@
     </div>
 
     {% if not items %}
-    <div id="empty-state" class="bg-white rounded-3xl p-10 sm:p-12 text-center">
+    <div id="item-empty-state" class="bg-white rounded-3xl p-10 sm:p-12 text-center">
         {% if is_filtered %}
         <h2 class="text-xl font-bold text-swNavy">Tidak ada pakaian yang cocok</h2>
         <p class="text-sm text-swSlate mt-2">Coba kata kunci atau filter lain.</p>

@@ -69,8 +69,11 @@
                     <p class="text-sm font-semibold text-swNavy">Belum pernah dipakai</p>
                     {% endif %}
                     <p class="text-xs text-swSlate mt-1">Tambahkan outfit yang terdiri dari pakaian ini ke dalam Kalender Outfit untuk memperbarui tanggal terakhir kali dipakai.</p>
-                    {% if outfit_count %}
-                    <p class="text-xs text-swSlate mt-1">Dipakai di {{ outfit_count }} outfit.</p>
+                    {% if item_outfits %}
+                    <p class="text-xs text-swSlate mt-1">
+                        Ada di {{ outfit_count }} outfit:
+                        {% for outfit in item_outfits %}<a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="font-semibold text-swPlum hover:underline">{{ outfit.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if outfit_count > item_outfits|length %}, …{% endif %}
+                    </p>
                     {% endif %}
                 </div>
             </div>
@@ -80,11 +83,18 @@
                         class="h-10 px-6 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
                     Hapus
                 </button>
-                <button type="button" data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"
-                        class="h-10 px-6 inline-flex items-center gap-2 rounded-lg border border-swPlum text-swPlum text-sm font-semibold hover:bg-swPlum/5">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
-                    Edit
-                </button>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}?item={{ item.pk }}"
+                            class="h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
+                        Pakai untuk Outfit
+                    </button>
+                    <button type="button" data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"
+                            class="h-10 px-6 inline-flex items-center gap-2 rounded-lg border border-swPlum text-swPlum text-sm font-semibold hover:bg-swPlum/5">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
+                        Edit
+                    </button>
+                </div>
             </div>
         </div>
     </div>

@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .forms import ClothingItemForm
+from .forms import ClothingItemForm, OutfitForm
 from .models import ClothingItem, Outfit
 
 PAGE_SIZE = 12
@@ -45,12 +45,22 @@ def idle_filter():
 
 
 def _auto_open_url(request):
-    """Modal yang dibuka otomatis lewat ?add=1 atau ?edit=<id> (fallback tanpa JS / dari halaman lain)."""
+    """
+    Modal yang dibuka otomatis lewat query string (fallback tanpa JS / dari halaman lain):
+    ?add=1, ?edit=<id>, ?add_outfit=1 (opsional &item=<id>), ?edit_outfit=<id>
+    """
     if request.GET.get('add') == '1':
         return reverse('digital_wardrobe:item_create')
     edit_pk = request.GET.get('edit', '')
     if edit_pk.isdigit() and ClothingItem.objects.filter(pk=edit_pk, user=request.user).exists():
         return reverse('digital_wardrobe:item_update', args=[int(edit_pk)])
+    if request.GET.get('add_outfit') == '1':
+        url = reverse('digital_wardrobe:outfit_create')
+        item_pk = request.GET.get('item', '')
+        return f'{url}?item={item_pk}' if item_pk.isdigit() else url
+    outfit_pk = request.GET.get('edit_outfit', '')
+    if outfit_pk.isdigit() and Outfit.objects.filter(pk=outfit_pk, user=request.user).exists():
+        return reverse('digital_wardrobe:outfit_update', args=[int(outfit_pk)])
     return ''
 
 
@@ -84,8 +94,13 @@ def index(request):
     params = request.GET.copy()
     params['limit'] = limit + PAGE_SIZE
 
+    outfits = []
+    if tab == 'outfit':
+        outfits = [with_tiles(o) for o in Outfit.objects.filter(user=request.user).prefetch_related('items')]
+
     context = {
         'tab': tab,
+        'outfits': outfits,
         'show': show,
         'category': category,
         'query': query,
@@ -121,6 +136,7 @@ def item_detail(request, pk):
         'added_label': format_tanggal(item.created_at),
         'last_worn_label': format_tanggal(item.last_worn_date),
         'outfit_count': item.outfits.count(),
+        'item_outfits': item.outfits.all()[:6],
     })
 
 
@@ -210,3 +226,133 @@ def item_delete(request, pk):
     item.delete()
     messages.success(request, f'"{name}" sudah dihapus dari lemarimu.')
     return redirect('digital_wardrobe:index')
+
+
+# ======================================================================
+# KOLEKSI OUTFIT
+# ======================================================================
+
+# Susunan kolase foto pada kartu outfit, berdasarkan jumlah pakaian (1–5)
+COLLAGE_SPANS = {
+    1: ['col-span-6 row-span-2'],
+    2: ['col-span-3 row-span-2', 'col-span-3 row-span-2'],
+    3: ['col-span-4 row-span-2', 'col-span-2', 'col-span-2'],
+    4: ['col-span-3', 'col-span-3', 'col-span-3', 'col-span-3'],
+    5: ['col-span-3', 'col-span-3', 'col-span-2', 'col-span-2', 'col-span-2'],
+}
+
+
+def with_tiles(outfit):
+    """Tambahkan atribut `tiles` (pakaian + kelas grid) untuk kolase kartu outfit."""
+    items = list(outfit.items.all())[:Outfit.MAX_ITEMS]
+    spans = COLLAGE_SPANS.get(len(items), [])
+    outfit.tiles = [{'item': item, 'span': span} for item, span in zip(items, spans)]
+    outfit.item_total = len(items)
+    return outfit
+
+
+def _outfit_card(request, outfit):
+    return render_to_string('digital_wardrobe/partials/outfit_card.html',
+                            {'outfit': with_tiles(outfit)}, request=request)
+
+
+def _outfit_modal(request, form, outfit=None):
+    value = form['items'].value() or []
+    selected = {int(pk) for pk in value if str(pk).isdigit()}
+    return render_to_string('digital_wardrobe/partials/outfit_form_modal.html', {
+        'form': form,
+        'outfit': outfit,
+        'wardrobe_items': form.fields['items'].queryset,
+        'selected_ids': selected,
+        'max_items': Outfit.MAX_ITEMS,
+        'action_url': reverse('digital_wardrobe:outfit_update', args=[outfit.pk]) if outfit
+        else reverse('digital_wardrobe:outfit_create'),
+    }, request=request)
+
+
+# C -> Create: membuat outfit dari maksimal 5 pakaian
+@login_required
+def outfit_create(request):
+    if request.method == 'POST':
+        form = OutfitForm(request.POST, user=request.user)
+        if form.is_valid():
+            outfit = form.save(commit=False)
+            outfit.user = request.user
+            outfit.save()
+            form.save_m2m()
+            if is_ajax(request):
+                return JsonResponse({
+                    'ok': True,
+                    'kind': 'outfit',
+                    'card_html': _outfit_card(request, outfit),
+                    'total_outfits': Outfit.objects.filter(user=request.user).count(),
+                    'redirect': f"{reverse('digital_wardrobe:index')}?tab=outfit",
+                    'message': f'Outfit "{outfit.name}" tersimpan.',
+                })
+            messages.success(request, f'Outfit "{outfit.name}" tersimpan.')
+            return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit")
+        if is_ajax(request):
+            return JsonResponse({'ok': False, 'modal_html': _outfit_modal(request, form)}, status=400)
+        return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit&add_outfit=1")
+
+    # Pakaian yang langsung terpilih, mis. dari tombol "Pakai untuk Outfit" di detail pakaian
+    initial = {}
+    item_pk = request.GET.get('item', '')
+    if item_pk.isdigit() and ClothingItem.objects.filter(pk=item_pk, user=request.user).exists():
+        initial['items'] = [int(item_pk)]
+    form = OutfitForm(initial=initial, user=request.user)
+
+    if is_ajax(request):
+        return JsonResponse({'ok': True, 'modal_html': _outfit_modal(request, form)})
+    query = f'&item={item_pk}' if item_pk.isdigit() else ''
+    return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit&add_outfit=1{query}")
+
+
+# R -> Read: detail outfit
+@login_required
+def outfit_detail(request, pk):
+    outfit = get_object_or_404(Outfit.objects.prefetch_related('items'), pk=pk, user=request.user)
+    return render(request, 'digital_wardrobe/outfit_detail.html', {
+        'outfit': outfit,
+        'outfit_items': outfit.items.all(),
+        'added_label': format_tanggal(outfit.created_at),
+    })
+
+
+# U -> Update: mengubah informasi / susunan outfit
+@login_required
+def outfit_update(request, pk):
+    outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
+    if request.method == 'POST':
+        form = OutfitForm(request.POST, instance=outfit, user=request.user)
+        if form.is_valid():
+            outfit = form.save()
+            if is_ajax(request):
+                return JsonResponse({
+                    'ok': True,
+                    'kind': 'outfit',
+                    'pk': outfit.pk,
+                    'card_html': _outfit_card(request, outfit),
+                    'message': 'Perubahan outfit tersimpan.',
+                })
+            messages.success(request, 'Perubahan outfit tersimpan.')
+            return redirect('digital_wardrobe:outfit_detail', pk=outfit.pk)
+        if is_ajax(request):
+            return JsonResponse({'ok': False, 'modal_html': _outfit_modal(request, form, outfit)}, status=400)
+        return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit&edit_outfit={outfit.pk}")
+
+    if is_ajax(request):
+        form = OutfitForm(instance=outfit, user=request.user)
+        return JsonResponse({'ok': True, 'modal_html': _outfit_modal(request, form, outfit)})
+    return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit&edit_outfit={outfit.pk}")
+
+
+# D -> Delete: menghapus outfit (pakaian di dalamnya tetap ada di lemari)
+@login_required
+@require_POST
+def outfit_delete(request, pk):
+    outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
+    name = outfit.name
+    outfit.delete()
+    messages.success(request, f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.')
+    return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit")

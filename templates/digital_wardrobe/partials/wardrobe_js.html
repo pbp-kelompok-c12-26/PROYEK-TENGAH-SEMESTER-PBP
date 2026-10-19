@@ -53,7 +53,21 @@
         const placeholder = form.querySelector('[data-image-placeholder]');
         const fileName = form.querySelector('[data-image-name]');
 
-        input.addEventListener('change', () => {
+        // Form outfit: batasi pilihan maksimal N pakaian
+        const picks = form.querySelectorAll('[data-pick]');
+        if (picks.length) {
+            const max = parseInt(form.dataset.maxItems, 10) || 5;
+            const counter = form.querySelector('[data-picked-count]');
+            const refresh = () => {
+                const checked = form.querySelectorAll('[data-pick]:checked').length;
+                counter.textContent = checked;
+                picks.forEach((cb) => { cb.disabled = !cb.checked && checked >= max; });
+            };
+            picks.forEach((cb) => cb.addEventListener('change', refresh));
+            refresh();
+        }
+
+        if (input) input.addEventListener('change', () => {
             const file = input.files[0];
             if (!file) return;
             if (file.size > MAX_SIZE) {
@@ -83,9 +97,10 @@
                     return;
                 }
                 closeModal();
+                const kind = data.kind || 'item';
                 if (data.pk) {
                     // Edit: ganti kartu di grid, atau muat ulang halaman detail
-                    const card = document.getElementById('item-' + data.pk);
+                    const card = document.getElementById(kind + '-' + data.pk);
                     if (card) {
                         card.outerHTML = data.card_html;
                         toast(data.message);
@@ -94,15 +109,19 @@
                     }
                 } else {
                     // Tambah: kartu baru langsung muncul di grid tanpa reload
-                    const grid = document.getElementById('item-grid');
+                    const grid = document.getElementById(kind + '-grid');
                     if (grid) {
                         grid.insertAdjacentHTML('afterbegin', data.card_html);
                         grid.classList.remove('hidden');
-                        document.getElementById('empty-state')?.remove();
-                        document.querySelectorAll('[data-total-items]').forEach((el) => el.textContent = data.total_items);
+                        document.getElementById(kind + '-empty-state')?.remove();
+                        if (kind === 'outfit') {
+                            document.querySelectorAll('[data-total-outfits]').forEach((el) => el.textContent = data.total_outfits);
+                        } else {
+                            document.querySelectorAll('[data-total-items]').forEach((el) => el.textContent = data.total_items);
+                        }
                         toast(data.message);
                     } else {
-                        window.location.href = '{% url "digital_wardrobe:index" %}';
+                        window.location.href = data.redirect || '{% url "digital_wardrobe:index" %}';
                     }
                 }
             } catch (err) {
@@ -114,9 +133,14 @@
     }
 
     // ---------- Modal hapus ----------
-    function openDelete(url, name) {
+    function openDelete(url, name, kind = 'item') {
         deleteModal.querySelector('[data-delete-form]').action = url;
         deleteModal.querySelector('[data-delete-name]').textContent = name;
+        deleteModal.querySelector('[data-delete-title]').textContent =
+            kind === 'outfit' ? 'Yakin hapus outfit ini?' : 'Yakin hapus pakaian ini?';
+        deleteModal.querySelectorAll('[data-delete-desc]').forEach((el) => {
+            el.classList.toggle('hidden', el.dataset.deleteDesc !== kind);
+        });
         deleteModal.classList.remove('hidden');
         deleteModal.classList.add('flex');
         deleteModal.querySelector('[data-close-delete]').focus();
@@ -139,7 +163,7 @@
         const deleteBtn = e.target.closest('[data-delete-url]');
         if (deleteBtn) {
             lastTrigger = deleteBtn;
-            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName);
+            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName, deleteBtn.dataset.deleteKind);
             return;
         }
         if (e.target.closest('[data-close-modal]')) closeModal();
@@ -152,7 +176,7 @@
         if (!deleteModal.classList.contains('hidden')) closeDelete();
     });
 
-    // Buka modal otomatis dari ?add=1 atau ?edit=<id>
+    // Buka modal otomatis dari ?add=1, ?edit=<id>, ?add_outfit=1, ?edit_outfit=<id>
     const autoOpen = document.body.querySelector('[data-auto-open]');
     if (autoOpen && autoOpen.dataset.autoOpen) openModal(autoOpen.dataset.autoOpen);
 })();

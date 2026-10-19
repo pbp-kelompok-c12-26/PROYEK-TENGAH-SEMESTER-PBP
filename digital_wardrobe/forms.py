@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import ClothingItem
+from .models import ClothingItem, Outfit
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_IMAGE_TYPES = ('image/jpeg', 'image/png')
@@ -73,3 +73,47 @@ class ClothingItemForm(forms.ModelForm):
             if image.content_type not in ALLOWED_IMAGE_TYPES or not name.endswith(ALLOWED_IMAGE_EXTS):
                 raise forms.ValidationError('Format foto harus JPG atau PNG.')
         return image
+
+
+class OutfitForm(forms.ModelForm):
+    """
+    Form outfit: nama, deskripsi, dan 1–5 pakaian dari lemari user sendiri.
+    """
+
+    items = forms.ModelMultipleChoiceField(
+        queryset=ClothingItem.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        label='Pilih pakaian',
+        error_messages={
+            'required': 'Pilih minimal 1 pakaian.',
+            'invalid_choice': 'Pakaian yang dipilih tidak valid.',
+            'invalid_pk_value': 'Pakaian yang dipilih tidak valid.',
+        },
+    )
+
+    class Meta:
+        model = Outfit
+        fields = ['name', 'description', 'items']
+        labels = {
+            'name': 'Nama outfit',
+            'description': 'Deskripsi',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Contoh: Casual Kampus'}),
+            'description': forms.Textarea(attrs={
+                'class': TEXTAREA_CLASS,
+                'rows': 3,
+                'placeholder': 'Cocok dipakai ke mana? Ceritakan sedikit tentang outfit ini...',
+            }),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        self.fields['items'].queryset = ClothingItem.objects.filter(user=user).order_by('category', '-created_at')
+        self.fields['name'].error_messages['required'] = 'Wajib diisi.'
+
+    def clean_items(self):
+        items = self.cleaned_data.get('items')
+        Outfit.validate_items(self.user, items)
+        return items
