@@ -1,0 +1,159 @@
+<div id="modal-root"></div>
+{% include 'digital_wardrobe/partials/delete_modal.html' %}
+{% include 'digital_wardrobe/partials/messages.html' %}
+
+<script>
+(() => {
+    const MAX_SIZE = 5 * 1024 * 1024;
+    const modalRoot = document.getElementById('modal-root');
+    const deleteModal = document.getElementById('delete-modal');
+    const toastBox = document.getElementById('wardrobe-toast');
+    let lastTrigger = null;
+
+    // ---------- Toast ----------
+    function toast(text, isError = false) {
+        const el = document.createElement('div');
+        el.dataset.toast = '';
+        el.className = 'w-full px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ' + (isError ? 'bg-swBerry' : 'bg-swNavy');
+        el.textContent = text;
+        toastBox.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
+    toastBox.querySelectorAll('[data-toast]').forEach((el) => setTimeout(() => el.remove(), 4000));
+
+    // ---------- Modal tambah / edit ----------
+    function closeModal() {
+        modalRoot.innerHTML = '';
+        document.body.classList.remove('overflow-hidden');
+        if (lastTrigger) lastTrigger.focus();
+    }
+
+    function showModal(html) {
+        modalRoot.innerHTML = html;
+        document.body.classList.add('overflow-hidden');
+        bindForm(modalRoot.querySelector('[data-item-form]'));
+        const first = modalRoot.querySelector('input:not([type=hidden]):not(.sr-only), select, textarea');
+        if (first) first.focus();
+    }
+
+    async function openModal(url) {
+        try {
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            showModal(data.modal_html);
+        } catch (err) {
+            toast('Gagal membuka form. Coba lagi.', true);
+        }
+    }
+
+    function bindForm(form) {
+        if (!form) return;
+        const input = form.querySelector('input[type=file]');
+        const preview = form.querySelector('[data-image-preview]');
+        const placeholder = form.querySelector('[data-image-placeholder]');
+        const fileName = form.querySelector('[data-image-name]');
+
+        input.addEventListener('change', () => {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > MAX_SIZE) {
+                toast('Ukuran foto maksimal 5 MB.', true);
+                input.value = '';
+                return;
+            }
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            fileName.textContent = file.name;
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submit = form.querySelector('[data-submit]');
+            submit.disabled = true;
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const data = await res.json();
+                if (!data.ok) {
+                    showModal(data.modal_html);
+                    return;
+                }
+                closeModal();
+                if (data.pk) {
+                    // Edit: ganti kartu di grid, atau muat ulang halaman detail
+                    const card = document.getElementById('item-' + data.pk);
+                    if (card) {
+                        card.outerHTML = data.card_html;
+                        toast(data.message);
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    // Tambah: kartu baru langsung muncul di grid tanpa reload
+                    const grid = document.getElementById('item-grid');
+                    if (grid) {
+                        grid.insertAdjacentHTML('afterbegin', data.card_html);
+                        grid.classList.remove('hidden');
+                        document.getElementById('empty-state')?.remove();
+                        document.querySelectorAll('[data-total-items]').forEach((el) => el.textContent = data.total_items);
+                        toast(data.message);
+                    } else {
+                        window.location.href = '{% url "digital_wardrobe:index" %}';
+                    }
+                }
+            } catch (err) {
+                toast('Gagal menyimpan. Periksa koneksi lalu coba lagi.', true);
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    }
+
+    // ---------- Modal hapus ----------
+    function openDelete(url, name) {
+        deleteModal.querySelector('[data-delete-form]').action = url;
+        deleteModal.querySelector('[data-delete-name]').textContent = name;
+        deleteModal.classList.remove('hidden');
+        deleteModal.classList.add('flex');
+        deleteModal.querySelector('[data-close-delete]').focus();
+    }
+
+    function closeDelete() {
+        deleteModal.classList.add('hidden');
+        deleteModal.classList.remove('flex');
+        if (lastTrigger) lastTrigger.focus();
+    }
+
+    // ---------- Event delegation ----------
+    document.addEventListener('click', (e) => {
+        const openBtn = e.target.closest('[data-open-modal]');
+        if (openBtn) {
+            lastTrigger = openBtn;
+            openModal(openBtn.dataset.openModal);
+            return;
+        }
+        const deleteBtn = e.target.closest('[data-delete-url]');
+        if (deleteBtn) {
+            lastTrigger = deleteBtn;
+            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName);
+            return;
+        }
+        if (e.target.closest('[data-close-modal]')) closeModal();
+        if (e.target.closest('[data-close-delete]')) closeDelete();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (modalRoot.innerHTML) closeModal();
+        if (!deleteModal.classList.contains('hidden')) closeDelete();
+    });
+
+    // Buka modal otomatis dari ?add=1 atau ?edit=<id>
+    const autoOpen = document.body.querySelector('[data-auto-open]');
+    if (autoOpen && autoOpen.dataset.autoOpen) openModal(autoOpen.dataset.autoOpen);
+})();
+</script>
