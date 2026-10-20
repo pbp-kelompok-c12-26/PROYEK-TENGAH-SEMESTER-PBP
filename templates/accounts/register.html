@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Buat Akun — SwapDrobe{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+    <!-- LEFT: HERO PANEL -->
+    <section class="relative overflow-hidden rounded-[28px] min-h-[620px] lg:min-h-[760px] p-8 sm:p-11 flex flex-col justify-center text-white shadow-lg"
+        style="background: linear-gradient(145deg, #E13B65 0%, #F2CEE0 48%, #3462AE 100%);">
+
+        <div class="relative z-10 space-y-8">
+            <div class="space-y-3">
+                <h1 class="text-3xl sm:text-4xl lg:text-[42px] leading-tight font-extrabold tracking-tight">
+                    Swap what you have.<br>
+                    Refresh your wardrobe.
+                </h1>
+            </div>
+
+            <!-- Clothing visuals -->
+            <div class="grid grid-cols-2 gap-4 items-center">
+                <div class="rounded-2xl overflow-hidden bg-white/20 aspect-[4/5] shadow-md">
+                    <img
+                        src="https://images.unsplash.com/photo-1543076447-215ad9ba6923?auto=format&fit=crop&w=700&q=85"
+                        alt="Denim jacket"
+                        class="w-full h-full object-cover"
+                    >
+                </div>
+
+                <div class="space-y-4">
+                    <div class="rounded-2xl overflow-hidden bg-white/20 aspect-[4/3] shadow-md">
+                        <img
+                            src="https://images.unsplash.com/photo-1598554747436-c9293d6a588f?auto=format&fit=crop&w=700&q=85"
+                            alt="Clothing ready to swap"
+                            class="w-full h-full object-cover"
+                        >
+                    </div>
+
+                    <div class="rounded-2xl bg-sky-300 text-swBlue p-4 sm:p-5 shadow-md">
+                        <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 4v6h6M20 20v-6h-6M5.6 15a7 7 0 0 0 12.8 2M18.4 9A7 7 0 0 0 5.6 7"/>
+                        </svg>
+                        <p class="font-bold text-base sm:text-lg leading-snug">
+                            Satu pakaian.<br>
+                            Banyak kemungkinan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-sm sm:text-base leading-relaxed text-white/95">
+                Atur lemari, rencanakan outfit, dan temukan teman untuk bertukar pakaian.
+                Semua dalam satu tempat.
+            </p>
+        </div>
+    </section>
+
+    <!-- RIGHT: REGISTER FORM -->
+    <section class="w-full max-w-xl mx-auto py-4">
+        <div class="mb-8">
+            <p class="font-logo text-3xl sm:text-4xl text-swBlue mb-8">
+                SwapDrobe
+            </p>
+
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-swBlue mb-3">
+                Mulai cerita baru.
+            </h2>
+
+            <p class="text-gray-500 text-sm sm:text-base">
+                Buat akun untuk mengelola lemarimu dan bertukar pakaian.
+            </p>
+        </div>
+
+        <form method="POST" class="space-y-5">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}"
+                        class="block text-sm font-bold text-swBlue mb-2">
+                        {{ field.label }}
+                        <span class="text-swRed">*</span>
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <div class="mt-2 text-xs leading-relaxed text-gray-500">
+                            {{ field.help_text|safe }}
+                        </div>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="mt-2 text-sm text-red-600">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-3">
+                <a href="{% url 'home:index' %}"
+                    class="inline-flex justify-center items-center gap-2 rounded-xl bg-gray-200 text-swBlue px-5 py-3 font-bold text-sm hover:bg-gray-300 transition-colors">
+                    <span aria-hidden="true">→</span>
+                    Lanjutkan Tanpa Akun
+                </a>
+
+                <button type="submit"
+                    class="inline-flex justify-center items-center gap-2 rounded-xl bg-swGreen text-white px-6 py-3 font-bold text-sm hover:brightness-95 active:scale-[0.98] transition">
+                    <span aria-hidden="true">→</span>
+                    Buat Akun
+                </button>
+            </div>
+        </form>
+
+        <p class="text-center text-sm text-gray-600 mt-8">
+            Sudah punya akun?
+            <a href="{% url 'accounts:login' %}"
+                class="font-bold text-sky-600 hover:text-swBlue transition-colors">
+                Masuk
+            </a>
+        </p>
+
+        <p class="text-xs text-gray-400 leading-relaxed mt-10">
+            Privasi kamu penting. Data akun hanya digunakan untuk mengelola lemari dan pertukaran.
+        </p>
+    </section>
+</div>
+
+<!-- Styling untuk input yang dirender oleh Django Form -->
+<style>
+    form input,
+    form select,
+    form textarea {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 13px 14px;
+        background-color: white;
+        color: #1E1E1E;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+        border-color: #3462AE;
+        box-shadow: 0 0 0 3px rgb(52 98 174 / 12%);
+    }
+
+    form ul {
+        padding-left: 18px;
+        list-style: disc;
+    }
+
+    form .errorlist {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 6px;
+        padding-left: 18px;
+    }
+</style>
+{% endblock %}

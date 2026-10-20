@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'items_for_swap',
     'swap_requests',
     'outfit_calendar',
+    'home'
 ]
 
 MIDDLEWARE = [
