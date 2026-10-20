@@ -1,0 +1,5 @@
+{# Satu chip pilihan. Pakai: include ... with option=opt size='h-10' #}
+<label class="cursor-pointer">
+    {{ option.tag }}
+    <span class="sw-chip {{ size|default:'h-10 px-4' }} w-full inline-flex items-center justify-center rounded-xl bg-[#ECEAF1] text-sm font-semibold text-swNavy/80 hover:bg-[#E2DEEA]">{{ option.choice_label }}</span>
+</label>

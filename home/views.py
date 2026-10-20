@@ -1,11 +1,14 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+from django.views.decorators.http import require_POST
 
-from digital_wardrobe.models import ClothingItem
-from accounts.forms import UserProfileForm, OnboardingSizesForm
+from accounts.forms import ProfileSetupForm, SizePreferenceForm
 from accounts.models import UserProfile
+from digital_wardrobe.models import ClothingItem
 
 PAGE_SIZE = 12
 
@@ -16,64 +19,57 @@ SORT_OPTIONS = [
     ('kondisi', 'Kondisi terbaik'),
 ]
 
+WELCOME_POINTS = ['Pakai lagi, bagi cerita baru', 'Tukar pakaian, bukan jual-beli']
+ONBOARDING_TOTAL_STEPS = 3
+
+
 @login_required(login_url='accounts:login')
-def onboarding_1(request):
-    return render(request, 'home/onboarding_1.html')
+def onboarding(request):
+    """Onboarding di login pertama: 1) welcome, 2) set up profil, 3) preferensi ukuran.
+    Yang mengarahkan ke sini hanya login pertama (lihat accounts.views.login_user)."""
+    profile = UserProfile.for_user(request.user)
 
-@login_required(login_url="accounts:login")
-def onboarding_2(request):
-    profile, created = UserProfile.objects.get_or_create(
-        user=request.user,
-        defaults={
-            "display_name": request.user.username,
-            "phone_number": "",
-            "domicile": "",
-        },
-    )
+    try:
+        step = int(request.GET.get('step', '1'))
+    except ValueError:
+        step = 0
+    if step not in range(1, ONBOARDING_TOTAL_STEPS + 1):
+        return redirect('home:onboarding')
 
-    if request.method == "POST":
-        form = UserProfileForm(
-            request.POST,
-            request.FILES,
-            instance=profile,
-        )
+    context = {'step': step, 'steps': list(range(1, ONBOARDING_TOTAL_STEPS + 1)), 'profile': profile}
 
-        if form.is_valid():
+    if step == 1:
+        context['welcome_points'] = WELCOME_POINTS
+        return render(request, 'home/onboarding.html', context)
+
+    if step == 2:
+        form = ProfileSetupForm(request.POST or None, request.FILES or None, instance=profile)
+        if request.method == 'POST' and form.is_valid():
             form.save()
-            return redirect("home:onboarding_3")
-    else:
-        form = UserProfileForm(instance=profile)
+            return redirect(f"{reverse('home:onboarding')}?step=3")
+        context['form'] = form
+        return render(request, 'home/onboarding_profile.html', context)
 
-    return render(
-        request,
-        "home/onboarding_2.html",
-        {"form": form},
-    )
+    form = SizePreferenceForm(request.POST or None, instance=profile)
+    if request.method == 'POST' and form.is_valid():
+        profile = form.save(commit=False)
+        profile.onboarding_completed = True
+        profile.save()
+        messages.success(request, f'Profilmu sudah siap, {profile.name}! Selamat menjelajah.')
+        return redirect('home:index')
+    context['form'] = form
+    return render(request, 'home/onboarding_sizes.html', context)
 
-@login_required(login_url="accounts:login")
-def onboarding_3(request):
-    profile = request.user.profile
 
-    if request.method == "POST":
-        form = OnboardingSizesForm(request.POST)
+@login_required(login_url='accounts:login')
+@require_POST
+def onboarding_skip(request):
+    """Lewati onboarding. Tetap dianggap selesai supaya tidak muncul lagi."""
+    profile = UserProfile.for_user(request.user)
+    profile.onboarding_completed = True
+    profile.save(update_fields=['onboarding_completed'])
+    return redirect('home:index')
 
-        if form.is_valid():
-            profile.save()
-
-            return redirect("home:index")
-    else:
-        form = OnboardingSizesForm(initial={
-            "preferred_clothing_sizes": profile.preferred_clothing_sizes,
-            "preferred_shoe_sizes": [
-                str(size) for size in profile.preferred_shoe_sizes
-            ],
-        })
-
-    return render(
-        request,
-        "home/onboarding_3.html",
-        {"form": form},
-    )
 
 def get_catalog_queryset(request):
     """

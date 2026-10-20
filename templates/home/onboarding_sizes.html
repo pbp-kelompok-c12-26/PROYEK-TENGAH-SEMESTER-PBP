@@ -1,0 +1,52 @@
+{% extends 'home/onboarding.html' %}
+{% block page_title %}Preferensi Ukuran{% endblock %}
+
+{% block header_progress %}
+<nav class="hidden sm:flex absolute left-1/2 -translate-x-1/2 items-center gap-2" aria-label="Langkah {{ step }} dari {{ steps|length }}">
+    {% for s in steps %}
+    <span class="h-2 rounded-full {% if s == step %}w-10 bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]{% elif s < step %}w-5 bg-swNavy/40{% else %}w-5 bg-swNavy/15{% endif %}"></span>
+    {% endfor %}
+</nav>
+{% endblock %}
+
+{% block onboarding %}
+<main class="flex-1 w-full max-w-3xl mx-auto px-5 sm:px-8 py-8 lg:py-10">
+    {% include 'home/partials/onboarding_heading.html' with eyebrow='LANGKAH 2 DARI 2' title='Tentukan' highlight='Preferensi Ukuranmu' subtitle='Ini membantu kami merekomendasikan pakaian dengan ukuran yang pas buat kamu.' %}
+
+    <form method="post" novalidate class="mt-8">
+        {% csrf_token %}
+        <div class="rounded-3xl bg-white/90 backdrop-blur p-5 sm:p-8 shadow-[0_20px_50px_-30px_rgba(23,31,99,0.45)] ring-1 ring-swNavy/5 space-y-8">
+            <fieldset>
+                <legend class="text-sm font-bold text-swNavy">Ukuran pakaian</legend>
+                <p class="text-xs text-swSlate mb-3">Kamu bisa pilih lebih dari satu sesuai preferensi ukuranmu.</p>
+                <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                    {% for opt in form.preferred_clothing_sizes %}
+                    {% include 'home/partials/onboarding_chip.html' with option=opt size='h-11 px-2' %}
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend class="text-sm font-bold text-swNavy">Ukuran sepatu <span class="font-medium text-swSlate">(standar EU)</span></legend>
+                <p class="text-xs text-swSlate mb-3">Kamu bisa pilih lebih dari satu.</p>
+                <div class="grid grid-cols-5 sm:grid-cols-7 gap-2">
+                    {% for opt in form.preferred_shoe_sizes %}
+                    {% include 'home/partials/onboarding_chip.html' with option=opt size='h-11 px-2' %}
+                    {% endfor %}
+                </div>
+            </fieldset>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between gap-3">
+            <a href="{% url 'home:onboarding' %}?step=2" class="h-12 px-6 inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur border border-swNavy/15 text-sm font-semibold text-swNavy hover:bg-white">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                Kembali
+            </a>
+            <button type="submit" class="sw-btn-holo h-12 px-7 inline-flex items-center gap-2 rounded-full text-sm font-bold text-white active:scale-[0.98]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                Selesai
+            </button>
+        </div>
+    </form>
+</main>
+{% endblock %}

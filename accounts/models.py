@@ -45,11 +45,15 @@ class UserProfile(models.Model):
 
     # Wajib
     display_name = models.CharField(max_length=15)
+    # Boleh kosong dulu sampai form register meminta nomor telepon & domisili.
+    # null=True supaya banyak user tanpa nomor tidak bentrok dengan unique.
     phone_number = models.CharField(
         max_length=20,
         unique=True,
+        null=True,
+        blank=True,
     )
-    domicile = models.CharField(max_length=100)
+    domicile = models.CharField(max_length=100, blank=True)
 
     # Opsional
     profile_picture = models.FileField(
@@ -64,5 +68,24 @@ class UserProfile(models.Model):
     preferred_clothing_sizes = models.JSONField(default=list, blank=True)
     preferred_shoe_sizes = models.JSONField(default=list, blank=True)
 
+    # True setelah onboarding ditampilkan di login pertama (diisi atau tidak)
+    onboarding_completed = models.BooleanField(default=False)
+
     def __str__(self):
         return self.display_name
+
+    @property
+    def name(self):
+        """Nama yang ditampilkan: display name, atau username kalau kosong."""
+        return self.display_name or self.user.username
+
+    @property
+    def style_labels(self):
+        labels = dict(STYLE_CHOICES)
+        return [labels[s] for s in self.preferred_styles if s in labels]
+
+    @classmethod
+    def for_user(cls, user):
+        """Ambil profil user, buat otomatis kalau belum ada (termasuk akun lama)."""
+        profile, _ = cls.objects.get_or_create(user=user, defaults={'display_name': user.username[:15]})
+        return profile
