@@ -13,6 +13,19 @@ SORT_OPTIONS = [
     ('kondisi', 'Kondisi terbaik'),
 ]
 
+def onboarding(request):
+    step = request.GET.get('step', '1')
+
+    # Pastikan step hanya 1, 2, atau 3
+    if step not in ['1', '2', '3']:
+        return redirect('home:onboarding')
+
+    template_name = f'home/onboarding_{step}.html'
+
+    return render(request, template_name, {
+        'step': int(step),
+    })
+
 def get_catalog_queryset(request):
     """
     Sumber data katalog "Pilihan yang cocok buat kamu".
