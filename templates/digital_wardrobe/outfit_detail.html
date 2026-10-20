@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ outfit.name }} · Swapdrobe{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <a href="{% url 'digital_wardrobe:index' %}?tab=outfit" class="inline-flex items-center gap-1.5 text-sm font-medium text-swSlate hover:text-swNavy">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        Kembali ke koleksi outfit
+    </a>
+
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-swNavy">{{ outfit.name }}</h1>
+            <p class="text-sm italic text-swSlate mt-1">Dibuat pada: {{ added_label }} · {{ outfit_items|length }} pakaian</p>
+        </div>
+        <div class="flex gap-3">
+            <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit"
+                    class="h-10 px-6 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
+                Hapus
+            </button>
+            <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_update' outfit.pk %}"
+                    class="h-10 px-6 inline-flex items-center gap-2 rounded-lg border border-swPlum text-swPlum text-sm font-semibold hover:bg-swPlum/5">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
+                Edit
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-4 shadow-[inset_0_0_0_1px_rgba(23,31,99,0.06)]">
+        {% if outfit.description %}
+        <p class="text-sm text-swNavy whitespace-pre-line">{{ outfit.description }}</p>
+        {% else %}
+        <p class="text-sm text-swSlate italic">Belum ada catatan untuk outfit ini.</p>
+        {% endif %}
+    </div>
+
+    <section class="rounded-3xl p-4 sm:p-6 bg-gradient-to-r from-[#F1D3CB] via-swLavender to-[#6E83B3]">
+        <h2 class="text-lg font-bold text-swNavy mb-4">Isi outfit</h2>
+        {% if outfit_items %}
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {% for item in outfit_items %}
+            <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="group bg-white rounded-2xl p-2.5 flex flex-col">
+                <span class="block rounded-xl overflow-hidden bg-swCream aspect-square">
+                    {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">{% endif %}
+                </span>
+                <span class="pt-2 px-1 text-sm font-bold text-swNavy group-hover:text-swPlum">{{ item.name }}</span>
+                <span class="px-1 pb-1 text-xs text-swSlate">{{ item.get_category_display }} · {{ item.get_size_display }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl p-8 text-center">
+            <p class="text-sm font-semibold text-swNavy">Pakaian di outfit ini sudah dihapus dari lemari</p>
+            <p class="text-xs text-swSlate mt-1">Edit outfit untuk memilih pakaian baru.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+{% include 'digital_wardrobe/partials/wardrobe_js.html' %}
+{% endblock %}

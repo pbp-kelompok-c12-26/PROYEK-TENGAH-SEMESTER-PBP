@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Swapdrobe{% endblock %}</title>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Shrikhand&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,90 +17,145 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        logo: ['"Shrikhand"', 'cursive'],
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        sans: ['"Poppins"', 'sans-serif'],
+                        logo: ['"Poppins"', 'sans-serif'],
                     },
                     colors: {
-                        // PALET WARNA RESMI SWAPDROBE
-                        swRose: '#F2CEE0',      // Rose Pink
-                        swRed: '#E13B30',       // Bubblegum Pink / Red
-                        swBlue: '#3462AE',      // Blueberry
-                        swGreen: '#0DA152',     // Granny Smith Green
-                        swOffWhite: '#FDEDD5',  // Off White Warm
-                        swDark: '#1E1E1E',       // Soft Charcoal
+                        // PALET WARNA SWAPDROBE (dari desain Figma)
+                        swNavy: '#171F63',      // Teks utama, judul, logo
+                        swBerry: '#AF3F5F',     // Tombol utama, hero
+                        swPlum: '#6063B4',      // Aksen biru-ungu, tombol sekunder
+                        swForest: '#40794C',    // Aksen hijau, tombol tambah
+                        swPink: '#D788B2',      // Highlight & dekorasi (bukan untuk teks)
+                        swMint: '#AAD0AE',      // Latar banner hijau
+                        swLavender: '#C1C7D6',  // Latar banner ungu
+                        swLilac: '#E6C4F9',     // Tab navigasi aktif
+                        swBlush: '#EDDFEE',     // Latar pink muda, hover
+                        swCream: '#F7F5F0',     // Latar halaman
+                        swSlate: '#56546A',     // Teks pendukung
+
+                        // Nama lama tetap ada supaya template modul lain tidak rusak,
+                        // nilainya diarahkan ke palet baru.
+                        swRose: '#EDDFEE',
+                        swRed: '#AF3F5F',
+                        swBlue: '#6063B4',
+                        swGreen: '#40794C',
+                        swOffWhite: '#F7F5F0',
+                        swDark: '#171F63',
+                        swBtn: '#AF3F5F',
+                        swBg: '#F7F5F0',
                     }
                 }
             }
         }
     </script>
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-swOffWhite/30 text-swDark font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-swCream text-swNavy font-sans min-h-screen flex flex-col antialiased">
 
-    <!-- TOP BANNER -->
-    <div class="bg-swBlue text-white py-2.5 px-4 text-center text-xs sm:text-sm font-medium flex justify-center items-center gap-3">
-        <span>Swap & style your wardrobe effortlessly.</span>
-        <a href="{% url 'digital_wardrobe:index' %}" class="bg-swRose text-swDark px-3 py-1 rounded-full text-xs font-bold hover:bg-swRed hover:text-white transition-colors">
-            Explore Now
-        </a>
-    </div>
+    <!-- HEADER -->
+    <header class="bg-white sticky top-0 z-50 shadow-[0_1px_0_rgba(23,31,99,0.08)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
-    <!-- NAVBAR HEADER -->
-    <header class="border-b border-swRose/20 bg-white sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4">
-            
-            <div class="relative flex items-center justify-between min-h-[60px]">
-                <div class="w-32 hidden md:block"></div>
+            <!-- LOGO SWAPDROBE (Holo Berry) -->
+            <a href="{% url 'accounts:index' %}" class="flex items-center shrink-0" aria-label="Swapdrobe, ke beranda">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 331.3 64.0" class="h-8 sm:h-9 w-auto" role="img" aria-hidden="true"><g transform="translate(0 0)">
+<defs>
+<linearGradient id="hnbase" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#AF3F5F"/><stop offset=".26" stop-color="#D788B2"/><stop offset=".44" stop-color="#C9A6E8"/><stop offset=".58" stop-color="#9FB4F0"/><stop offset=".76" stop-color="#D788B2"/><stop offset="1" stop-color="#CA6D88"/></linearGradient>
+<linearGradient id="hnshine" x1="0" y1="0.18" x2="1" y2="0.82"><stop offset=".34" stop-color="#fff" stop-opacity="0"/><stop offset=".47" stop-color="#fff" stop-opacity=".5"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="hnglow" cx=".24" cy=".18" r=".42"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="64" height="64" rx="16.64" fill="url(#hnbase)"/>
+<rect width="64" height="64" rx="16.64" fill="url(#hnshine)"/>
+<rect width="64" height="64" rx="16.64" fill="url(#hnglow)"/>
+<rect x=".75" y=".75" width="62.5" height="62.5" rx="15.89" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="1.5"/>
+<g transform="translate(11.52 11.52) scale(0.6400)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+<path d="M27 15 C27 8 36 6 38 12 C40 18 32 20 32 26 V29" stroke-width="4"/>
+<path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="4"/>
+<path d="M24 43 H40" stroke-width="3.5"/>
+<path d="M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3.5"/>
+</g>
+</g><path d="M1.188 -8.315999999999999H9.548Q9.724 -7.127999999999999 10.648 -6.468Q11.572 -5.808 12.936 -5.808Q13.991999999999999 -5.808 14.607999999999999 -6.247999999999999Q15.223999999999998 -6.688 15.223999999999998 -7.3919999999999995Q15.223999999999998 -8.315999999999999 14.212 -8.756Q13.2 -9.196 10.867999999999999 -9.724Q8.228 -10.251999999999999 6.468 -10.911999999999999Q4.707999999999999 -11.572 3.4099999999999997 -13.067999999999998Q2.112 -14.563999999999998 2.112 -17.116Q2.112 -19.316 3.3 -21.098Q4.4879999999999995 -22.88 6.797999999999999 -23.936Q9.107999999999999 -24.991999999999997 12.363999999999999 -24.991999999999997Q17.204 -24.991999999999997 19.976 -22.616Q22.747999999999998 -20.24 23.188 -16.368H15.399999999999999Q15.18 -17.555999999999997 14.366 -18.193999999999996Q13.552 -18.831999999999997 12.187999999999999 -18.831999999999997Q11.132 -18.831999999999997 10.582 -18.436Q10.032 -18.04 10.032 -17.336Q10.032 -16.456 11.044 -15.994Q12.056 -15.531999999999998 14.299999999999999 -15.047999999999998Q16.983999999999998 -14.475999999999999 18.766 -13.771999999999998Q20.548 -13.068 21.89 -11.506Q23.232 -9.943999999999999 23.232 -7.26Q23.232 -5.104 21.978 -3.388Q20.724 -1.672 18.414 -0.6819999999999999Q16.104 0.308 12.979999999999999 0.308Q9.636 0.308 7.017999999999999 -0.814Q4.3999999999999995 -1.936 2.8819999999999997 -3.8939999999999997Q1.3639999999999999 -5.851999999999999 1.188 -8.315999999999999Z M63.05199999999999 -24.683999999999997 56.75999999999999 0.0H47.08L43.647999999999996 -14.959999999999999L40.083999999999996 0.0H30.447999999999997L24.2 -24.683999999999997H32.78L35.552 -8.315999999999999L39.20399999999999 -24.683999999999997H48.443999999999996L52.227999999999994 -8.272L54.955999999999996 -24.683999999999997Z M73.744 -24.991999999999997Q76.29599999999999 -24.991999999999997 78.14399999999999 -23.979999999999997Q79.99199999999999 -22.968 81.00399999999999 -21.252V-24.683999999999997H89.628V0.0H81.00399999999999V-3.432Q79.99199999999999 -1.716 78.12199999999999 -0.704Q76.252 0.308 73.744 0.308Q70.79599999999999 0.308 68.398 -1.232Q66.0 -2.772 64.614 -5.654Q63.227999999999994 -8.536 63.227999999999994 -12.363999999999999Q63.227999999999994 -16.192 64.614 -19.052Q66.0 -21.912 68.398 -23.451999999999998Q70.79599999999999 -24.991999999999997 73.744 -24.991999999999997ZM76.51599999999999 -17.468Q74.58 -17.468 73.304 -16.125999999999998Q72.02799999999999 -14.783999999999999 72.02799999999999 -12.363999999999999Q72.02799999999999 -9.988 73.304 -8.602Q74.58 -7.215999999999999 76.51599999999999 -7.215999999999999Q78.408 -7.215999999999999 79.70599999999999 -8.579999999999998Q81.00399999999999 -9.943999999999999 81.00399999999999 -12.363999999999999Q81.00399999999999 -14.739999999999998 79.70599999999999 -16.104Q78.408 -17.468 76.51599999999999 -17.468Z M109.51599999999999 -24.991999999999997Q112.46399999999998 -24.991999999999997 114.862 -23.451999999999998Q117.25999999999999 -21.912 118.64599999999999 -19.052Q120.03199999999998 -16.192 120.03199999999998 -12.363999999999999Q120.03199999999998 -8.536 118.64599999999999 -5.654Q117.25999999999999 -2.772 114.862 -1.232Q112.46399999999998 0.308 109.51599999999999 0.308Q107.00799999999998 0.308 105.18199999999999 -0.704Q103.356 -1.716 102.29999999999998 -3.432V11.792H93.67599999999999V-24.683999999999997H102.29999999999998V-21.252Q103.31199999999998 -22.968 105.15999999999998 -23.979999999999997Q107.00799999999998 -24.991999999999997 109.51599999999999 -24.991999999999997ZM106.78799999999998 -17.468Q104.89599999999999 -17.468 103.59799999999998 -16.104Q102.29999999999998 -14.739999999999998 102.29999999999998 -12.363999999999999Q102.29999999999998 -9.943999999999999 103.59799999999998 -8.579999999999998Q104.89599999999999 -7.215999999999999 106.78799999999998 -7.215999999999999Q108.67999999999999 -7.215999999999999 109.97799999999998 -8.602Q111.27599999999998 -9.988 111.27599999999998 -12.363999999999999Q111.27599999999998 -14.783999999999999 109.97799999999998 -16.125999999999998Q108.67999999999999 -17.468 106.78799999999998 -17.468Z M131.868 -24.991999999999997Q134.24399999999997 -24.991999999999997 136.11399999999998 -24.001999999999995Q137.98399999999998 -23.011999999999997 139.04 -21.296V-32.559999999999995H147.70799999999997V0.0H139.04V-3.432Q138.028 -1.716 136.18 -0.704Q134.332 0.308 131.82399999999998 0.308Q128.87599999999998 0.308 126.47799999999998 -1.232Q124.07999999999998 -2.772 122.69399999999999 -5.654Q121.30799999999998 -8.536 121.30799999999998 -12.363999999999999Q121.30799999999998 -16.192 122.69399999999999 -19.052Q124.07999999999998 -21.912 126.49999999999999 -23.451999999999998Q128.92 -24.991999999999997 131.868 -24.991999999999997ZM134.59599999999998 -17.468Q132.65999999999997 -17.468 131.38399999999996 -16.125999999999998Q130.10799999999998 -14.783999999999999 130.10799999999998 -12.363999999999999Q130.10799999999998 -9.988 131.38399999999996 -8.602Q132.65999999999997 -7.215999999999999 134.59599999999998 -7.215999999999999Q136.48799999999997 -7.215999999999999 137.78599999999997 -8.579999999999998Q139.08399999999997 -9.943999999999999 139.08399999999997 -12.363999999999999Q139.08399999999997 -14.739999999999998 137.78599999999997 -16.104Q136.48799999999997 -17.468 134.59599999999998 -17.468Z M168.34399999999997 -24.904V-15.707999999999998H165.92399999999998Q163.10799999999998 -15.707999999999998 161.74399999999997 -14.607999999999999Q160.37999999999997 -13.508 160.37999999999997 -10.78V0.0H151.75599999999997V-24.683999999999997H160.37999999999997V-20.328Q161.83199999999997 -22.439999999999998 163.89999999999998 -23.671999999999997Q165.96799999999996 -24.904 168.34399999999997 -24.904Z M169.136 -12.363999999999999Q169.136 -16.192 170.82999999999998 -19.052Q172.52399999999997 -21.912 175.45 -23.451999999999998Q178.37599999999998 -24.991999999999997 182.07199999999997 -24.991999999999997Q185.76799999999997 -24.991999999999997 188.69399999999996 -23.451999999999998Q191.61999999999998 -21.912 193.31399999999996 -19.052Q195.00799999999998 -16.192 195.00799999999998 -12.363999999999999Q195.00799999999998 -8.536 193.31399999999996 -5.654Q191.61999999999998 -2.772 188.67199999999997 -1.232Q185.724 0.308 182.028 0.308Q178.332 0.308 175.406 -1.232Q172.48 -2.772 170.808 -5.632Q169.136 -8.491999999999999 169.136 -12.363999999999999ZM186.25199999999998 -12.363999999999999Q186.25199999999998 -14.872 185.04199999999997 -16.192Q183.832 -17.512 182.07199999999997 -17.512Q180.31199999999998 -17.512 179.12399999999997 -16.192Q177.93599999999998 -14.872 177.93599999999998 -12.363999999999999Q177.93599999999998 -9.812 179.07999999999998 -8.491999999999999Q180.224 -7.172 182.028 -7.172Q183.832 -7.172 185.04199999999997 -8.514Q186.25199999999998 -9.856 186.25199999999998 -12.363999999999999Z M213.48799999999997 -24.991999999999997Q216.43599999999998 -24.991999999999997 218.83399999999997 -23.451999999999998Q221.23199999999997 -21.912 222.61799999999997 -19.052Q224.00399999999996 -16.192 224.00399999999996 -12.363999999999999Q224.00399999999996 -8.536 222.61799999999997 -5.654Q221.23199999999997 -2.772 218.83399999999997 -1.232Q216.43599999999998 0.308 213.48799999999997 0.308Q210.97999999999996 0.308 209.13199999999995 -0.6819999999999999Q207.28399999999996 -1.672 206.27199999999996 -3.432V0.0H197.64799999999997V-32.559999999999995H206.27199999999996V-21.252Q207.28399999999996 -23.011999999999997 209.13199999999995 -24.001999999999995Q210.97999999999996 -24.991999999999997 213.48799999999997 -24.991999999999997ZM210.75999999999996 -17.468Q208.86799999999997 -17.468 207.56999999999996 -16.104Q206.27199999999996 -14.739999999999998 206.27199999999996 -12.363999999999999Q206.27199999999996 -9.943999999999999 207.56999999999996 -8.579999999999998Q208.86799999999997 -7.215999999999999 210.75999999999996 -7.215999999999999Q212.65199999999996 -7.215999999999999 213.94999999999996 -8.602Q215.24799999999996 -9.988 215.24799999999996 -12.363999999999999Q215.24799999999996 -14.783999999999999 213.94999999999996 -16.125999999999998Q212.65199999999996 -17.468 210.75999999999996 -17.468Z M250.13999999999996 -10.604H233.81599999999997Q233.94799999999995 -8.58 234.93799999999996 -7.59Q235.92799999999997 -6.6 237.46799999999996 -6.6Q239.62399999999997 -6.6 240.54799999999994 -8.536H249.74399999999997Q249.17199999999997 -5.984 247.52199999999996 -3.982Q245.87199999999996 -1.98 243.36399999999998 -0.836Q240.85599999999997 0.308 237.81999999999996 0.308Q234.16799999999995 0.308 231.32999999999996 -1.232Q228.49199999999996 -2.772 226.88599999999997 -5.632Q225.27999999999997 -8.491999999999999 225.27999999999997 -12.363999999999999Q225.27999999999997 -16.236 226.86399999999998 -19.073999999999998Q228.44799999999995 -21.912 231.28599999999994 -23.451999999999998Q234.12399999999997 -24.991999999999997 237.81999999999996 -24.991999999999997Q241.47199999999995 -24.991999999999997 244.28799999999995 -23.496Q247.10399999999996 -22.0 248.68799999999996 -19.206Q250.27199999999996 -16.412 250.27199999999996 -12.628Q250.27199999999996 -11.616 250.13999999999996 -10.604ZM241.47199999999995 -14.783999999999999Q241.47199999999995 -16.368 240.41599999999994 -17.27Q239.35999999999996 -18.172 237.77599999999995 -18.172Q236.19199999999995 -18.172 235.17999999999995 -17.314Q234.16799999999995 -16.456 233.85999999999996 -14.783999999999999Z" fill="#171F63" transform="translate(80.00 42.38)"/></svg>
+            </a>
 
-                <!-- LOGO SWAPDROBE -->
-                <div class="mx-auto md:mx-0 md:absolute md:left-1/2 md:-translate-x-1/2 text-center">
-                    <a href="{% url 'accounts:index' %}" class="inline-block bg-swRose px-8 py-2.5 rounded-2xl font-logo text-4xl sm:text-5xl text-swRed hover:scale-105 transition-transform tracking-wide leading-none shadow-sm">
-                        Swapdrobe
-                    </a>
-                </div>
+            <!-- AKSI KANAN -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <a href="{% url 'items_for_swap:index' %}" class="hidden sm:inline text-sm font-medium text-swNavy hover:text-swBerry transition-colors">
+                    Swap your fits
+                </a>
+                <a href="{% url 'items_for_swap:index' %}" class="w-10 h-10 flex items-center justify-center rounded-full text-swNavy hover:bg-swBlush transition-colors" aria-label="Bookmark">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+                </a>
 
-                <!-- BUTTON SIGN IN / SWAP -->
-                <div class="flex items-center gap-2">
-                    <a href="{% url 'accounts:login' %}" class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-swOffWhite text-swDark hover:bg-swRose/40 transition-all">
-                        Sign In
-                    </a>
-                    <a href="{% url 'items_for_swap:index' %}" class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-swRed text-white hover:bg-swRed/90 shadow-sm transition-all">
-                        Swap Now
-                    </a>
-                </div>
+                {% if user.is_authenticated %}
+                <details class="relative">
+                    <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-2 pl-3 pr-1 h-11 rounded-full border border-swNavy/20 hover:border-swNavy/40 transition-colors" aria-label="Menu akun">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                        <span class="w-9 h-9 rounded-full bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white text-sm font-bold flex items-center justify-center">
+                            {{ user.username|first|upper }}
+                        </span>
+                    </summary>
+                    <div class="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-lg ring-1 ring-swNavy/10 p-2 text-sm">
+                        <p class="px-3 py-2 text-xs text-swSlate">Masuk sebagai <span class="font-semibold text-swNavy">{{ user.username }}</span></p>
+                        <a href="{% url 'digital_wardrobe:index' %}" class="block px-3 py-2 rounded-xl hover:bg-swBlush">Lemari Saya</a>
+                        <button type="button" id="sw-logout" data-url="{% url 'accounts:logout' %}" data-next="{% url 'accounts:login' %}" class="w-full text-left px-3 py-2 rounded-xl text-swBerry hover:bg-swBlush">Keluar</button>
+                    </div>
+                </details>
+                {% else %}
+                <a href="{% url 'accounts:login' %}" class="h-10 px-5 flex items-center rounded-full text-sm font-semibold bg-swBerry text-white hover:bg-swBerry/90 transition-colors">
+                    Sign In
+                </a>
+                {% endif %}
             </div>
-
-            <!-- NAV LINKS -->
-            <nav class="mt-5 pt-3 flex flex-wrap justify-center items-center gap-6 text-sm font-medium border-t border-swRose/10">
-                <a href="{% url 'accounts:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
-                    Accounts
-                </a>
-                <a href="{% url 'digital_wardrobe:index' %}" class="text-swDark hover:text-swRed font-semibold border-b-2 border-swRed py-1">
-                    Digital Wardrobe
-                </a>
-                <a href="{% url 'items_for_swap:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
-                    Items For Swap
-                </a>
-                <a href="{% url 'swap_requests:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
-                    Swap Requests
-                </a>
-                <a href="{% url 'outfit_calendar:index' %}" class="text-swDark hover:text-swRed transition-colors py-1">
-                    Outfit Calendar
-                </a>
-            </nav>
-
         </div>
+
+        <!-- NAVIGASI MODUL -->
+        <nav class="border-t border-swNavy/10" aria-label="Navigasi utama">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex justify-start md:justify-center gap-1 sm:gap-3 overflow-x-auto">
+                <a href="{% url 'items_for_swap:index' %}"{% if request.resolver_match.app_name == 'items_for_swap' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'items_for_swap' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>
+                    <span>Jelajahi</span>
+                </a>
+                <a href="{% url 'digital_wardrobe:index' %}"{% if request.resolver_match.app_name == 'digital_wardrobe' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'digital_wardrobe' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
+                    <span>Lemari Saya</span>
+                </a>
+                <a href="{% url 'outfit_calendar:index' %}"{% if request.resolver_match.app_name == 'outfit_calendar' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'outfit_calendar' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01"/></svg>
+                    <span>Kalender Outfit</span>
+                </a>
+                <a href="{% url 'items_for_swap:index' %}" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors text-swNavy/80 hover:bg-swBlush hover:text-swNavy">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12M15 3l4 4-4 4M17 17H5M9 13l-4 4 4 4"/></svg>
+                    <span>Item Swap Saya</span>
+                </a>
+                <a href="{% url 'swap_requests:index' %}"{% if request.resolver_match.app_name == 'swap_requests' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'swap_requests' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg>
+                    <span>Permintaan Swap</span>
+                </a>
+            </div>
+        </nav>
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-6 py-10 flex-grow w-full">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-grow w-full">
         {% block content %}
         {% endblock %}
     </main>
 
     <!-- FOOTER -->
-    <footer class="border-t border-swRose/20 bg-white py-8 text-center text-swDark/60 text-xs font-medium">
-        &copy; Swapdrobe — Reimagining the future of fashion.
+    <footer class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex flex-col sm:flex-row gap-1 justify-between text-xs text-swSlate">
+        <span>SwapDrobe · Pakai lagi, cerita lagi.</span>
+        <span>Tukar pakaian, bukan jual-beli.</span>
     </footer>
 
+    <script>
+        // Logout lewat AJAX (view accounts:logout mengembalikan JSON)
+        document.getElementById('sw-logout')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            try { await fetch(btn.dataset.url, { credentials: 'same-origin' }); } catch (err) {}
+            window.location.href = btn.dataset.next;
+        });
+    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
