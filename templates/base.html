@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load wardrobe_tags %}<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -88,17 +88,36 @@
                 </a>
 
                 {% if user.is_authenticated %}
-                <details class="relative">
-                    <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-2 pl-3 pr-1 h-11 rounded-full border border-swNavy/20 hover:border-swNavy/40 transition-colors" aria-label="Menu akun">
+                <details class="relative" data-account-menu>
+                    <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-2 pl-3 pr-1 h-11 rounded-full border border-swNavy/20 hover:border-swPlum/60 transition-colors" aria-label="Menu akun">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-                        <span class="w-9 h-9 rounded-full bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white text-sm font-bold flex items-center justify-center">
+                        <span class="w-9 h-9 rounded-full bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-2 ring-white text-white text-sm font-bold flex items-center justify-center">
                             {{ user.username|first|upper }}
                         </span>
                     </summary>
-                    <div class="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-lg ring-1 ring-swNavy/10 p-2 text-sm">
-                        <p class="px-3 py-2 text-xs text-swSlate">Masuk sebagai <span class="font-semibold text-swNavy">{{ user.username }}</span></p>
-                        <a href="{% url 'digital_wardrobe:index' %}" class="block px-3 py-2 rounded-xl hover:bg-swBlush">Lemari Saya</a>
-                        <button type="button" id="sw-logout" data-url="{% url 'accounts:logout' %}" data-next="{% url 'accounts:login' %}" class="w-full text-left px-3 py-2 rounded-xl text-swBerry hover:bg-swBlush">Keluar</button>
+                    {% swap_item_count user as swap_count %}
+                    <div class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-[0_16px_40px_-12px_rgba(23,31,99,0.35)] ring-1 ring-swNavy/10 overflow-hidden">
+                        <div class="relative flex items-center gap-3 px-4 py-4 border-b border-swNavy/10">
+                            <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]" aria-hidden="true"></div>
+                            <span class="w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] text-white text-lg font-bold flex items-center justify-center shadow-sm" aria-hidden="true">
+                                {{ user.username|first|upper }}
+                            </span>
+                            <div class="min-w-0">
+                                <p class="font-bold text-swNavy truncate">@{{ user.username }}</p>
+                                <p class="text-xs text-swPlum"><span class="font-bold">{{ swap_count }}</span> items for swap</p>
+                            </div>
+                        </div>
+                        <div class="p-2 text-sm">
+                            <span class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-swNavy/60 cursor-not-allowed" aria-disabled="true">
+                                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6 1.3 0 2.5.4 3.5 1.1"/><path d="m14 20 1-3.5 4.5-4.5 2.5 2.5-4.5 4.5z"/></svg>
+                                <span class="font-semibold whitespace-nowrap">Pengaturan Profil/Akun</span>
+                                <span class="ml-auto px-2 py-0.5 rounded-full bg-swBlush text-[10px] font-semibold text-swBerry whitespace-nowrap">segera hadir</span>
+                            </span>
+                            <a href="{% url 'accounts:logout' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-swBerry font-semibold hover:bg-swBlush transition-colors">
+                                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"/><path d="M10 12h10M16 8l4 4-4 4"/></svg>
+                                Log Out
+                            </a>
+                        </div>
                     </div>
                 </details>
                 {% else %}
@@ -149,12 +168,13 @@
     </footer>
 
     <script>
-        // Logout lewat AJAX (view accounts:logout mengembalikan JSON)
-        document.getElementById('sw-logout')?.addEventListener('click', async (e) => {
-            const btn = e.currentTarget;
-            try { await fetch(btn.dataset.url, { credentials: 'same-origin' }); } catch (err) {}
-            window.location.href = btn.dataset.next;
-        });
+        // Tutup menu akun saat klik di luar menu
+        (() => {
+            const menu = document.querySelector('[data-account-menu]');
+            if (!menu) return;
+            document.addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+            menu.addEventListener('keydown', (e) => { if (e.key === 'Escape') { menu.open = false; menu.querySelector('summary').focus(); } });
+        })();
     </script>
     {% block scripts %}{% endblock %}
 </body>
