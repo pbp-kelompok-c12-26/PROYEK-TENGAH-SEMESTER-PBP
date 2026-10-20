@@ -49,7 +49,12 @@ def index(request):
     today = date.today()
 
     month_schedules = _schedules_for(request.user).filter(date__year=year, date__month=month)
-    by_date = {s.date: s for s in month_schedules}
+    by_date = {}
+    for s in month_schedules:
+        # maks 4 foto baju (yang masih ada di lemari & punya gambar) untuk kolase di kalender
+        s.thumbs = [w.clothing_item for w in s.worn_items.all()
+                    if w.clothing_item and w.clothing_item.image][:4]
+        by_date[s.date] = s
 
     weeks = []
     for week in calendar.Calendar(firstweekday=0).monthdatescalendar(year, month):
