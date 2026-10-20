@@ -1,0 +1,6 @@
+{% comment %}Pakai: with swap=s  — atau with label='Pending' style='bg-... text-...'{% endcomment %}
+{% if swap %}
+<span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap {{ swap.status_style }}">{{ swap.get_status_display }}</span>
+{% else %}
+<span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap {{ style }}">{{ label }}</span>
+{% endif %}

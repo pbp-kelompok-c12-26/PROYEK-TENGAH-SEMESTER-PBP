@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}{{ swap.code }} · Swapdrobe{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <a href="{% url 'swap_requests:index' %}?tab={% if role == 'requester' %}kamu{% else %}masuk{% endif %}" class="text-sm font-semibold text-swPlum hover:underline">&larr; Kembali ke Permintaan Swap</a>
+
+    <!-- Judul + aksi -->
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-extrabold text-swNavy">{% if role == 'requester' %}Request kepada @{{ other.username }}{% else %}Request dari @{{ other.username }}{% endif %}</h1>
+            <p class="text-xs text-swSlate mt-1">{{ swap.code }} · Dikirim {{ tanggal }}</p>
+        </div>
+        <div class="flex gap-2">
+            {% if swap.can_delete %}
+            <form method="post" action="{% url 'swap_requests:delete' swap.pk %}" data-confirm="Swap request {{ swap.code }} akan dihapus permanen." data-confirm-yes="Ya, hapus" data-confirm-danger="1">
+                {% csrf_token %}
+                <button type="submit" class="h-10 px-4 inline-flex items-center gap-2 rounded-full bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+                    Hapus swap request
+                </button>
+            </form>
+            {% else %}
+            <span class="h-10 px-4 inline-flex items-center gap-2 rounded-full bg-[#ECEAF1] text-swSlate text-sm font-semibold cursor-not-allowed" title="Tidak bisa dihapus saat menunggu pertukaran">Hapus swap request</span>
+            {% endif %}
+            {% if can_edit %}
+            <a href="{% url 'swap_requests:update' swap.pk %}" class="h-10 px-4 inline-flex items-center gap-2 rounded-full border border-swNavy/25 bg-white text-swNavy text-sm font-semibold hover:bg-swCream">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
+                Edit
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'swap_requests/partials/messages.html' %}
+
+    <div class="grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+        <!-- Overview pertukaran -->
+        <section class="bg-white rounded-2xl border border-swNavy/10 p-4 sm:p-5">
+            <h2 class="text-base font-extrabold text-swNavy mb-4">Overview Pertukaran</h2>
+            <div class="grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-4 items-center">
+                {% include 'swap_requests/partials/overview_item.html' with item=get_item name=get_name person=other caption='akan memberikan ke kamu' %}
+                <svg class="w-6 h-6 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>
+                {% include 'swap_requests/partials/overview_item.html' with item=give_item name=give_name person=request.user caption='kamu berikan' %}
+            </div>
+        </section>
+
+        <div class="space-y-4">
+            <!-- Pesan -->
+            <section class="bg-white rounded-2xl border border-swNavy/10 p-4 sm:p-5">
+                <h2 class="text-sm font-extrabold text-swNavy mb-2">{% if role == 'requester' %}Pesan kamu{% else %}Pesan dari @{{ other.username }}{% endif %}</h2>
+                <p class="text-sm text-swSlate whitespace-pre-line">{% if swap.message %}"{{ swap.message }}"{% else %}Tidak ada pesan.{% endif %}</p>
+            </section>
+
+            <!-- Status -->
+            <section class="bg-white rounded-2xl border border-swNavy/10 p-4 sm:p-5 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-sm font-extrabold text-swNavy">Status Request</h2>
+                    {% include 'swap_requests/partials/status_badge.html' with swap=swap %}
+                </div>
+                <p class="text-xs text-swSlate">{{ swap.status_note }}</p>
+
+                {% if swap.status == 'awaiting_exchange' %}
+                <div class="rounded-xl bg-[#EEF4FF] px-3 py-2.5 text-xs text-swNavy flex gap-2">
+                    <svg class="w-4 h-4 shrink-0 text-swPlum" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+                    <p>Hubungi @{{ other.username }}{% if other.email %} lewat email <a href="mailto:{{ other.email }}" class="font-bold underline">{{ other.email }}</a>{% endif %} untuk mengatur waktu dan tempat pertukaran.</p>
+                </div>
+                {% endif %}
+
+                {% if can_respond %}
+                <div class="flex justify-end gap-2 pt-1">
+                    <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" data-confirm="Tolak request {{ swap.code }} dari @{{ other.username }}?" data-confirm-yes="Ya, tolak" data-confirm-danger="1">
+                        {% csrf_token %}
+                        <button type="submit" name="action" value="reject" class="h-9 px-4 rounded-full border border-swBerry/40 text-swBerry text-xs font-bold hover:bg-swBlush">Tolak swap</button>
+                    </form>
+                    <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" data-confirm="Setujui swap ini? Request lain untuk kedua pakaian ini otomatis jadi Item not available." data-confirm-yes="Ya, setujui">
+                        {% csrf_token %}
+                        <button type="submit" name="action" value="accept" class="h-9 px-4 inline-flex items-center gap-1.5 rounded-full sw-btn-holo text-white text-xs font-bold">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                            Setujui swap
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Konfirmasi penyelesaian -->
+            {% if swap.status == 'awaiting_exchange' or swap.status == 'completed' or swap.status == 'cancelled' %}
+            <section class="bg-white rounded-2xl border border-swNavy/10 p-4 sm:p-5 space-y-3">
+                <div>
+                    <h2 class="text-sm font-extrabold text-swNavy">Konfirmasi Penyelesaian</h2>
+                    <p class="text-xs text-swSlate">Swap selesai setelah kalian berdua memilih <b>Selesai swap</b>. Kalau salah satu memilih <b>Batalkan swap</b>, pertukaran dibatalkan.</p>
+                </div>
+                <div class="rounded-xl bg-[#F3F8EC] p-3 space-y-2">
+                    <!-- Pilihan saya -->
+                    <div class="flex items-center gap-2">
+                        {% include 'swap_requests/partials/avatar.html' with person=request.user size='w-8 h-8 text-xs' %}
+                        {% if swap.status == 'awaiting_exchange' %}
+                        <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" class="flex-1 flex gap-2" data-confirm="Simpan pilihanmu? Pilihan ini tidak bisa diubah setelah kedua pihak memilih." data-confirm-yes="Ya, simpan">
+                            {% csrf_token %}
+                            <select name="choice" required class="flex-1 h-9 px-2 rounded-lg bg-white border border-swNavy/15 text-xs text-swNavy">
+                                <option value="">Pilih opsi</option>
+                                {% for value, label in confirm_choices %}
+                                <option value="{{ value }}" {% if my_confirmation == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="h-9 px-3 rounded-lg sw-btn-holo text-white text-xs font-bold">Simpan</button>
+                        </form>
+                        {% else %}
+                        <p class="flex-1 h-9 px-3 rounded-lg bg-white border border-swNavy/10 text-xs text-swNavy flex items-center">Kamu: {% if my_confirmation == 'done' %}Selesai swap{% elif my_confirmation == 'cancel' %}Batalkan swap{% else %}–{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    <!-- Pilihan pihak lain -->
+                    <div class="flex items-center gap-2">
+                        <p class="flex-1 h-9 px-3 rounded-lg bg-white border border-swNavy/10 text-xs text-swNavy flex items-center">
+                            <span>@{{ other.username }}: {% if other_confirmation == 'done' %}Selesai swap{% elif other_confirmation == 'cancel' %}Batalkan swap{% else %}<span class="text-swSlate">menunggu pilihan…</span>{% endif %}</span>
+                        </p>
+                        {% include 'swap_requests/partials/avatar.html' with person=other size='w-8 h-8 text-xs' %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% include 'swap_requests/partials/confirm_dialog.html' %}
+{% endblock %}

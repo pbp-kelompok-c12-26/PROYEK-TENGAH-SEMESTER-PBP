@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} · Swapdrobe{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <form method="post" novalidate class="rounded-3xl overflow-hidden shadow-[0_20px_50px_-20px_rgba(23,31,99,0.45)] bg-gradient-to-br from-[#F4C6D6] via-[#E6CFF3] to-[#C9D6FF] p-4 sm:p-6 space-y-4">
+        {% csrf_token %}
+        <h1 class="text-xl sm:text-2xl font-extrabold text-swNavy">{{ title }}</h1>
+
+        {% for error in form.non_field_errors %}
+        <p class="px-4 py-3 rounded-xl bg-swBerry text-white text-sm font-semibold">{{ error }}</p>
+        {% endfor %}
+
+        <div class="grid md:grid-cols-2 gap-4">
+            <!-- Kiri: pakaian -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 space-y-3">
+                <h2 class="text-sm font-bold text-swNavy">Pakaian yang kamu tawarkan</h2>
+                <div class="aspect-[4/3] rounded-xl bg-swCream border border-dashed border-swNavy/20 flex items-center justify-center overflow-hidden" data-offer-box>
+                    <p class="text-xs text-swSlate text-center px-6" data-offer-empty>Pilih pakaian dari daftar di samping. Hanya pakaian yang sedang kamu tawarkan di Item Swap Saya yang bisa dipilih.</p>
+                    {% for it in offer_items %}
+                    <div class="w-full h-full hidden" data-offer-preview="{{ it.pk }}">
+                        {% if it.image %}<img src="{{ it.image.url }}" alt="{{ it.name }}" class="w-full h-full object-cover">{% else %}<div class="w-full h-full flex items-center justify-center text-sm font-bold text-swNavy">{{ it.name }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="flex justify-center text-swNavy" aria-hidden="true">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v16l-3-3M16 20V4l3 3"/></svg>
+                </div>
+
+                <h2 class="text-sm font-bold text-swNavy">Pakaian yang kamu dapat</h2>
+                <div class="flex items-center gap-3 rounded-xl border border-swNavy/10 p-2">
+                    {% include 'swap_requests/partials/thumb.html' with item=requested_item size='w-20 h-20' %}
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-swNavy truncate">{{ requested_item.name }}</p>
+                        <p class="text-xs text-swSlate">{{ requested_item.get_category_display }}{% if requested_item.size_label %} · {{ requested_item.size_label }}{% endif %} · {{ requested_item.get_condition_display }}</p>
+                        <p class="text-xs text-swPlum font-semibold mt-0.5">milik @{{ requested_item.user.username }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kanan: informasi -->
+            <div class="bg-white rounded-2xl p-4 sm:p-5 space-y-4">
+                <h2 class="text-sm font-bold text-swNavy">Informasi request</h2>
+                {% for field in form %}
+                <div class="flex flex-col gap-1.5">
+                    <label for="{{ field.id_for_label }}" class="text-xs font-bold text-swNavy">{{ field.label }}{% if field.field.required %} <span class="text-swBerry">*</span>{% endif %}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<p class="text-xs font-semibold text-swBerry">{{ error }}</p>{% endfor %}
+                </div>
+                {% endfor %}
+                {% if not has_offerable %}
+                <p class="text-xs text-swNavy bg-swBlush rounded-xl px-3 py-2">Kamu belum menawarkan pakaian apa pun. Tawarkan dulu pakaianmu di <a href="{% url 'items_for_swap:index' %}" class="font-bold text-swBerry underline">Item Swap Saya</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3">
+            <a href="{% if swap %}{% url 'swap_requests:detail' swap.pk %}{% else %}{% url 'swap_requests:index' %}{% endif %}"
+               class="h-10 px-5 inline-flex items-center rounded-full bg-white border border-swNavy/25 text-swNavy text-sm font-semibold hover:bg-swCream">Batal</a>
+            <button type="submit" class="h-10 px-5 inline-flex items-center gap-2 rounded-full sw-btn-holo text-white text-sm font-bold">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                {{ submit_label }}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+(() => {
+    const select = document.querySelector('[data-offer-select]');
+    if (!select) return;
+    const show = () => {
+        document.querySelectorAll('[data-offer-preview]').forEach((el) => el.classList.toggle('hidden', el.dataset.offerPreview !== select.value));
+        document.querySelector('[data-offer-empty]').classList.toggle('hidden', !!select.value);
+    };
+    select.addEventListener('change', show);
+    show();
+})();
+</script>
+{% endblock %}
