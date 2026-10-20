@@ -2,7 +2,8 @@
     <div class="absolute inset-0 bg-swNavy/40" data-close-modal></div>
 
     <form action="{{ action_url }}" method="post" enctype="multipart/form-data" novalidate data-item-form
-          class="relative w-full max-w-4xl my-8 rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-b from-[#E9B9C8] via-swBlush to-swLavender p-4 sm:p-5">
+          class="relative isolate w-full max-w-4xl my-8 rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#F2B8CF] via-[#E2CDF5] to-[#C3D0F7] p-4 sm:p-5">
+        <div class="absolute -z-10 -top-20 -right-16 w-64 h-64 rounded-full bg-white/40 blur-3xl pointer-events-none" aria-hidden="true"></div>
         {% csrf_token %}
 
         <div class="flex items-center justify-between gap-4 mb-4 px-1">
