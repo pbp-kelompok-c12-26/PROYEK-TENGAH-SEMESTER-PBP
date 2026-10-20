@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .ifs-d{max-width:1200px;margin:0 auto;padding:24px 16px}
+  .ifs-d h1{color:#00007a;margin:0}
+  .ifs-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-top:24px}
+  @media(max-width:800px){.ifs-grid{grid-template-columns:1fr}}
+  .ifs-d img.main{width:100%;border-radius:16px;display:block}
+  .ifs-box{background:#fff;border-radius:14px;padding:14px 18px;margin-bottom:12px}
+  .ifs-box small{display:block;color:#777}
+  .ifs-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .ifs-facts .ifs-box{margin:0}
+  .ifs-pill{display:inline-block;padding:8px 24px;border-radius:999px;font-weight:700;color:#fff;background:#16a34a}
+  .ifs-pill.light{background:#c7f9a8;color:#166534;font-weight:500}
+  .ifs-pill.swapped{background:#f9a8d4;color:#9d174d}
+  .ifs-owner{background:#e6f7fd}
+  .ifs-btn{display:inline-block;padding:10px 24px;border-radius:12px;border:0;font-weight:600;color:#fff;text-decoration:none;cursor:pointer}
+  .ifs-btn.blue{background:#3a5fa8}.ifs-btn.red{background:#d0114f}.ifs-btn.grey{background:#ddd;color:#777}
+  .ifs-others{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px}
+  .ifs-others a{background:#fff;border-radius:16px;padding:10px;color:#00007a;text-decoration:none;font-weight:600}
+  .ifs-others img{width:100%;border-radius:12px}
+  dialog.ifs-dialog{border:0;border-radius:16px;padding:24px;max-width:420px}
+  dialog.ifs-dialog::backdrop{background:rgba(0,0,0,.4)}
+</style>
+
+<div class="ifs-d">
+  <h1>{{ item.name }}</h1>
+  <small>diposting pada {{ listing.posted_at|date:"j F Y" }}</small>
+
+  <div class="ifs-grid">
+    <div>
+      {% if listing.photo_url %}<img class="main" src="{{ listing.photo_url }}" alt="{{ item.name }}">{% endif %}
+      <div class="ifs-box" style="margin-top:16px">
+        <strong>{% if is_owner %}Anda adalah pemilik{% else %}Kenalan dengan pemilik{% endif %}</strong><br>
+        {{ listing.user.get_full_name|default:listing.user.username }}
+      </div>
+    </div>
+
+    <div>
+      <p>
+        <span class="ifs-pill {% if not listing.is_available %}swapped{% endif %}">{{ listing.get_status_display }}</span>
+        {% if listing.is_available %}<span class="ifs-pill light">{{ listing.request_count }} request(s)</span>{% endif %}
+      </p>
+      <div class="ifs-facts">
+        <div class="ifs-box"><small>Kategori</small>{{ item.get_category_display }}</div>
+        <div class="ifs-box"><small>Ukuran</small>{{ item.size_label }}</div>
+        <div class="ifs-box"><small>Kondisi</small>{{ item.get_condition_display }}</div>
+      </div>
+      <div class="ifs-facts" style="grid-template-columns:repeat(2,1fr);margin-top:8px">
+        <div class="ifs-box"><small>Warna</small>{{ item.get_color_display }}</div>
+        <div class="ifs-box"><small>Gender Pakaian</small>{{ item.get_gender_display }}</div>
+      </div>
+      <div class="ifs-box" style="margin-top:12px"><strong>Meeting Location</strong><br>{{ listing.meeting_location }}</div>
+      {% if listing.reason %}<div class="ifs-box">{{ listing.reason|linebreaksbr }}</div>{% endif %}
+
+      <div class="ifs-box ifs-owner">
+        <small>Komunikasi lanjutan dengan nomor telepon dilakukan setelah kesepakatan request disepakati bersama. Pastikan kamu mempercayai orang yang bertukar denganmu.</small>
+      </div>
+
+      <div style="text-align:right">
+        {% if is_owner %}
+          {% if listing.is_available %}
+            <a class="ifs-btn blue" href="{% url 'items_for_swap:edit' listing.pk %}">Edit</a>
+            <button type="button" class="ifs-btn red" id="open-return">Kembalikan</button>
+          {% endif %}
+        {% elif request_url %}
+          <a class="ifs-btn blue" href="{{ request_url }}">Ajukan swap</a>
+        {% else %}
+          <span class="ifs-btn grey">Ajukan swap (segera hadir)</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if others %}
+  <h2 style="color:#00007a;margin-top:32px">Lainnya dari lemari {{ listing.user.get_full_name|default:listing.user.username }}</h2>
+  <div class="ifs-others">
+    {% for other in others %}
+      <a href="{% url 'items_for_swap:detail' other.pk %}">
+        {% if other.photo_url %}<img src="{{ other.photo_url }}" alt="{{ other.clothing_item.name }}">{% endif %}
+        <div>{{ other.clothing_item.name }}</div>
+      </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if is_owner and listing.is_available %}
+<dialog id="ret-dialog" class="ifs-dialog">
+  <form method="post" action="{% url 'items_for_swap:return_item' listing.pk %}">
+    {% csrf_token %}
+    <h3>Kembalikan ke lemari?</h3>
+    <p>"{{ item.name }}" akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button type="button" class="ifs-btn grey" id="ret-cancel">Batal</button>
+      <button type="submit" class="ifs-btn red">Ya, kembalikan</button>
+    </div>
+  </form>
+</dialog>
+<script>
+  const dlg = document.getElementById('ret-dialog');
+  document.getElementById('open-return').addEventListener('click', () => dlg.showModal());
+  document.getElementById('ret-cancel').addEventListener('click', () => dlg.close());
+</script>
+{% endif %}
+{% endblock %}

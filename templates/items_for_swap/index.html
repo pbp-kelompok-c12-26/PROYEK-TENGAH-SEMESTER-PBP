@@ -1,37 +1,115 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="space-y-8">
+<style>
+  .ifs{max-width:1200px;margin:0 auto;padding:24px 16px}
+  .ifs-info{background:#e6f7fd;border-radius:12px;padding:14px 18px;margin:16px 0;font-size:.9rem}
+  .ifs-tabs{display:flex;gap:32px;margin:24px 0 12px}
+  .ifs-tabs a{font-size:1.3rem;font-weight:600;color:#777;text-decoration:none;padding-bottom:4px}
+  .ifs-tabs a.on{color:#3a5fa8;border-bottom:2px solid #3a5fa8}
+  .ifs-search{display:flex;gap:12px;margin:16px 0}
+  .ifs-search input{flex:1;padding:12px 16px;border:1px solid #e5e5e5;border-radius:12px}
+  .ifs-search select{padding:12px;border:1px solid #e5e5e5;border-radius:12px;background:#fff}
+  .ifs-table{width:100%;background:#fff;border-radius:16px;padding:16px;border-collapse:collapse}
+  .ifs-table th{text-align:left;font-size:.75rem;color:#00007a;padding:12px 8px}
+  .ifs-table td{padding:12px 8px;border-top:1px solid #eee;vertical-align:middle}
+  .ifs-thumb{width:88px;height:88px;object-fit:cover;border-radius:10px;background:#eee}
+  .ifs-item{display:flex;gap:14px;align-items:center}
+  .ifs-item a{font-weight:600;color:#00007a;text-decoration:none}
+  .ifs-sub{font-size:.8rem;color:#666}
+  .ifs-btn{display:inline-block;padding:6px 14px;border-radius:999px;border:0;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none}
+  .ifs-btn.blue{background:#3a5fa8;color:#fff}
+  .ifs-btn.grey{background:#eee;color:#555}
+  .ifs-btn.red{background:#d0114f;color:#fff}
+  .ifs-empty{text-align:center;color:#777;padding:32px}
+  dialog.ifs-dialog{border:0;border-radius:16px;padding:24px;max-width:420px}
+  dialog.ifs-dialog::backdrop{background:rgba(0,0,0,.4)}
+</style>
 
-    <!-- Header Banner -->
-    <div class="bg-gradient-to-r from-swRose/40 via-swOffWhite to-swBlue/20 rounded-3xl p-8 border border-swRose/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <div class="flex items-center gap-2 mb-2">
-                <span class="px-3 py-1 bg-swRed text-white text-xs font-bold rounded-full">Marketplace</span>
-                <span class="px-3 py-1 bg-swGreen text-white text-xs font-bold rounded-full">Ready to Swap</span>
+<div class="ifs">
+  {% url 'items_for_swap:add' as add_url %}
+  {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='ITEM SWAP SAYA' title='Item untuk Swap' subtitle='Kelola pakaian kamu untuk ditukar dengan orang lain.' button_url=add_url button_label='+ Tambahkan pakaian dari lemari untuk ditukar' %}
+
+  <div class="ifs-info">
+    <strong>Item yang sudah masuk daftar swap tidak dapat dikelola di lemari pribadi lagi</strong><br>
+    Kamu masih bisa mengembalikannya ke lemari pribadimu, tapi itemnya akan dihapus dari daftar swap kamu.
+  </div>
+
+  <nav class="ifs-tabs">
+    <a href="?tab=active" class="{% if tab == 'active' %}on{% endif %}">Item swap aktif</a>
+    <a href="?tab=done" class="{% if tab == 'done' %}on{% endif %}">Swap selesai</a>
+  </nav>
+
+  <form method="get" class="ifs-search">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <input type="search" name="q" value="{{ q }}" placeholder="Cari item untuk swap...">
+    <select name="sort" onchange="this.form.submit()">
+      <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Terbaru ↓</option>
+      <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Terlama ↑</option>
+    </select>
+  </form>
+
+  <table class="ifs-table">
+    <thead>
+      <tr><th>PAKAIAN</th><th>STATUS</th>{% if tab == 'active' %}<th>AKTIVITAS</th>{% endif %}<th>TINDAKAN</th></tr>
+    </thead>
+    <tbody>
+    {% for listing in listings %}
+      <tr>
+        <td>
+          <div class="ifs-item">
+            {% if listing.photo_url %}<img class="ifs-thumb" src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}<div class="ifs-thumb"></div>{% endif %}
+            <div>
+              <a href="{% url 'items_for_swap:detail' listing.pk %}">{{ listing.clothing_item.name }}</a>
+              <div class="ifs-sub">{{ listing.clothing_item.size_label }} · {{ listing.clothing_item.get_condition_display }}</div>
+              <div class="ifs-sub">{{ listing.user.get_full_name|default:listing.user.username }}</div>
             </div>
-            <h1 class="font-logo text-4xl text-swRed">Items For Swap</h1>
-            <p class="text-swDark/70 text-sm mt-1">Jelajahi dan temukan pakaian keren dari pengguna lain untuk ditukar.</p>
-        </div>
-        
-        <a href="#" class="px-6 py-3.5 bg-swRed text-white font-bold text-sm rounded-full shadow-md hover:bg-swBlue transition-all flex items-center gap-2">
-            <span>+</span> Tawarkan Barang
-        </a>
-    </div>
-
-    <!-- Empty State / Card Grid -->
-    <div class="bg-white rounded-3xl p-12 text-center border border-swRose/30 shadow-sm">
-        <div class="w-20 h-20 bg-swRose/30 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-swRed">
-            🛍️
-        </div>
-        <h2 class="font-logo text-3xl text-swRed mb-2">Belum Ada Barang Tersedia</h2>
-        <p class="text-swDark/60 text-sm max-w-md mx-auto mb-6">
-            Jadilah yang pertama menawarkan pakaian impianmu untuk saling tukar pakaian!
-        </p>
-        <button class="px-6 py-3 bg-swBlue text-white font-bold text-sm rounded-full hover:opacity-90 transition-opacity">
-            Mulai Pajang Pakaian
-        </button>
-    </div>
-
+          </div>
+        </td>
+        <td>{% include 'digital_wardrobe/partials/item_status_badge.html' with item=listing.clothing_item %}</td>
+        {% if tab == 'active' %}
+        <td class="ifs-sub">{% if listing.request_count %}{{ listing.request_count }} permintaan aktif{% else %}Belum ada permintaan{% endif %}</td>
+        {% endif %}
+        <td>
+          <a class="ifs-btn blue" href="{% url 'items_for_swap:detail' listing.pk %}">Lihat detail</a>
+          {% if listing.is_available %}
+            <a class="ifs-btn grey" href="{% url 'items_for_swap:edit' listing.pk %}">Edit</a>
+            <button type="button" class="ifs-btn red"
+                    data-return-url="{% url 'items_for_swap:return_item' listing.pk %}"
+                    data-name="{{ listing.clothing_item.name }}"
+                    data-requests="{{ listing.request_count }}">Kembalikan</button>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" class="ifs-empty">
+        {% if q %}Tidak ada item yang cocok dengan "{{ q }}".{% elif tab == 'done' %}Belum ada swap yang selesai.{% else %}Belum ada item yang ditawarkan.{% endif %}
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
+
+<dialog id="ret-dialog" class="ifs-dialog">
+  <form method="post" id="ret-form">
+    {% csrf_token %}
+    <h3>Kembalikan ke lemari?</h3>
+    <p>"<span id="ret-name"></span>" akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p>
+    <p id="ret-warning" class="ifs-sub" hidden>Masih ada permintaan swap yang menunggu. Permintaan tersebut akan dibatalkan otomatis.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button type="button" class="ifs-btn grey" id="ret-cancel">Batal</button>
+      <button type="submit" class="ifs-btn red">Ya, kembalikan</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('ret-dialog');
+  document.querySelectorAll('[data-return-url]').forEach(btn => btn.addEventListener('click', () => {
+    document.getElementById('ret-form').action = btn.dataset.returnUrl;
+    document.getElementById('ret-name').textContent = btn.dataset.name;
+    document.getElementById('ret-warning').hidden = !(parseInt(btn.dataset.requests, 10) > 0);
+    dlg.showModal();
+  }));
+  document.getElementById('ret-cancel').addEventListener('click', () => dlg.close());
+</script>
 {% endblock %}
