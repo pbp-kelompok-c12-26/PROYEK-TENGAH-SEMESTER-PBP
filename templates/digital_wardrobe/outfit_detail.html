@@ -35,15 +35,17 @@
         {% endif %}
     </div>
 
-    <section class="rounded-3xl p-4 sm:p-6 bg-gradient-to-r from-[#F1D3CB] via-swLavender to-[#6E83B3]">
-        <h2 class="text-lg font-bold text-swNavy mb-1">Isi outfit</h2>
+    <section class="relative overflow-hidden rounded-3xl p-4 sm:p-6 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] shadow-[0_10px_30px_-12px_rgba(23,31,99,0.35)]">
+        <div class="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-white/25 blur-3xl pointer-events-none" aria-hidden="true"></div>
+        <div class="absolute -bottom-28 right-10 w-80 h-80 rounded-full bg-[#9FB4F0]/50 blur-3xl pointer-events-none" aria-hidden="true"></div>
+        <h2 class="relative text-lg font-bold text-white mb-1">Isi outfit</h2>
         {% if has_listed %}
-        <p class="text-xs text-swNavy/80 mb-4">Pakaian berlabel "Sedang ditawarkan" sedang ada di Items for Swap. Kembalikan ke lemari untuk memakainya lagi.</p>
+        <p class="relative text-xs text-white/90 mb-4">Pakaian berlabel "Sedang ditawarkan" sedang ada di Items for Swap. Kembalikan ke lemari untuk memakainya lagi.</p>
         {% else %}
         <div class="mb-3"></div>
         {% endif %}
         {% if outfit_items %}
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {% for item in outfit_items %}
             {% if item.is_listed_for_swap %}
             <div class="bg-white rounded-2xl p-2.5 flex flex-col">
@@ -66,7 +68,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <div class="bg-white rounded-2xl p-8 text-center">
+        <div class="relative bg-white rounded-2xl p-8 text-center">
             <p class="text-sm font-semibold text-swNavy">Pakaian di outfit ini sudah dihapus dari lemari</p>
             <p class="text-xs text-swSlate mt-1">Edit outfit untuk memilih pakaian baru.</p>
         </div>

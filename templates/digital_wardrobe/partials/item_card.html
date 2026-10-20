@@ -1,10 +1,10 @@
-<article id="item-{{ item.pk }}" class="bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col">
+<article id="item-{{ item.pk }}" class="bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col transition-shadow hover:ring-2 hover:ring-swLilac hover:shadow-[0_14px_30px_-14px_rgba(175,63,95,0.45)]">
     <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="block relative rounded-xl overflow-hidden bg-swCream aspect-[4/3]">
         {% if item.image %}
         <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
         {% endif %}
         {% if item.is_listed_for_swap %}
-        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-swBerry text-white text-[11px] font-semibold">Listed for Swap</span>
+        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-swBerry via-[#C46AA6] to-swPlum text-white text-[11px] font-semibold">Listed for Swap</span>
         {% endif %}
     </a>
     <div class="pt-3 px-1 flex-grow">

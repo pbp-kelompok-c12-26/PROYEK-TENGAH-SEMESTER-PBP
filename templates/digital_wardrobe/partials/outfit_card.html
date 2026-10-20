@@ -1,4 +1,4 @@
-<article id="outfit-{{ outfit.pk }}" class="bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col">
+<article id="outfit-{{ outfit.pk }}" class="bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col transition-shadow hover:ring-2 hover:ring-swLilac hover:shadow-[0_14px_30px_-14px_rgba(175,63,95,0.45)]">
     <a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="block rounded-xl overflow-hidden bg-swCream aspect-[4/3]">
         {% if outfit.tiles %}
         <div class="grid grid-cols-6 grid-rows-2 gap-1 w-full h-full">
