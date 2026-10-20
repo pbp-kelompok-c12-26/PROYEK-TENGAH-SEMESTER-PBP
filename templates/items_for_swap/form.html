@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .ifs-form{max-width:900px;margin:24px auto;padding:24px;border-radius:24px;background:linear-gradient(135deg,#e88fa0,#fbe9d0 50%,#9fb0cc)}
+  .ifs-form h1{color:#00007a;font-size:1.6rem;margin:0 0 16px}
+  .ifs-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:700px){.ifs-cols{grid-template-columns:1fr}}
+  .ifs-card{background:#fff;border-radius:16px;padding:20px}
+  .ifs-card h2{color:#00007a;font-size:1.1rem;margin:0 0 12px}
+  .ifs-card label{display:block;font-weight:600;font-size:.8rem;color:#00007a;margin:12px 0 6px}
+  .ifs-card input,.ifs-card select,.ifs-card textarea{width:100%;box-sizing:border-box;padding:12px;border:1px solid #e5e5e5;border-radius:12px}
+  .ifs-preview{background:#f1f1f5;border-radius:12px;min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:.8rem;padding:12px}
+  .ifs-preview img{width:100%;border-radius:12px;display:block}
+  .ifs-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:16px}
+  .ifs-btn{padding:10px 24px;border-radius:12px;border:0;font-weight:600;color:#fff;cursor:pointer;text-decoration:none}
+  .ifs-btn.red{background:#d0114f}.ifs-btn.green{background:#16a34a}.ifs-btn.grey{background:#eee;color:#555}
+  .ifs-error{color:#d0114f;font-size:.8rem}
+  dialog.ifs-dialog{border:0;border-radius:16px;padding:24px;max-width:420px}
+  dialog.ifs-dialog::backdrop{background:rgba(0,0,0,.4)}
+</style>
+
+<div class="ifs-form">
+  <h1>{% if is_edit %}Edit penawaran {{ listing.clothing_item.name|lower }}{% else %}Tambahkan pakaian untuk ditukar{% endif %}</h1>
+  <form method="post" id="ifs-form" novalidate>
+    {% csrf_token %}
+    <div class="ifs-cols">
+      <div class="ifs-card">
+        <h2>Pakaian terpilih</h2>
+        <div class="ifs-preview" id="preview">
+          {% if is_edit %}
+            {% if listing.photo_url %}<img src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}{{ listing.clothing_item.name }}{% endif %}
+          {% else %}
+            Tambahkan pakaian dari wardrobe-mu untuk melihat pratinjau
+          {% endif %}
+        </div>
+      </div>
+      <div class="ifs-card">
+        <h2>Informasi item</h2>
+        {% if form.non_field_errors %}<div class="ifs-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+        {% if is_edit %}
+          <label>Pakaian</label>
+          <input type="text" value="{{ listing.clothing_item.name }}" disabled>
+        {% else %}
+          <label for="{{ form.clothing_item.id_for_label }}">Tambahkan pakaian *</label>
+          {{ form.clothing_item }}
+          <div class="ifs-error">{{ form.clothing_item.errors|join:" " }}</div>
+        {% endif %}
+
+        <label for="{{ form.meeting_location.id_for_label }}">Lokasi Bertemu *</label>
+        {{ form.meeting_location }}
+        <div class="ifs-error">{{ form.meeting_location.errors|join:" " }}</div>
+
+        <label for="{{ form.reason.id_for_label }}">Deskripsi</label>
+        {{ form.reason }}
+        <div class="ifs-error">{{ form.reason.errors|join:" " }}</div>
+      </div>
+    </div>
+    <div class="ifs-actions">
+      <a class="ifs-btn red" href="{% url 'items_for_swap:index' %}">Batal</a>
+      {% if is_edit %}
+        <button type="submit" class="ifs-btn green">✓ Simpan perubahan</button>
+      {% else %}
+        <button type="button" class="ifs-btn green" id="open-confirm">✓ Tambah ke items for swap</button>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+{% if not is_edit %}
+<dialog id="confirm-dialog" class="ifs-dialog">
+  <h3>Publish ke items for swap?</h3>
+  <p>"<span id="confirm-name"></span>" akan hilang dari lemarimu dan tampil untuk pengguna lain. Kamu masih bisa mengembalikannya nanti.</p>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button type="button" class="ifs-btn grey" id="confirm-cancel">Batal</button>
+    <button type="button" class="ifs-btn green" id="confirm-publish">Publish</button>
+  </div>
+</dialog>
+{{ photo_map|json_script:"photo-map" }}
+<script>
+  const photos = JSON.parse(document.getElementById('photo-map').textContent);
+  const select = document.getElementById('{{ form.clothing_item.id_for_label }}');
+  const preview = document.getElementById('preview');
+  const placeholder = preview.textContent.trim();
+  const formEl = document.getElementById('ifs-form');
+  const dlg = document.getElementById('confirm-dialog');
+
+  function updatePreview() {
+    const url = photos[select.value];
+    preview.innerHTML = '';
+    if (url) { const img = document.createElement('img'); img.src = url; preview.appendChild(img); }
+    else { preview.textContent = select.value ? select.options[select.selectedIndex].text : placeholder; }
+  }
+  select.addEventListener('change', updatePreview);
+  updatePreview();
+
+  document.getElementById('open-confirm').addEventListener('click', () => {
+    if (!formEl.reportValidity()) return;
+    document.getElementById('confirm-name').textContent = select.options[select.selectedIndex].text;
+    dlg.showModal();
+  });
+  document.getElementById('confirm-cancel').addEventListener('click', () => dlg.close());
+  document.getElementById('confirm-publish').addEventListener('click', () => formEl.submit());
+</script>
+{% endif %}
+{% endblock %}
