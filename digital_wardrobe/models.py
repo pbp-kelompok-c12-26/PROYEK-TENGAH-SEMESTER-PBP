@@ -11,9 +11,13 @@ from django.utils import timezone
 class ClothingItemQuerySet(models.QuerySet):
     """Query bantu yang bisa dipakai juga oleh modul lain."""
 
+    def active(self):
+        """Pakaian yang belum dihapus dari lemari."""
+        return self.filter(deleted_at__isnull=True)
+
     def in_wardrobe(self, user):
-        """Pakaian yang tampil di Lemari Saya: milik user dan tidak sedang ditawarkan di Items for Swap."""
-        return self.filter(user=user, is_listed_for_swap=False)
+        """Pakaian yang tampil di Lemari Saya: milik user, belum dihapus, dan tidak sedang ditawarkan di Items for Swap."""
+        return self.active().filter(user=user, is_listed_for_swap=False)
 
     def available_for_swap(self, user):
         """Pakaian yang boleh dipilih untuk ditawarkan di Items for Swap (dipakai modul Items for Swap)."""
@@ -21,7 +25,7 @@ class ClothingItemQuerySet(models.QuerySet):
 
     def listed_for_swap(self, user):
         """Pakaian milik user yang sedang ditawarkan di Items for Swap."""
-        return self.filter(user=user, is_listed_for_swap=True)
+        return self.active().filter(user=user, is_listed_for_swap=True)
 
     def refresh_idle(self, user):
         """
@@ -31,7 +35,7 @@ class ClothingItemQuerySet(models.QuerySet):
         """
         cutoff = timezone.localdate() - timedelta(days=ClothingItem.IDLE_AFTER_DAYS)
         idle = Q(last_worn_date__lt=cutoff) | Q(last_worn_date__isnull=True, created_at__date__lt=cutoff)
-        mine = self.filter(user=user)
+        mine = self.active().filter(user=user)
         mine.filter(idle, is_idle=False).update(is_idle=True)
         mine.filter(is_idle=True).exclude(idle).update(is_idle=False)
 
@@ -111,6 +115,9 @@ class ClothingItem(models.Model):
     last_worn_date = models.DateField(null=True, blank=True)        # Outfit Calendar
     is_idle = models.BooleanField(default=False)                    # penanda "jarang dipakai"
     is_listed_for_swap = models.BooleanField(default=False)         # Items for Swap
+    # Diisi saat pakaian dihapus padahal sudah dipakai di outfit / Kalender Outfit:
+    # pakaian hilang dari lemari, tapi tetap tampil di outfit & kalender dengan status.
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     objects = ClothingItemQuerySet.as_manager()
 
@@ -134,9 +141,39 @@ class ClothingItem(models.Model):
         return self.get_size_display() or '-'
 
     @property
+    def is_deleted(self):
+        return self.deleted_at is not None
+
+    @property
     def status_label(self):
         """Label status untuk ditampilkan di outfit & Kalender Outfit ('' jika ada di lemari)."""
+        if self.is_deleted:
+            return 'Sudah dihapus dari lemari'
         return 'Sedang ditawarkan' if self.is_listed_for_swap else ''
+
+    def is_in_use(self):
+        """Sudah dipakai di outfit atau jadwal Kalender Outfit?"""
+        if self.outfits.exists():
+            return True
+        scheduled = getattr(self, 'scheduled_entries', None)  # dari modul Kalender Outfit
+        return bool(scheduled is not None and scheduled.exists())
+
+    def remove_from_wardrobe(self):
+        """
+        Hapus pakaian dari lemari.
+        - Sudah dipakai di outfit/kalender: disembunyikan saja (deleted_at diisi), foto & data tetap.
+        - Belum pernah dipakai: dihapus permanen beserta fotonya.
+        Mengembalikan 'archived' atau 'deleted'.
+        """
+        if self.is_in_use():
+            self.deleted_at = timezone.now()
+            self.is_listed_for_swap = False
+            self.save(update_fields=['deleted_at', 'is_listed_for_swap', 'updated_at'])
+            return 'archived'
+        if self.image:
+            self.image.delete(save=False)
+        self.delete()
+        return 'deleted'
 
 
 class Outfit(models.Model):

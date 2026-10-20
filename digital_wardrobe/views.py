@@ -136,6 +136,9 @@ def item_list(request):
 @login_required
 def item_detail(request, pk):
     item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
+    if item.is_deleted:
+        messages.info(request, f'"{item.name}" sudah dihapus dari lemarimu.')
+        return redirect('digital_wardrobe:index')
     if item.is_listed_for_swap:
         return _listed_response(request, item)
     return render(request, 'digital_wardrobe/item_detail.html', {
@@ -191,7 +194,7 @@ def item_create(request):
 # U -> Update: mengubah informasi pakaian (modal)
 @login_required
 def item_update(request, pk):
-    item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
+    item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
     if item.is_listed_for_swap:
         return _listed_response(request, item)
     if request.method == 'POST':
@@ -220,7 +223,7 @@ def item_update(request, pk):
 @login_required
 @require_POST
 def item_delete(request, pk):
-    item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
+    item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
 
     # Cegah data yatim di modul Items for Swap / Swap Request (panduan §2.3)
     if item.is_listed_for_swap:
@@ -228,10 +231,11 @@ def item_delete(request, pk):
         return redirect('digital_wardrobe:index')
 
     name = item.name
-    if item.image:
-        item.image.delete(save=False)
-    item.delete()
-    messages.success(request, f'"{name}" sudah dihapus dari lemarimu.')
+    if item.remove_from_wardrobe() == 'archived':
+        messages.success(request, f'"{name}" sudah dihapus dari lemarimu. '
+                                  'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
+    else:
+        messages.success(request, f'"{name}" sudah dihapus dari lemarimu.')
     return redirect('digital_wardrobe:index')
 
 
@@ -255,7 +259,8 @@ def with_tiles(outfit):
     spans = COLLAGE_SPANS.get(len(items), [])
     outfit.tiles = [{'item': item, 'span': span} for item, span in zip(items, spans)]
     outfit.item_total = len(items)
-    outfit.listed_total = sum(1 for item in items if item.is_listed_for_swap)
+    outfit.listed_total = sum(1 for item in items if item.is_listed_for_swap and not item.is_deleted)
+    outfit.deleted_total = sum(1 for item in items if item.is_deleted)
     return outfit
 
 
@@ -324,7 +329,8 @@ def outfit_detail(request, pk):
     return render(request, 'digital_wardrobe/outfit_detail.html', {
         'outfit': outfit,
         'outfit_items': outfit_items,
-        'has_listed': any(item.is_listed_for_swap for item in outfit_items),
+        'has_listed': any(item.is_listed_for_swap and not item.is_deleted for item in outfit_items),
+        'has_deleted': any(item.is_deleted for item in outfit_items),
         'added_label': format_tanggal(outfit.created_at),
     })
 
