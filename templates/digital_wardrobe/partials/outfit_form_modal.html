@@ -53,7 +53,7 @@
                             <span class="block px-2 py-1.5 bg-white">
                                 <span class="block text-xs font-semibold text-swNavy truncate">{{ item.name }}</span>
                                 <span class="block text-[11px] text-swSlate">{{ item.get_category_display }}</span>
-                                {% if item.is_listed_for_swap %}<span class="block mt-1">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>{% endif %}
+                                {% if item.status_label %}<span class="block mt-1">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>{% endif %}
                             </span>
                         </span>
                         <span class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 border border-swNavy/20 hidden peer-checked:flex items-center justify-center text-swPlum" aria-hidden="true">

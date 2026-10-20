@@ -142,8 +142,8 @@ class OutfitForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.user = user
         # Yang bisa dipilih: pakaian di lemari, ditambah pakaian yang sudah ada di outfit ini
-        # (meski sedang ditawarkan) supaya tidak hilang saat outfit diedit.
-        allowed = Q(is_listed_for_swap=False)
+        # (meski sedang ditawarkan / sudah dihapus) supaya tidak hilang saat outfit diedit.
+        allowed = Q(is_listed_for_swap=False, deleted_at__isnull=True)
         if self.instance.pk:
             allowed |= Q(pk__in=self.instance.items.values('pk'))
         self.fields['items'].queryset = (
