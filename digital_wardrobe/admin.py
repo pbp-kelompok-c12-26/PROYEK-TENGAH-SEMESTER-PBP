@@ -5,7 +5,7 @@ from .models import ClothingItem, Outfit
 
 @admin.register(ClothingItem)
 class ClothingItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'category', 'size', 'condition', 'is_listed_for_swap', 'created_at')
+    list_display = ('name', 'user', 'category', 'size', 'shoe_size', 'condition', 'is_listed_for_swap', 'created_at')
     list_filter = ('category', 'condition', 'gender', 'is_listed_for_swap', 'is_idle')
     search_fields = ('name', 'user__username')
 

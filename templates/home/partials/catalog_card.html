@@ -1,0 +1,39 @@
+{% comment %}
+Kartu katalog. Butuh `item` (ClothingItem). Opsional dari Items for Swap: `listing`
+(listing.user, listing.meeting_location, listing.request_count).
+{% endcomment %}
+<article class="group bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col hover:shadow-[0_10px_24px_-12px_rgba(23,31,99,0.35)] transition-shadow">
+    <div class="relative rounded-xl overflow-hidden bg-swCream aspect-[4/3]">
+        {% if item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+        {% endif %}
+        <button type="button" disabled title="Bookmark segera hadir" aria-label="Simpan {{ item.name }} ke bookmark (segera hadir)"
+                class="absolute top-2 right-2 w-9 h-9 rounded-full bg-white/90 text-swBerry flex items-center justify-center shadow-sm disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+        </button>
+    </div>
+    <div class="pt-3 px-1 flex-grow flex flex-col gap-1">
+        <div class="flex items-start justify-between gap-2">
+            <h3 class="font-bold text-sm text-swNavy leading-snug">{{ item.name }}</h3>
+            <div class="flex flex-wrap justify-end gap-1 shrink-0">
+                <span class="px-2 py-0.5 rounded-full bg-swForest text-white text-[10px] font-semibold">Available</span>
+                {% if listing %}
+                <span class="px-2 py-0.5 rounded-full bg-[#E3F1E3] text-swForest text-[10px] font-semibold">{{ listing.request_count|default:0 }} request</span>
+                {% endif %}
+            </div>
+        </div>
+        <p class="text-xs text-swSlate">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
+    </div>
+    <div class="flex items-center justify-between gap-2 pt-3 px-1 pb-1 text-xs">
+        <span class="flex items-center gap-2 min-w-0 text-swNavy">
+            <span class="w-6 h-6 shrink-0 rounded-full bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white text-[10px] font-bold flex items-center justify-center">{{ item.user.username|first|upper }}</span>
+            <span class="truncate">{{ item.user.username }}</span>
+        </span>
+        {% if listing.meeting_location %}
+        <span class="flex items-center gap-1 text-swSlate shrink-0">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            {{ listing.meeting_location }}
+        </span>
+        {% endif %}
+    </div>
+</article>

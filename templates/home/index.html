@@ -1,1 +1,177 @@
-belum dibuat
+{% extends 'base.html' %}
+
+{% block title %}Jelajahi · Swapdrobe{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- SAPAAN -->
+    <header class="space-y-1">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-swNavy tracking-tight">Temukan pakaian barumu.</h1>
+        <p class="text-sm text-swSlate">Hai, <span class="font-bold text-swNavy">{{ user.username }}</span>! Ada banyak pakaian yang siap kamu ajak berpetualang lagi.</p>
+    </header>
+
+    {% include 'home/partials/hero_carousel.html' %}
+
+    <form method="get" id="katalog" class="space-y-6 scroll-mt-28">
+
+        <!-- PENCARIAN -->
+        <div class="flex flex-col sm:flex-row gap-3">
+            <label class="relative flex-grow">
+                <span class="sr-only">Cari pakaian</span>
+                <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari pakaian, kategori, atau pemilik..."
+                       class="w-full h-12 pl-11 pr-4 rounded-xl bg-white border border-swNavy/10 text-sm text-swNavy placeholder:text-swSlate/70 focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+            </label>
+            <button type="submit"
+                    class="h-12 px-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-swPlum to-swNavy text-white text-sm font-bold hover:opacity-90 transition-opacity">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                Cari pakaian
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[16rem_minmax(0,1fr)] gap-6 items-start">
+
+            <!-- FILTER -->
+            <details data-filter-panel class="group bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] lg:sticky lg:top-40" {% if active_filters %}open{% endif %}>
+                <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center justify-between px-5 py-4 lg:hidden">
+                    <span class="flex items-center gap-2 text-sm font-bold text-swNavy">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+                        Filter{% if active_filters %} <span class="px-2 py-0.5 rounded-full bg-swPlum text-white text-[10px]">aktif</span>{% endif %}
+                    </span>
+                    <svg class="w-4 h-4 text-swNavy transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </summary>
+
+                <div class="px-5 pb-5 lg:pt-5 flex flex-col gap-4">
+                    <div class="hidden lg:flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-swNavy">Filter</h2>
+                        <a href="{% url 'home:index' %}#katalog" class="text-xs font-semibold text-swPlum hover:underline">Reset</a>
+                    </div>
+                    <p class="text-xs text-swSlate -mt-2">Pilih pakaian sesuai preferensimu.</p>
+
+                    {% include 'home/partials/filter_select.html' with name='category' label='Kategori' placeholder='Semua kategori' choices=category_choices selected=filters.category %}
+                    {% include 'home/partials/filter_select.html' with name='gender' label='Gender' placeholder='Semua gender' choices=gender_choices selected=filters.gender %}
+                    {% include 'home/partials/filter_select.html' with name='size' label='Ukuran pakaian' placeholder='Semua ukuran' choices=size_choices selected=filters.size %}
+
+                    <!-- Range ukuran sepatu -->
+                    <fieldset class="flex flex-col gap-1.5">
+                        <legend class="text-xs font-bold text-swNavy">Ukuran sepatu (EU)</legend>
+                        <p class="text-[11px] text-swSlate -mt-0.5 mb-1">Masukkan rentang ukuran, {{ shoe_min_limit }}–{{ shoe_max_limit }}.</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex flex-col gap-1">
+                                <span class="text-[11px] text-swSlate">Min</span>
+                                <input type="number" name="shoe_min" value="{{ filters.shoe_min }}" min="{{ shoe_min_limit }}" max="{{ shoe_max_limit }}" inputmode="numeric" placeholder="{{ shoe_min_limit }}"
+                                       class="w-full h-10 px-3 rounded-lg bg-white border text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40 {% if filters.shoe_error %}border-swBerry{% else %}border-swNavy/15{% endif %}"
+                                       {% if filters.shoe_error %}aria-invalid="true" aria-describedby="shoe-error"{% endif %}>
+                            </label>
+                            <label class="flex flex-col gap-1">
+                                <span class="text-[11px] text-swSlate">Max</span>
+                                <input type="number" name="shoe_max" value="{{ filters.shoe_max }}" min="{{ shoe_min_limit }}" max="{{ shoe_max_limit }}" inputmode="numeric" placeholder="{{ shoe_max_limit }}"
+                                       class="w-full h-10 px-3 rounded-lg bg-white border text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40 {% if filters.shoe_error %}border-swBerry{% else %}border-swNavy/15{% endif %}"
+                                       {% if filters.shoe_error %}aria-invalid="true" aria-describedby="shoe-error"{% endif %}>
+                            </label>
+                        </div>
+                        {% if filters.shoe_error %}
+                        <p id="shoe-error" class="flex gap-2 mt-1 rounded-lg bg-swBlush px-3 py-2 text-xs text-swBerry">
+                            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+                            <span><span class="font-bold">Input tidak valid.</span> {{ filters.shoe_error }}</span>
+                        </p>
+                        {% endif %}
+                    </fieldset>
+
+                    {% include 'home/partials/filter_select.html' with name='color' label='Warna' placeholder='Semua warna' choices=color_choices selected=filters.color %}
+                    {% include 'home/partials/filter_select.html' with name='condition' label='Kondisi' placeholder='Semua kondisi' choices=condition_choices selected=filters.condition %}
+
+                    <div class="flex flex-col gap-1.5">
+                        <label for="filter-location" class="text-xs font-bold text-swNavy">Lokasi</label>
+                        <select id="filter-location" disabled
+                                class="w-full h-10 px-3 rounded-lg bg-swCream border border-swNavy/10 text-sm text-swSlate cursor-not-allowed">
+                            <option>Semua lokasi</option>
+                        </select>
+                        <p class="text-[11px] text-swSlate">Filter lokasi aktif setelah Items for Swap tersedia.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-1">
+                        <button type="submit" class="h-10 px-5 rounded-lg bg-swForest text-white text-sm font-bold hover:bg-swForest/90 transition-colors">Terapkan filter</button>
+                        <a href="{% url 'home:index' %}#katalog" class="text-xs font-semibold text-swPlum hover:underline lg:hidden">Reset</a>
+                    </div>
+                </div>
+            </details>
+
+            <!-- KATALOG -->
+            <section class="space-y-5" aria-labelledby="katalog-title">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                    <div>
+                        <h2 id="katalog-title" class="text-xl font-extrabold text-swNavy">Pilihan yang cocok buat kamu</h2>
+                        <p class="text-xs text-swSlate mt-1">{{ total }} pakaian · Semua item di sini tersedia untuk ditukar.</p>
+                    </div>
+                    <label class="flex items-center gap-2 self-start sm:self-auto">
+                        <span class="text-xs font-semibold text-swSlate">Urutkan</span>
+                        <select name="sort" onchange="this.form.submit()"
+                                class="h-10 px-3 rounded-xl bg-white border border-swNavy/10 text-sm font-semibold text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+                            {% for value, text in sort_choices %}
+                            <option value="{{ value }}" {% if value == filters.sort %}selected{% endif %}>{{ text }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+
+                {% if page.object_list %}
+                <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {% for entry in page.object_list %}
+                        {% include 'home/partials/catalog_card.html' with item=entry %}
+                    {% endfor %}
+                </div>
+
+                {% if page.paginator.num_pages > 1 %}
+                <nav class="flex items-center justify-center gap-2 pt-2" aria-label="Halaman katalog">
+                    {% for number in page.paginator.page_range %}
+                    <a href="?{% if query_without_page %}{{ query_without_page }}&amp;{% endif %}page={{ number }}#katalog"
+                       class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold {% if number == page.number %}bg-swNavy text-white{% else %}bg-white text-swNavy border border-swNavy/10 hover:bg-swBlush{% endif %}"
+                       {% if number == page.number %}aria-current="page"{% endif %}>{{ number }}</a>
+                    {% endfor %}
+                    {% if page.has_next %}
+                    <a href="?{% if query_without_page %}{{ query_without_page }}&amp;{% endif %}page={{ page.next_page_number }}#katalog" class="ml-2 inline-flex items-center gap-1 text-sm font-semibold text-swNavy hover:text-swPlum">
+                        Berikutnya
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="relative overflow-hidden bg-white rounded-3xl px-6 py-12 sm:py-14 text-center">
+                    <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-40 rounded-full bg-gradient-to-r from-swBlush via-swLilac to-[#DCE4F7] blur-2xl opacity-80" aria-hidden="true"></div>
+                    <div class="relative mx-auto mb-5 w-20 h-20 rounded-3xl bg-gradient-to-br from-swBerry via-swPink to-[#9FB4F0] flex items-center justify-center shadow-lg" aria-hidden="true">
+                        <svg class="w-11 h-11 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M27 15 C27 8 36 6 38 12 C40 18 32 20 32 26 V29" stroke-width="4"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="4"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3.5"/></svg>
+                    </div>
+                    {% if active_filters %}
+                    <h3 class="relative text-lg font-extrabold text-swNavy">Belum ada yang cocok dengan filtermu</h3>
+                    <p class="relative text-sm text-swSlate mt-2 max-w-md mx-auto">Coba longgarkan filter atau cari dengan kata kunci lain.</p>
+                    <a href="{% url 'home:index' %}#katalog" class="relative mt-5 inline-flex h-10 px-5 items-center rounded-full border border-swNavy/20 text-sm font-bold text-swNavy hover:bg-swCream">Reset filter</a>
+                    {% else %}
+                    <h3 class="relative text-lg font-extrabold text-swNavy">Belum ada pakaian yang ditawarkan</h3>
+                    <p class="relative text-sm text-swSlate mt-2 max-w-md mx-auto">Jadilah yang pertama! Tawarkan pakaian dari lemarimu supaya bisa ditukar dengan pengguna lain.</p>
+                    <a href="{% url 'items_for_swap:index' %}" class="relative mt-5 inline-flex h-11 px-5 items-center gap-2 rounded-full bg-swBerry text-white text-sm font-bold hover:bg-swBerry/90">
+                        Tawarkan pakaian
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Panel filter selalu terbuka di layar besar; di HP bisa dilipat
+    (() => {
+        const panel = document.querySelector('[data-filter-panel]');
+        const desktop = window.matchMedia('(min-width: 1024px)');
+        const sync = () => { if (desktop.matches) panel.open = true; };
+        desktop.addEventListener('change', sync);
+        sync();
+    })();
+</script>
+{% endblock %}
