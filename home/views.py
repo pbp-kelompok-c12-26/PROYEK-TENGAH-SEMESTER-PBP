@@ -1,8 +1,11 @@
 from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
 
 from digital_wardrobe.models import ClothingItem
+from accounts.forms import UserProfileForm, OnboardingSizesForm
+from accounts.models import UserProfile
 
 PAGE_SIZE = 12
 
@@ -13,18 +16,64 @@ SORT_OPTIONS = [
     ('kondisi', 'Kondisi terbaik'),
 ]
 
-def onboarding(request):
-    step = request.GET.get('step', '1')
+@login_required(login_url='accounts:login')
+def onboarding_1(request):
+    return render(request, 'home/onboarding_1.html')
 
-    # Pastikan step hanya 1, 2, atau 3
-    if step not in ['1', '2', '3']:
-        return redirect('home:onboarding')
+@login_required(login_url="accounts:login")
+def onboarding_2(request):
+    profile, created = UserProfile.objects.get_or_create(
+        user=request.user,
+        defaults={
+            "display_name": request.user.username,
+            "phone_number": "",
+            "domicile": "",
+        },
+    )
 
-    template_name = f'home/onboarding_{step}.html'
+    if request.method == "POST":
+        form = UserProfileForm(
+            request.POST,
+            request.FILES,
+            instance=profile,
+        )
 
-    return render(request, template_name, {
-        'step': int(step),
-    })
+        if form.is_valid():
+            form.save()
+            return redirect("home:onboarding_3")
+    else:
+        form = UserProfileForm(instance=profile)
+
+    return render(
+        request,
+        "home/onboarding_2.html",
+        {"form": form},
+    )
+
+@login_required(login_url="accounts:login")
+def onboarding_3(request):
+    profile = request.user.profile
+
+    if request.method == "POST":
+        form = OnboardingSizesForm(request.POST)
+
+        if form.is_valid():
+            profile.save()
+
+            return redirect("home:index")
+    else:
+        form = OnboardingSizesForm(initial={
+            "preferred_clothing_sizes": profile.preferred_clothing_sizes,
+            "preferred_shoe_sizes": [
+                str(size) for size in profile.preferred_shoe_sizes
+            ],
+        })
+
+    return render(
+        request,
+        "home/onboarding_3.html",
+        {"form": form},
+    )
 
 def get_catalog_queryset(request):
     """

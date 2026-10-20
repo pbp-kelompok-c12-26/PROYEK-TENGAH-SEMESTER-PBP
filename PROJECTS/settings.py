@@ -142,7 +142,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # hasil collectstatic
 WHITENOISE_USE_FINDERS = True  # file static app tetap tersaji walau collectstatic belum dijalankan
-STATICFILES_DIR = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files (upload foto pakaian di Digital Wardrobe)
 MEDIA_URL = '/media/'
