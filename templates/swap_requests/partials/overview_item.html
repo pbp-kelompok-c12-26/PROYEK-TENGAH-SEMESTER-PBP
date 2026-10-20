@@ -1,0 +1,17 @@
+<div class="min-w-0">
+    <div class="flex items-center gap-2 mb-2">
+        {% include 'swap_requests/partials/avatar.html' with person=person size='w-7 h-7 text-xs' %}
+        <p class="text-[11px] text-swSlate leading-tight line-clamp-2">{% if person == request.user %}Pakaian yang{% else %}@{{ person.username }}{% endif %} {{ caption }}</p>
+    </div>
+    <div class="aspect-square rounded-xl overflow-hidden bg-swBlush ring-1 ring-swNavy/10">
+        {% if item and item.image %}
+        <img src="{{ item.image.url }}" alt="{{ name }}" class="w-full h-full object-cover">
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-xs text-swSlate text-center px-3">{% if item %}Belum ada foto{% else %}Pakaian sudah dihapus{% endif %}</div>
+        {% endif %}
+    </div>
+    <p class="mt-2 text-sm font-bold text-swNavy truncate">{{ name }}</p>
+    {% if item %}
+    <p class="text-[11px] text-swSlate">{{ item.get_category_display }}{% if item.size_label %} · {{ item.size_label }}{% endif %} · {{ item.get_condition_display }} · {{ item.get_color_display }} · {{ item.get_gender_display }}</p>
+    {% endif %}
+</div>

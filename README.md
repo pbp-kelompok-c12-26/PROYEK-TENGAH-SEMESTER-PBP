@@ -101,4 +101,4 @@ Orang-orang yang sering mengelola *fashion* mereka dan ingin memaksimalkan pakai
 ## 🔗 Tautan Penting
 
 * **Deployment PWS**: [https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id/](https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id/)
-* **Desain Low-Fi Figma**: [Figma Low-Fi Design SwapMatch](https://www.figma.com/design/gSqXDCz8gnHd5gXU26yzIn/Untitled?node-id=0-1&t=yVCVLg0Ne6LHcpLZ-1)
+* **Desain Figma**: [Figma Low-Fi Design SwapMatch](https://www.figma.com/design/EC91kdm0tnJODFQhxwIQul/Prototype-Web-PBP?node-id=0-1&p=f&t=eQtZICktQfXXkBwX-0)

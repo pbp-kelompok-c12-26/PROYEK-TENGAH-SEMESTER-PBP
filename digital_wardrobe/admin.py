@@ -9,7 +9,6 @@ class ClothingItemAdmin(admin.ModelAdmin):
     list_filter = ('category', 'condition', 'gender', 'is_listed_for_swap', 'is_idle')
     search_fields = ('name', 'user__username')
 
-
 @admin.register(Outfit)
 class OutfitAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'created_at')
