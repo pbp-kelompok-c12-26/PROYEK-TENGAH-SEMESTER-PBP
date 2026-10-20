@@ -79,7 +79,7 @@
             </div>
 
             <div class="flex items-center justify-between gap-3 pt-2">
-                <button type="button" data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}"
+                <button type="button" data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ outfit_count }}"
                         class="h-10 px-6 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
                     Hapus
                 </button>

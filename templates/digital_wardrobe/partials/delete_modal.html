@@ -3,11 +3,16 @@
     <form method="post" data-delete-form class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 flex flex-col gap-4">
         {% csrf_token %}
         <h2 id="delete-modal-title" class="text-lg font-bold text-swNavy" data-delete-title>Yakin hapus pakaian ini?</h2>
-        <p class="text-sm text-swSlate">
-            <span data-delete-name class="font-semibold text-swNavy"></span>
-            <span data-delete-desc="item">akan dihapus permanen dari lemarimu, termasuk dari outfit yang memakainya.</span>
-            <span data-delete-desc="outfit" class="hidden">akan dihapus. Pakaian di dalamnya tetap ada di lemarimu.</span>
-        </p>
+        <div class="text-sm text-swSlate space-y-2">
+            <p>
+                <span data-delete-name class="font-semibold text-swNavy"></span>
+                <span data-delete-desc="item">akan dihapus permanen dari lemarimu.</span>
+                <span data-delete-desc="outfit" class="hidden">akan dihapus permanen. Jadwalnya di Kalender Outfit juga ikut terhapus. Pakaian di dalamnya tetap ada di lemarimu.</span>
+            </p>
+            <p data-delete-outfit-note class="hidden rounded-xl bg-swBlush px-3 py-2 text-swNavy">
+                Pakaian ini ada di <span data-delete-outfits class="font-semibold"></span> outfit dan akan dilepas dari outfit tersebut, termasuk di Kalender Outfit.
+            </p>
+        </div>
         <div class="flex justify-end gap-2">
             <button type="button" data-close-delete class="h-10 px-5 rounded-lg border border-swNavy/20 text-swNavy text-sm font-semibold hover:bg-swCream">Batal</button>
             <button type="submit" class="h-10 px-5 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">Ya, hapus</button>

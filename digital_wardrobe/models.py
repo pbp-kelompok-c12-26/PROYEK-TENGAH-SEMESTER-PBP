@@ -3,6 +3,22 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+class ClothingItemQuerySet(models.QuerySet):
+    """Query bantu yang bisa dipakai juga oleh modul lain."""
+
+    def in_wardrobe(self, user):
+        """Pakaian yang tampil di Lemari Saya: milik user dan tidak sedang ditawarkan di Items for Swap."""
+        return self.filter(user=user, is_listed_for_swap=False)
+
+    def available_for_swap(self, user):
+        """Pakaian yang boleh dipilih untuk ditawarkan di Items for Swap (dipakai modul Items for Swap)."""
+        return self.in_wardrobe(user)
+
+    def listed_for_swap(self, user):
+        """Pakaian milik user yang sedang ditawarkan di Items for Swap."""
+        return self.filter(user=user, is_listed_for_swap=True)
+
+
 class ClothingItem(models.Model):
     """
     Satu pakaian di lemari digital milik seorang user.
@@ -69,6 +85,8 @@ class ClothingItem(models.Model):
     is_idle = models.BooleanField(default=False)                    # penanda "jarang dipakai"
     is_listed_for_swap = models.BooleanField(default=False)         # Items for Swap
 
+    objects = ClothingItemQuerySet.as_manager()
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = 'Pakaian'
@@ -76,6 +94,11 @@ class ClothingItem(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
+
+    @property
+    def status_label(self):
+        """Label status untuk ditampilkan di outfit & Kalender Outfit ('' jika ada di lemari)."""
+        return 'Sedang ditawarkan' if self.is_listed_for_swap else ''
 
 
 class Outfit(models.Model):

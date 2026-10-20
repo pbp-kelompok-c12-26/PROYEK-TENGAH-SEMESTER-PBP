@@ -40,6 +40,10 @@
         try {
             const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await res.json();
+            if (!data.modal_html) {
+                toast(data.message || 'Gagal membuka form. Coba lagi.', true);
+                return;
+            }
             showModal(data.modal_html);
         } catch (err) {
             toast('Gagal membuka form. Coba lagi.', true);
@@ -93,7 +97,8 @@
                 });
                 const data = await res.json();
                 if (!data.ok) {
-                    showModal(data.modal_html);
+                    if (data.modal_html) showModal(data.modal_html);
+                    else { closeModal(); toast(data.message || 'Gagal menyimpan.', true); }
                     return;
                 }
                 closeModal();
@@ -133,7 +138,7 @@
     }
 
     // ---------- Modal hapus ----------
-    function openDelete(url, name, kind = 'item') {
+    function openDelete(url, name, kind = 'item', outfitCount = 0) {
         deleteModal.querySelector('[data-delete-form]').action = url;
         deleteModal.querySelector('[data-delete-name]').textContent = name;
         deleteModal.querySelector('[data-delete-title]').textContent =
@@ -141,6 +146,9 @@
         deleteModal.querySelectorAll('[data-delete-desc]').forEach((el) => {
             el.classList.toggle('hidden', el.dataset.deleteDesc !== kind);
         });
+        const count = parseInt(outfitCount, 10) || 0;
+        deleteModal.querySelector('[data-delete-outfits]').textContent = count;
+        deleteModal.querySelector('[data-delete-outfit-note]').classList.toggle('hidden', !(kind === 'item' && count > 0));
         deleteModal.classList.remove('hidden');
         deleteModal.classList.add('flex');
         deleteModal.querySelector('[data-close-delete]').focus();
@@ -163,7 +171,7 @@
         const deleteBtn = e.target.closest('[data-delete-url]');
         if (deleteBtn) {
             lastTrigger = deleteBtn;
-            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName, deleteBtn.dataset.deleteKind);
+            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName, deleteBtn.dataset.deleteKind, deleteBtn.dataset.deleteOutfits);
             return;
         }
         if (e.target.closest('[data-close-modal]')) closeModal();

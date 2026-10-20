@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -52,7 +52,7 @@ def _auto_open_url(request):
     if request.GET.get('add') == '1':
         return reverse('digital_wardrobe:item_create')
     edit_pk = request.GET.get('edit', '')
-    if edit_pk.isdigit() and ClothingItem.objects.filter(pk=edit_pk, user=request.user).exists():
+    if edit_pk.isdigit() and ClothingItem.objects.in_wardrobe(request.user).filter(pk=edit_pk).exists():
         return reverse('digital_wardrobe:item_update', args=[int(edit_pk)])
     if request.GET.get('add_outfit') == '1':
         url = reverse('digital_wardrobe:outfit_create')
@@ -67,7 +67,7 @@ def _auto_open_url(request):
 # R -> Read: halaman Lemari Digital (daftar pakaian + filter)
 @login_required
 def index(request):
-    user_items = ClothingItem.objects.filter(user=request.user)
+    user_items = ClothingItem.objects.in_wardrobe(request.user)
 
     tab = request.GET.get('tab', 'pakaian')
     show = request.GET.get('show', 'all')
@@ -88,7 +88,7 @@ def index(request):
         items = items.filter(category=category)
     if query:
         items = items.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    items = items.order_by(SORT_OPTIONS[sort][0])
+    items = items.annotate(outfit_total=Count('outfits')).order_by(SORT_OPTIONS[sort][0])
 
     filtered_total = items.count()
     params = request.GET.copy()
@@ -115,10 +115,22 @@ def index(request):
         'sort_choices': [(key, label) for key, (_, label) in SORT_OPTIONS.items()],
         'total_items': user_items.count(),
         'total_outfits': Outfit.objects.filter(user=request.user).count(),
-        'total_for_swap': user_items.filter(is_listed_for_swap=True).count(),
+        'total_for_swap': ClothingItem.objects.listed_for_swap(request.user).count(),
         'auto_open_url': _auto_open_url(request),
     }
     return render(request, 'digital_wardrobe/index.html', context)
+
+
+LISTED_MESSAGE = '"{name}" sedang ditawarkan di Items for Swap. Kelola dari Item Swap Saya, atau kembalikan dulu ke lemari.'
+
+
+def _listed_response(request, item):
+    """Pakaian yang sedang ditawarkan tidak dikelola dari wardrobe."""
+    message = LISTED_MESSAGE.format(name=item.name)
+    if is_ajax(request):
+        return JsonResponse({'ok': False, 'message': message}, status=409)
+    messages.info(request, message)
+    return redirect('digital_wardrobe:index')
 
 
 # Alamat lama daftar pakaian diarahkan ke halaman Lemari Digital
@@ -131,6 +143,8 @@ def item_list(request):
 @login_required
 def item_detail(request, pk):
     item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
+    if item.is_listed_for_swap:
+        return _listed_response(request, item)
     return render(request, 'digital_wardrobe/item_detail.html', {
         'item': item,
         'added_label': format_tanggal(item.created_at),
@@ -150,6 +164,7 @@ def _form_modal(request, form, item=None):
 
 
 def _card(request, item):
+    item.outfit_total = item.outfits.count()
     return render_to_string('digital_wardrobe/partials/item_card.html', {'item': item}, request=request)
 
 
@@ -166,7 +181,7 @@ def item_create(request):
                 return JsonResponse({
                     'ok': True,
                     'card_html': _card(request, item),
-                    'total_items': ClothingItem.objects.filter(user=request.user).count(),
+                    'total_items': ClothingItem.objects.in_wardrobe(request.user).count(),
                     'message': f'"{item.name}" masuk ke lemarimu.',
                 })
             messages.success(request, f'"{item.name}" masuk ke lemarimu.')
@@ -184,6 +199,8 @@ def item_create(request):
 @login_required
 def item_update(request, pk):
     item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
+    if item.is_listed_for_swap:
+        return _listed_response(request, item)
     if request.method == 'POST':
         form = ClothingItemForm(request.POST, request.FILES, instance=item)
         if form.is_valid():
@@ -214,11 +231,8 @@ def item_delete(request, pk):
 
     # Cegah data yatim di modul Items for Swap / Swap Request (panduan §2.3)
     if item.is_listed_for_swap:
-        messages.error(
-            request,
-            f'"{item.name}" sedang ditawarkan di Items for Swap. Batalkan dulu dari Items for Swap sebelum menghapus.',
-        )
-        return redirect('digital_wardrobe:item_detail', pk=item.pk)
+        messages.error(request, LISTED_MESSAGE.format(name=item.name))
+        return redirect('digital_wardrobe:index')
 
     name = item.name
     if item.image:
@@ -248,6 +262,7 @@ def with_tiles(outfit):
     spans = COLLAGE_SPANS.get(len(items), [])
     outfit.tiles = [{'item': item, 'span': span} for item, span in zip(items, spans)]
     outfit.item_total = len(items)
+    outfit.listed_total = sum(1 for item in items if item.is_listed_for_swap)
     return outfit
 
 
@@ -298,7 +313,7 @@ def outfit_create(request):
     # Pakaian yang langsung terpilih, mis. dari tombol "Pakai untuk Outfit" di detail pakaian
     initial = {}
     item_pk = request.GET.get('item', '')
-    if item_pk.isdigit() and ClothingItem.objects.filter(pk=item_pk, user=request.user).exists():
+    if item_pk.isdigit() and ClothingItem.objects.in_wardrobe(request.user).filter(pk=item_pk).exists():
         initial['items'] = [int(item_pk)]
     form = OutfitForm(initial=initial, user=request.user)
 
@@ -312,9 +327,11 @@ def outfit_create(request):
 @login_required
 def outfit_detail(request, pk):
     outfit = get_object_or_404(Outfit.objects.prefetch_related('items'), pk=pk, user=request.user)
+    outfit_items = list(outfit.items.all())
     return render(request, 'digital_wardrobe/outfit_detail.html', {
         'outfit': outfit,
-        'outfit_items': outfit.items.all(),
+        'outfit_items': outfit_items,
+        'has_listed': any(item.is_listed_for_swap for item in outfit_items),
         'added_label': format_tanggal(outfit.created_at),
     })
 
