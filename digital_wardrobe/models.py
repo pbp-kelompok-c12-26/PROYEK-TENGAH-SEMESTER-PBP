@@ -1,7 +1,11 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
+from django.utils import timezone
 
 
 class ClothingItemQuerySet(models.QuerySet):
@@ -18,6 +22,18 @@ class ClothingItemQuerySet(models.QuerySet):
     def listed_for_swap(self, user):
         """Pakaian milik user yang sedang ditawarkan di Items for Swap."""
         return self.filter(user=user, is_listed_for_swap=True)
+
+    def refresh_idle(self, user):
+        """
+        Perbarui is_idle semua pakaian milik user (2 query UPDATE).
+        Idle = tidak dipakai lebih dari IDLE_AFTER_DAYS hari. Pakaian yang belum
+        pernah dipakai dihitung sejak ditambahkan ke lemari, jadi baju baru tidak langsung idle.
+        """
+        cutoff = timezone.localdate() - timedelta(days=ClothingItem.IDLE_AFTER_DAYS)
+        idle = Q(last_worn_date__lt=cutoff) | Q(last_worn_date__isnull=True, created_at__date__lt=cutoff)
+        mine = self.filter(user=user)
+        mine.filter(idle, is_idle=False).update(is_idle=True)
+        mine.filter(is_idle=True).exclude(idle).update(is_idle=False)
 
 
 class ClothingItem(models.Model):
@@ -63,6 +79,7 @@ class ClothingItem(models.Model):
 
     SHOE_SIZE_MIN = 20
     SHOE_SIZE_MAX = 50
+    IDLE_AFTER_DAYS = 90  # pakaian dianggap "jarang dipakai" setelah 90 hari tidak dipakai
 
     COLOR_CHOICES = [
         ('neutral', 'Netral'),
