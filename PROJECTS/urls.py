@@ -14,6 +14,4 @@ urlpatterns = [
 
     # Menyajikan foto upload (media); dipakai juga saat DEBUG = False
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-    path('auth/', include('accounts.urls')),
-    path('calendar/', include('outfit_calendar.urls')),
 ]
