@@ -19,7 +19,7 @@
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
             Edit
         </button>
-        <button type="button" data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}"
+        <button type="button" data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ item.outfit_total|default:0 }}"
                 class="h-8 px-4 inline-flex items-center rounded-full bg-swBerry text-white text-xs font-semibold hover:bg-swBerry/90 transition-colors">
             Hapus
         </button>

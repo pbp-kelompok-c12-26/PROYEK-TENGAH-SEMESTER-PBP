@@ -36,10 +36,25 @@
     </div>
 
     <section class="rounded-3xl p-4 sm:p-6 bg-gradient-to-r from-[#F1D3CB] via-swLavender to-[#6E83B3]">
-        <h2 class="text-lg font-bold text-swNavy mb-4">Isi outfit</h2>
+        <h2 class="text-lg font-bold text-swNavy mb-1">Isi outfit</h2>
+        {% if has_listed %}
+        <p class="text-xs text-swNavy/80 mb-4">Pakaian berlabel "Sedang ditawarkan" sedang ada di Items for Swap. Kembalikan ke lemari untuk memakainya lagi.</p>
+        {% else %}
+        <div class="mb-3"></div>
+        {% endif %}
         {% if outfit_items %}
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {% for item in outfit_items %}
+            {% if item.is_listed_for_swap %}
+            <div class="bg-white rounded-2xl p-2.5 flex flex-col">
+                <span class="relative block rounded-xl overflow-hidden bg-swCream aspect-square">
+                    {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover opacity-60">{% endif %}
+                    <span class="absolute left-2 top-2">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>
+                </span>
+                <span class="pt-2 px-1 text-sm font-bold text-swNavy">{{ item.name }}</span>
+                <span class="px-1 pb-1 text-xs text-swSlate">{{ item.get_category_display }} · {{ item.get_size_display }}</span>
+            </div>
+            {% else %}
             <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="group bg-white rounded-2xl p-2.5 flex flex-col">
                 <span class="block rounded-xl overflow-hidden bg-swCream aspect-square">
                     {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">{% endif %}
@@ -47,6 +62,7 @@
                 <span class="pt-2 px-1 text-sm font-bold text-swNavy group-hover:text-swPlum">{{ item.name }}</span>
                 <span class="px-1 pb-1 text-xs text-swSlate">{{ item.get_category_display }} · {{ item.get_size_display }}</span>
             </a>
+            {% endif %}
             {% endfor %}
         </div>
         {% else %}

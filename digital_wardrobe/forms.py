@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 
 from .models import ClothingItem, Outfit
 
@@ -110,7 +111,14 @@ class OutfitForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
-        self.fields['items'].queryset = ClothingItem.objects.filter(user=user).order_by('category', '-created_at')
+        # Yang bisa dipilih: pakaian di lemari, ditambah pakaian yang sudah ada di outfit ini
+        # (meski sedang ditawarkan) supaya tidak hilang saat outfit diedit.
+        allowed = Q(is_listed_for_swap=False)
+        if self.instance.pk:
+            allowed |= Q(pk__in=self.instance.items.values('pk'))
+        self.fields['items'].queryset = (
+            ClothingItem.objects.filter(user=user).filter(allowed).order_by('category', '-created_at')
+        )
         self.fields['name'].error_messages['required'] = 'Wajib diisi.'
 
     def clean_items(self):
