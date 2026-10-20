@@ -1,0 +1,7 @@
+{% comment %}
+Badge status pakaian. Dipakai di koleksi outfit dan bisa di-include modul lain (mis. Kalender Outfit):
+    {% include 'digital_wardrobe/partials/item_status_badge.html' with item=pakaian %}
+{% endcomment %}
+{% if item.status_label %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-gradient-to-r from-swBerry via-[#C46AA6] to-swPlum text-white shadow-sm text-[11px] font-semibold whitespace-nowrap">{{ item.status_label }}</span>
+{% endif %}

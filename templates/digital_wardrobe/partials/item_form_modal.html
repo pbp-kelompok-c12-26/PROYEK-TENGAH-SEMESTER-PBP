@@ -1,0 +1,85 @@
+<div class="fixed inset-0 z-[60] flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="wardrobe-modal-title">
+    <div class="absolute inset-0 bg-swNavy/40" data-close-modal></div>
+
+    <form action="{{ action_url }}" method="post" enctype="multipart/form-data" novalidate data-item-form
+          class="relative isolate w-full max-w-4xl my-8 rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#F2B8CF] via-[#E2CDF5] to-[#C3D0F7] p-4 sm:p-5">
+        <div class="absolute -z-10 -top-20 -right-16 w-64 h-64 rounded-full bg-white/40 blur-3xl pointer-events-none" aria-hidden="true"></div>
+        {% csrf_token %}
+
+        <div class="flex items-center justify-between gap-4 mb-4 px-1">
+            <h2 id="wardrobe-modal-title" class="text-xl sm:text-2xl font-bold text-swNavy">
+                {% if item %}Edit {{ item.name }}{% else %}Tambah penghuni lemari digitalmu{% endif %}
+            </h2>
+            <button type="button" data-close-modal aria-label="Tutup"
+                    class="w-9 h-9 shrink-0 flex items-center justify-center rounded-full text-swNavy hover:bg-white/60">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="mb-4 px-4 py-3 rounded-xl bg-white text-sm text-swBerry">{{ form.non_field_errors|join:" " }}</div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4">
+            <!-- FOTO PAKAIAN -->
+            <section class="bg-white rounded-2xl p-5 flex flex-col gap-4">
+                <h3 class="font-bold text-swNavy">Foto pakaian</h3>
+
+                <label for="{{ form.image.id_for_label }}"
+                       class="relative block rounded-xl overflow-hidden bg-swCream border border-dashed border-swNavy/20 aspect-[4/3] cursor-pointer hover:border-swPlum transition-colors">
+                    <img data-image-preview src="{% if item and item.image %}{{ item.image.url }}{% endif %}" alt=""
+                         class="w-full h-full object-cover {% if not item or not item.image %}hidden{% endif %}">
+                    <span data-image-placeholder class="absolute inset-0 flex flex-col items-center justify-center gap-1 text-swSlate text-xs {% if item and item.image %}hidden{% endif %}">
+                        <span class="text-2xl leading-none text-swNavy">+</span>
+                        Tambah foto
+                    </span>
+                </label>
+                {{ form.image }}
+
+                <label for="{{ form.image.id_for_label }}"
+                       class="self-start h-9 px-4 inline-flex items-center gap-2 rounded-lg border border-swNavy/20 text-swNavy text-xs font-semibold cursor-pointer hover:bg-swCream">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+                    Pilih foto
+                </label>
+                <p data-image-name class="text-xs text-swNavy truncate"></p>
+                <p class="text-xs text-swSlate">JPG atau PNG · maks. 5 MB per foto</p>
+                {% for error in form.image.errors %}
+                <p class="text-xs text-swBerry">{{ error }}</p>
+                {% endfor %}
+            </section>
+
+            <!-- INFORMASI PAKAIAN -->
+            <section class="bg-white rounded-2xl p-5 flex flex-col gap-4">
+                <h3 class="font-bold text-swNavy">Informasi pakaian</h3>
+                {% include 'digital_wardrobe/partials/field.html' with field=form.name %}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {% include 'digital_wardrobe/partials/field.html' with field=form.category %}
+                    <div data-size-field class="{% if form.is_footwear %}hidden{% endif %}">
+                        {% include 'digital_wardrobe/partials/field.html' with field=form.size required=True %}
+                    </div>
+                    <div data-shoe-field class="{% if not form.is_footwear %}hidden{% endif %}">
+                        {% include 'digital_wardrobe/partials/field.html' with field=form.shoe_size required=True %}
+                    </div>
+                    {% include 'digital_wardrobe/partials/field.html' with field=form.gender %}
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {% include 'digital_wardrobe/partials/field.html' with field=form.condition %}
+                    {% include 'digital_wardrobe/partials/field.html' with field=form.color %}
+                </div>
+                {% include 'digital_wardrobe/partials/field.html' with field=form.description %}
+            </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 mt-5 px-1">
+            <button type="button" data-close-modal
+                    class="h-10 px-5 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
+                Batal
+            </button>
+            <button type="submit" data-submit
+                    class="h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swForest text-white text-sm font-semibold hover:bg-swForest/90 disabled:opacity-60">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+                {% if item %}Simpan perubahan{% else %}Tambah ke lemari{% endif %}
+            </button>
+        </div>
+    </form>
+</div>

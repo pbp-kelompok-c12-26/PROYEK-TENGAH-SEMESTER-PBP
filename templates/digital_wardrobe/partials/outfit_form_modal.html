@@ -1,0 +1,86 @@
+<div class="fixed inset-0 z-[60] flex items-start sm:items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="wardrobe-modal-title">
+    <div class="absolute inset-0 bg-swNavy/40" data-close-modal></div>
+
+    <form action="{{ action_url }}" method="post" novalidate data-item-form data-max-items="{{ max_items }}"
+          class="relative isolate w-full max-w-5xl my-8 rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#C3D0F7] via-[#E2CDF5] to-[#F2B8CF] p-4 sm:p-5">
+        <div class="absolute -z-10 -top-20 -left-16 w-64 h-64 rounded-full bg-white/40 blur-3xl pointer-events-none" aria-hidden="true"></div>
+        {% csrf_token %}
+
+        <div class="flex items-center justify-between gap-4 mb-4 px-1">
+            <h2 id="wardrobe-modal-title" class="text-xl sm:text-2xl font-bold text-swNavy">
+                {% if outfit %}Edit {{ outfit.name }}{% else %}Padu-padan outfit baru{% endif %}
+            </h2>
+            <button type="button" data-close-modal aria-label="Tutup"
+                    class="w-9 h-9 shrink-0 flex items-center justify-center rounded-full text-swNavy hover:bg-white/60">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-4">
+            <!-- INFORMASI OUTFIT -->
+            <section class="bg-white rounded-2xl p-5 flex flex-col gap-4">
+                <h3 class="font-bold text-swNavy">Informasi outfit</h3>
+                {% include 'digital_wardrobe/partials/field.html' with field=form.name %}
+                {% include 'digital_wardrobe/partials/field.html' with field=form.description %}
+            </section>
+
+            <!-- PILIH PAKAIAN -->
+            <section class="bg-white rounded-2xl p-5 flex flex-col gap-4">
+                <div class="flex items-center justify-between gap-3">
+                    <h3 class="font-bold text-swNavy">Pilih pakaian <span class="text-swBerry">*</span></h3>
+                    <span class="px-3 py-1 rounded-full bg-swBlush text-xs font-semibold text-swNavy" aria-live="polite">
+                        <span data-picked-count>{{ selected_ids|length }}</span>/{{ max_items }} dipilih
+                    </span>
+                </div>
+                <p class="text-xs text-swSlate -mt-2">Pilih 1 sampai {{ max_items }} pakaian dari lemarimu.</p>
+                {% for error in form.items.errors %}
+                <p class="text-xs text-swBerry">{{ error }}</p>
+                {% endfor %}
+
+                {% if wardrobe_items %}
+                <fieldset class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[22rem] overflow-y-auto p-1">
+                    <legend class="sr-only">Pakaian di lemarimu</legend>
+                    {% for item in wardrobe_items %}
+                    <label class="relative cursor-pointer">
+                        <input type="checkbox" name="items" value="{{ item.pk }}" class="peer sr-only" data-pick
+                               {% if item.pk in selected_ids %}checked{% endif %}>
+                        <span class="block rounded-xl overflow-hidden border-2 border-transparent bg-swCream transition
+                                     peer-checked:border-swPlum peer-checked:shadow-[0_0_0_3px_rgba(96,99,180,0.2)]
+                                     peer-focus-visible:ring-2 peer-focus-visible:ring-swPlum peer-disabled:opacity-40 peer-disabled:cursor-not-allowed">
+                            <span class="block aspect-square">
+                                {% if item.image %}<img src="{{ item.image.url }}" alt="" loading="lazy" class="w-full h-full object-cover">{% endif %}
+                            </span>
+                            <span class="block px-2 py-1.5 bg-white">
+                                <span class="block text-xs font-semibold text-swNavy truncate">{{ item.name }}</span>
+                                <span class="block text-[11px] text-swSlate">{{ item.get_category_display }}</span>
+                                {% if item.is_listed_for_swap %}<span class="block mt-1">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>{% endif %}
+                            </span>
+                        </span>
+                        <span class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 border border-swNavy/20 hidden peer-checked:flex items-center justify-center text-swPlum" aria-hidden="true">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+                        </span>
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                {% else %}
+                <div class="rounded-xl bg-swCream p-6 text-center">
+                    <p class="text-sm font-semibold text-swNavy">Lemarimu masih kosong</p>
+                    <p class="text-xs text-swSlate mt-1">Tambahkan pakaian dulu, baru padu-padankan jadi outfit.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 mt-5 px-1">
+            <button type="button" data-close-modal
+                    class="h-10 px-5 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
+                Batal
+            </button>
+            <button type="submit" data-submit {% if not wardrobe_items %}disabled{% endif %}
+                    class="h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90 disabled:opacity-60">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+                {% if outfit %}Simpan perubahan{% else %}Simpan outfit{% endif %}
+            </button>
+        </div>
+    </form>
+</div>

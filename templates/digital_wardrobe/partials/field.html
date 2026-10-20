@@ -1,0 +1,9 @@
+<div class="flex flex-col gap-1.5">
+    <label for="{{ field.id_for_label }}" class="text-xs font-semibold text-swNavy">
+        {{ field.label }}{% if field.field.required or required %} <span class="text-swBerry">*</span>{% endif %}
+    </label>
+    {{ field }}
+    {% for error in field.errors %}
+    <p class="text-xs text-swBerry">{{ error }}</p>
+    {% endfor %}
+</div>

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-swRose/40 via-swOffWhite to-swBlue/20 rounded-3xl p-8 border border-swRose/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="px-3 py-1 bg-swBlue text-white text-xs font-bold rounded-full">Aktivitas Swap</span>
+            </div>
+            <h1 class="font-logo text-4xl text-swRed">Swap Requests</h1>
+            <p class="text-swDark/70 text-sm mt-1">Pantau penawaran tukar pakaian masuk dan keluar milikmu.</p>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="bg-white rounded-3xl p-12 text-center border border-swRose/30 shadow-sm">
+        <div class="w-20 h-20 bg-swRose/30 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-swRed">
+            🔄
+        </div>
+        <h2 class="font-logo text-3xl text-swRed mb-2">Belum Ada Permintaan Tukar</h2>
+        <p class="text-swDark/60 text-sm max-w-md mx-auto mb-6">
+            Semua pengajuan tukar pakaian yang kamu kirim atau terima akan muncul di sini.
+        </p>
+        <a href="{% url 'items_for_swap:index' %}" class="inline-block px-6 py-3 bg-swRed text-white font-bold text-sm rounded-full hover:bg-swBlue transition-colors">
+            Cari Barang untuk Ditukar
+        </a>
+    </div>
+
+</div>
+{% endblock %}
