@@ -80,7 +80,7 @@
 
             <!-- AKSI KANAN -->
             <div class="flex items-center gap-2 sm:gap-4">
-                <a href="{% url 'items_for_swap:index' %}" class="hidden sm:inline text-sm font-medium text-swNavy hover:text-swBerry transition-colors">
+                <a href="{% url 'home:index' %}" class="hidden sm:inline text-sm font-medium text-swNavy hover:text-swBerry transition-colors">
                     Swap your fits
                 </a>
                 <a href="{% url 'items_for_swap:index' %}" class="w-10 h-10 flex items-center justify-center rounded-full text-swNavy hover:bg-swBlush transition-colors" aria-label="Bookmark">
@@ -112,7 +112,7 @@
         <!-- NAVIGASI MODUL -->
         <nav class="border-t border-swNavy/10" aria-label="Navigasi utama">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex justify-start md:justify-center gap-1 sm:gap-3 overflow-x-auto">
-                <a href="{% url 'items_for_swap:index' %}"{% if request.resolver_match.app_name == 'items_for_swap' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'items_for_swap' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                <a href="{% url 'home:index' %}"{% if request.resolver_match.app_name == 'home' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'home' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>
                     <span>Jelajahi</span>
                 </a>
@@ -124,7 +124,7 @@
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01"/></svg>
                     <span>Kalender Outfit</span>
                 </a>
-                <a href="{% url 'items_for_swap:index' %}" class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors text-swNavy/80 hover:bg-swBlush hover:text-swNavy">
+                <a href="{% url 'items_for_swap:index' %}"{% if request.resolver_match.app_name == 'items_for_swap' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'items_for_swap' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12M15 3l4 4-4 4M17 17H5M9 13l-4 4 4 4"/></svg>
                     <span>Item Swap Saya</span>
                 </a>

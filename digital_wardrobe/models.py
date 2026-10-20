@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -60,6 +61,9 @@ class ClothingItem(models.Model):
         ('fair', 'Fair'),
     ]
 
+    SHOE_SIZE_MIN = 20
+    SHOE_SIZE_MAX = 50
+
     COLOR_CHOICES = [
         ('neutral', 'Netral'),
         ('earth', 'Earth'),
@@ -70,7 +74,13 @@ class ClothingItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wardrobe_items')
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
-    size = models.CharField(max_length=5, choices=SIZE_CHOICES)
+    # Ukuran pakaian (XS–XXL / Satu ukuran). Dikosongkan untuk sepatu.
+    size = models.CharField(max_length=5, choices=SIZE_CHOICES, blank=True)
+    # Ukuran sepatu (EU), hanya untuk kategori Sepatu.
+    shoe_size = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(SHOE_SIZE_MIN), MaxValueValidator(SHOE_SIZE_MAX)],
+    )
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     color = models.CharField(max_length=20, choices=COLOR_CHOICES)
@@ -94,6 +104,17 @@ class ClothingItem(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_category_display()})"
+
+    @property
+    def is_footwear(self):
+        return self.category == 'footwear'
+
+    @property
+    def size_label(self):
+        """Ukuran siap tampil: 'EU 38' untuk sepatu, 'M' / 'Satu ukuran' untuk lainnya."""
+        if self.is_footwear:
+            return f'EU {self.shoe_size}' if self.shoe_size else '-'
+        return self.get_size_display() or '-'
 
     @property
     def status_label(self):

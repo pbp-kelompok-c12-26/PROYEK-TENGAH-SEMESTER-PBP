@@ -11,7 +11,7 @@
         <h3 class="font-bold text-sm text-swNavy leading-snug">
             <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="hover:text-swPlum">{{ item.name }}</a>
         </h3>
-        <p class="text-xs text-swSlate mt-0.5">{{ item.get_category_display }} · {{ item.get_size_display }} · {{ item.get_condition_display }}</p>
+        <p class="text-xs text-swSlate mt-0.5">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
     </div>
     <div class="flex gap-2 pt-3 px-1 pb-1">
         <button type="button" data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"

@@ -53,7 +53,12 @@
                 {% include 'digital_wardrobe/partials/field.html' with field=form.name %}
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {% include 'digital_wardrobe/partials/field.html' with field=form.category %}
-                    {% include 'digital_wardrobe/partials/field.html' with field=form.size %}
+                    <div data-size-field class="{% if form.is_footwear %}hidden{% endif %}">
+                        {% include 'digital_wardrobe/partials/field.html' with field=form.size required=True %}
+                    </div>
+                    <div data-shoe-field class="{% if not form.is_footwear %}hidden{% endif %}">
+                        {% include 'digital_wardrobe/partials/field.html' with field=form.shoe_size required=True %}
+                    </div>
                     {% include 'digital_wardrobe/partials/field.html' with field=form.gender %}
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

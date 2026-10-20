@@ -1,0 +1,275 @@
+{% comment %}
+Hero carousel homepage. Murni Tailwind + SVG (tanpa foto), bisa di-swipe di HP.
+Elemen [data-pop] muncul dengan animasi "pop" saat slide-nya aktif (diatur script di bawah).
+{% endcomment %}
+<section class="relative" aria-roledescription="carousel" aria-label="Sorotan Swapdrobe" data-carousel>
+    <div data-track tabindex="0"
+         class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-3xl shadow-[0_10px_30px_-12px_rgba(23,31,99,0.35)] focus:outline-none focus-visible:ring-2 focus-visible:ring-swPlum [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+        <!-- ============ SLIDE 1: SWAP WHAT YOU HAVE ============ -->
+        <article data-slide aria-roledescription="slide" aria-label="1 dari 4"
+                 class="relative shrink-0 basis-full snap-center overflow-hidden min-h-[22rem] sm:min-h-[20rem] lg:h-[21rem] bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6]">
+            <div class="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-white/25 blur-3xl" aria-hidden="true"></div>
+            <div class="absolute -bottom-28 right-10 w-80 h-80 rounded-full bg-[#9FB4F0]/50 blur-3xl" aria-hidden="true"></div>
+
+            <div class="relative h-full grid md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-center gap-6 px-6 sm:px-10 py-8">
+                <div class="flex flex-col gap-4 text-white">
+                    <span data-pop class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-white/80">SWAPDROBE · TUKAR, BUKAN BELI</span>
+                    <h2 data-pop class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.05] tracking-tight">
+                        Swap what you have.<br>Refresh your wardrobe.
+                    </h2>
+                    <p data-pop class="text-sm sm:text-base text-white/90 max-w-md">Atur lemari, rencanakan outfit, dan tukar pakaian. Semua dalam satu tempat.</p>
+                    <div data-pop class="flex flex-wrap gap-3 pt-1">
+                        <a href="#katalog" class="h-11 px-5 inline-flex items-center gap-2 rounded-full bg-white text-swBerry text-sm font-bold shadow-sm hover:bg-swBlush transition-colors">
+                            Mulai jelajahi
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                        <a href="{% url 'items_for_swap:index' %}" class="h-11 px-5 inline-flex items-center rounded-full border-2 border-white/80 text-white text-sm font-bold hover:bg-white/15 transition-colors">
+                            Tawarkan bajumu
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Ilustrasi: hanger tukar + stiker -->
+                <div class="relative hidden md:block h-64" aria-hidden="true">
+                    <svg data-pop viewBox="0 0 260 220" class="absolute inset-0 m-auto w-64 h-56 drop-shadow-[0_8px_18px_rgba(23,31,99,0.25)]">
+                        <path d="M130 72 V60 C130 54 141 52 141 43 C141 36 136 32 130 32 C124 32 120 36 120 41" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="130" cy="72" r="5" fill="#fff"/>
+                        <path d="M28 168 L130 72 L232 168 Q236 176 226 176 H34 Q24 176 28 168 Z" fill="rgba(255,255,255,0.14)" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
+                        <path d="M92 136 H162 M150 124 L164 136 L150 148" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M168 156 H98 M110 144 L96 156 L110 168" fill="none" stroke="#FCE7F1" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span data-pop class="absolute top-2 left-4 -rotate-12 px-3 py-1.5 rounded-full bg-white text-swBerry text-xs font-extrabold shadow-md">Like New</span>
+                    <span data-pop class="absolute top-10 right-2 rotate-6 px-3 py-1.5 rounded-full bg-swMint text-swNavy text-xs font-extrabold shadow-md">EU 38</span>
+                    <span data-pop class="absolute bottom-6 left-0 rotate-3 px-3 py-1.5 rounded-full bg-swLilac text-swNavy text-xs font-extrabold shadow-md">Unisex</span>
+                    <span data-pop class="absolute bottom-2 right-10 -rotate-6 px-3 py-1.5 rounded-full bg-swNavy text-white text-xs font-extrabold shadow-md">Available</span>
+                    <svg data-pop viewBox="0 0 40 40" class="absolute top-0 right-24 w-7 h-7"><path d="M20 2 Q22 18 38 20 Q22 22 20 38 Q18 22 2 20 Q18 18 20 2 Z" fill="#fff"/></svg>
+                    <svg data-pop viewBox="0 0 40 40" class="absolute bottom-16 right-0 w-5 h-5"><path d="M20 2 Q22 18 38 20 Q22 22 20 38 Q18 22 2 20 Q18 18 20 2 Z" fill="#FCE7F1"/></svg>
+                </div>
+            </div>
+        </article>
+
+        <!-- ============ SLIDE 2: PAKAIAN LAMA, CERITA BARU ============ -->
+        <article data-slide aria-roledescription="slide" aria-label="2 dari 4"
+                 class="relative shrink-0 basis-full snap-center overflow-hidden min-h-[22rem] sm:min-h-[20rem] lg:h-[21rem] bg-gradient-to-r from-[#F6F2E9] via-[#D3E8D3] to-swMint">
+            <div class="absolute -top-20 right-1/3 w-72 h-72 rounded-full bg-white/60 blur-3xl" aria-hidden="true"></div>
+
+            <div class="relative h-full grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] items-center gap-6 px-6 sm:px-10 py-8">
+                <div class="flex flex-col gap-3">
+                    <span data-pop class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-swForest">PAKAI LAGI, BAGI CERITA BARU.</span>
+                    <h2 data-pop class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.05] tracking-tight">
+                        <span class="text-swNavy">Pakaian Lama,</span><br>
+                        <span class="relative text-swForest">Cerita Baru.<svg class="absolute -right-11 top-1/2 -translate-y-1/2 w-9 h-9 text-swForest" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 22 L16 6 M12 27 L32 19 M14 33 L32 35" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg></span>
+                    </h2>
+                    <p data-pop class="text-sm sm:text-base text-swNavy/80 max-w-md">Simpan semua pakaianmu di lemari digital, lalu beri yang jarang dipakai kesempatan kedua.</p>
+                    <div data-pop class="pt-2">
+                        <a href="{% url 'digital_wardrobe:index' %}" class="h-11 px-5 inline-flex items-center gap-2 rounded-full bg-swForest text-white text-sm font-bold hover:bg-swForest/90 transition-colors">
+                            Buka lemariku
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Ilustrasi: jemuran polaroid -->
+                <div class="relative hidden md:block h-64" aria-hidden="true">
+                    <svg viewBox="0 0 400 60" class="absolute top-6 left-0 w-full h-14" preserveAspectRatio="none"><path d="M0 8 Q200 60 400 8" fill="none" stroke="#40794C" stroke-width="3" stroke-linecap="round"/></svg>
+                    <div data-pop class="absolute top-12 left-[6%] -rotate-6 w-28 bg-white rounded-lg p-2 pb-6 shadow-lg">
+                        <span class="absolute -top-3 left-1/2 -translate-x-1/2 w-2.5 h-6 rounded-sm bg-swBerry"></span>
+                        <div class="aspect-square rounded bg-swBlush flex items-center justify-center text-swBerry">
+                            <svg class="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
+                        </div>
+                    </div>
+                    <div data-pop class="absolute top-[4.5rem] left-[38%] rotate-3 w-28 bg-white rounded-lg p-2 pb-6 shadow-lg">
+                        <span class="absolute -top-3 left-1/2 -translate-x-1/2 w-2.5 h-6 rounded-sm bg-swPlum"></span>
+                        <div class="aspect-square rounded bg-swLavender flex items-center justify-center text-swPlum">
+                            <svg class="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M9 3h6l-1 4 4 13H6l4-13z"/><path d="M10 7h4"/></svg>
+                        </div>
+                    </div>
+                    <div data-pop class="absolute top-12 right-[4%] -rotate-3 w-28 bg-white rounded-lg p-2 pb-6 shadow-lg">
+                        <span class="absolute -top-3 left-1/2 -translate-x-1/2 w-2.5 h-6 rounded-sm bg-swForest"></span>
+                        <div class="aspect-square rounded bg-[#E3F1E3] flex items-center justify-center text-swForest">
+                            <svg class="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16v-5l5-1 3 3h4l6 2v3H3z"/><path d="M3 19h18M9 13l1-2M12 14l1-2"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- ============ SLIDE 3: MIX & MATCH ============ -->
+        <article data-slide aria-roledescription="slide" aria-label="3 dari 4"
+                 class="relative shrink-0 basis-full snap-center overflow-hidden min-h-[22rem] sm:min-h-[20rem] lg:h-[21rem] bg-gradient-to-r from-[#EEEAF6] via-swLavender to-[#8C90D6]">
+            <div class="absolute -bottom-24 -left-10 w-72 h-72 rounded-full bg-swLilac/60 blur-3xl" aria-hidden="true"></div>
+
+            <div class="relative h-full grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] items-center gap-6 px-6 sm:px-10 py-8">
+                <div class="flex flex-col gap-3">
+                    <span data-pop class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-swPlum">MIX &amp; MATCH</span>
+                    <h2 data-pop class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.05] tracking-tight">
+                        <span class="text-swNavy">Padu-padankan</span><br>
+                        <span class="text-swPlum">jadi outfit favorit.</span>
+                    </h2>
+                    <p data-pop class="text-sm sm:text-base text-swNavy/80 max-w-md">Pilih sampai 5 pakaian dari lemarimu, simpan sebagai outfit, lalu jadwalkan di Kalender Outfit.</p>
+                    <div data-pop class="pt-2">
+                        <a href="{% url 'digital_wardrobe:index' %}?tab=outfit&amp;add_outfit=1" class="h-11 px-5 inline-flex items-center gap-2 rounded-full bg-swPlum text-white text-sm font-bold hover:bg-swPlum/90 transition-colors">
+                            <span aria-hidden="true">+</span> Buat outfit
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Ilustrasi: kartu kolase outfit -->
+                <div class="relative hidden md:flex items-center justify-center h-64" aria-hidden="true">
+                    <div data-pop class="relative w-60 bg-white rounded-2xl p-3 shadow-xl rotate-2">
+                        <span class="absolute -top-3 -left-3 w-9 h-9 rounded-full bg-swForest text-white flex items-center justify-center shadow-md ring-4 ring-white">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>
+                        </span>
+                        <div class="grid grid-cols-6 grid-rows-2 gap-1.5 h-36">
+                            <div class="col-span-3 rounded-lg bg-swBlush flex items-center justify-center text-swBerry"><svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg></div>
+                            <div class="col-span-3 rounded-lg bg-[#DCE4F7] flex items-center justify-center text-swNavy"><svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M7 3h10l1 18h-4l-2-11-2 11H6z"/></svg></div>
+                            <div class="col-span-2 rounded-lg bg-[#E3F1E3] flex items-center justify-center text-swForest"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16v-5l5-1 3 3h4l6 2v3H3z"/></svg></div>
+                            <div class="col-span-2 rounded-lg bg-swLilac flex items-center justify-center text-swPlum"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 9h12l-1 11H7z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg></div>
+                            <div class="col-span-2 rounded-lg bg-[#F6EADF] flex items-center justify-center text-swBerry"><svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15c0-4 3.5-7 8-7s8 3 8 7"/><path d="M2 15h20"/></svg></div>
+                        </div>
+                        <p class="pt-3 px-1 text-sm font-bold text-swNavy">Casual Kampus</p>
+                        <p class="px-1 text-xs text-swSlate">5 pakaian</p>
+                    </div>
+                    <span data-pop class="absolute top-4 right-6 px-3 py-1.5 rounded-full bg-swNavy text-white text-xs font-extrabold shadow-md -rotate-6">5/5 dipilih</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- ============ SLIDE 4: CARA KERJA ============ -->
+        <article data-slide aria-roledescription="slide" aria-label="4 dari 4"
+                 class="relative shrink-0 basis-full snap-center overflow-hidden min-h-[22rem] sm:min-h-[20rem] lg:h-[21rem] bg-gradient-to-br from-swNavy via-[#2A2F82] to-swPlum">
+            <div class="absolute -top-24 right-0 w-96 h-96 rounded-full bg-gradient-to-br from-swPink/50 via-[#C9A6E8]/40 to-[#9FB4F0]/40 blur-3xl" aria-hidden="true"></div>
+
+            <!-- Ikon holo besar -->
+            <div data-pop class="hidden lg:flex absolute right-12 top-1/2 -translate-y-1/2 rotate-6 w-44 h-44 rounded-[2.75rem] bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] items-center justify-center shadow-[0_20px_40px_-12px_rgba(0,0,0,0.45)] ring-1 ring-white/40" aria-hidden="true">
+                <div class="absolute inset-0 rounded-[2.75rem] bg-gradient-to-tr from-transparent via-white/40 to-transparent"></div>
+                <svg class="relative w-28 h-28 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg>
+            </div>
+            <div class="relative h-full flex flex-col justify-center gap-5 px-6 sm:px-10 py-8 lg:pr-72">
+                <div class="flex flex-col gap-2">
+                    <span data-pop class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-swPink">CARA KERJA</span>
+                    <h2 data-pop class="text-3xl sm:text-4xl font-extrabold leading-[1.05] tracking-tight text-white">3 langkah, lemari makin hidup.</h2>
+                </div>
+                <ol class="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl">
+                    <li data-pop class="flex items-center gap-3 rounded-2xl bg-white/10 ring-1 ring-white/20 p-3 sm:p-4">
+                        <span class="w-10 h-10 shrink-0 rounded-xl bg-swBlush text-swBerry flex items-center justify-center font-extrabold">1</span>
+                        <span><span class="block text-sm font-bold text-white">Simpan di lemari</span><span class="block text-xs text-white/75">Foto &amp; catat pakaianmu</span></span>
+                    </li>
+                    <li data-pop class="flex items-center gap-3 rounded-2xl bg-white/10 ring-1 ring-white/20 p-3 sm:p-4">
+                        <span class="w-10 h-10 shrink-0 rounded-xl bg-swLilac text-swPlum flex items-center justify-center font-extrabold">2</span>
+                        <span><span class="block text-sm font-bold text-white">Tawarkan</span><span class="block text-xs text-white/75">Pilih yang mau ditukar</span></span>
+                    </li>
+                    <li data-pop class="flex items-center gap-3 rounded-2xl bg-white/10 ring-1 ring-white/20 p-3 sm:p-4">
+                        <span class="w-10 h-10 shrink-0 rounded-xl bg-swMint text-swForest flex items-center justify-center font-extrabold">3</span>
+                        <span><span class="block text-sm font-bold text-white">Tukar</span><span class="block text-xs text-white/75">Sepakati &amp; ketemuan COD</span></span>
+                    </li>
+                </ol>
+                <div data-pop>
+                    <a href="{% url 'swap_requests:index' %}" class="h-11 px-5 inline-flex items-center gap-2 rounded-full bg-swPink text-swNavy text-sm font-bold hover:bg-white transition-colors">
+                        Lihat permintaan swap
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <!-- Kontrol -->
+    <div class="absolute bottom-4 left-6 sm:left-10 flex items-center gap-1.5" data-dots>
+        {% for n in "1234" %}
+        <button type="button" data-dot="{{ forloop.counter0 }}" aria-label="Tampilkan slide {{ n }}"
+                class="h-2 rounded-full bg-white/50 transition-all duration-300 w-2 hover:bg-white"></button>
+        {% endfor %}
+    </div>
+    <div class="absolute bottom-3 right-4 sm:right-6 flex items-center gap-2">
+        <button type="button" data-carousel-prev aria-label="Slide sebelumnya"
+                class="w-10 h-10 rounded-full bg-white/90 text-swNavy flex items-center justify-center shadow-md hover:bg-white transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" data-carousel-next aria-label="Slide berikutnya"
+                class="w-10 h-10 rounded-full bg-white/90 text-swNavy flex items-center justify-center shadow-md hover:bg-white transition-colors">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+    </div>
+</section>
+
+<script>
+(() => {
+    const root = document.querySelector('[data-carousel]');
+    if (!root) return;
+    const track = root.querySelector('[data-track]');
+    const slides = [...root.querySelectorAll('[data-slide]')];
+    const dots = [...root.querySelectorAll('[data-dot]')];
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const HIDDEN = ['opacity-0', 'translate-y-4', 'scale-95'];
+    let current = 0;
+    let timer = null;
+
+    // Siapkan animasi "pop" (hanya kalau JS jalan, jadi tanpa JS konten tetap terlihat)
+    slides.forEach((slide) => slide.querySelectorAll('[data-pop]').forEach((el, i) => {
+        if (!reduceMotion) {
+            el.classList.add('transition', 'duration-700', 'ease-out');
+            el.style.transitionDelay = `${80 + i * 70}ms`;
+        }
+    }));
+
+    function activate(index) {
+        current = (index + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+            const active = i === current;
+            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+            slide.querySelectorAll('a, button').forEach((el) => el.tabIndex = active ? 0 : -1);
+            if (!reduceMotion) {
+                slide.querySelectorAll('[data-pop]').forEach((el) => HIDDEN.forEach((c) => el.classList.toggle(c, !active)));
+            }
+        });
+        dots.forEach((dot, i) => {
+            const active = i === current;
+            dot.classList.toggle('w-6', active);
+            dot.classList.toggle('bg-white', active);
+            dot.classList.toggle('w-2', !active);
+            dot.classList.toggle('bg-white/50', !active);
+            dot.setAttribute('aria-current', active ? 'true' : 'false');
+        });
+    }
+
+    function go(index) {
+        const target = (index + slides.length) % slides.length;
+        track.scrollTo({ left: target * track.clientWidth, behavior: reduceMotion ? 'auto' : 'smooth' });
+        activate(target);
+    }
+
+    // Sinkron saat user swipe / scroll manual
+    let scrollTimer;
+    track.addEventListener('scroll', () => {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+            const index = Math.round(track.scrollLeft / track.clientWidth);
+            if (index !== current) activate(index);
+        }, 80);
+    });
+
+    root.querySelector("[data-carousel-prev]").addEventListener('click', () => { go(current - 1); restart(); });
+    root.querySelector("[data-carousel-next]").addEventListener('click', () => { go(current + 1); restart(); });
+    dots.forEach((dot, i) => dot.addEventListener('click', () => { go(i); restart(); }));
+    root.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); go(current + 1); restart(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); go(current - 1); restart(); }
+    });
+
+    // Geser otomatis tiap 6 detik; berhenti saat disentuh mouse / fokus / tab tidak aktif
+    function start() { if (!reduceMotion && !timer) timer = setInterval(() => go(current + 1), 6000); }
+    function stop() { clearInterval(timer); timer = null; }
+    function restart() { stop(); start(); }
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+    track.addEventListener('touchstart', stop, { passive: true });
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    window.addEventListener('resize', () => track.scrollTo({ left: current * track.clientWidth }));
+
+    activate(0);
+    start();
+})();
+</script>

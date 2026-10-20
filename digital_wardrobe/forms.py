@@ -20,12 +20,13 @@ TEXTAREA_CLASS = (
 class ClothingItemForm(forms.ModelForm):
     class Meta:
         model = ClothingItem
-        fields = ['image', 'name', 'category', 'size', 'gender', 'condition', 'color', 'description']
+        fields = ['image', 'name', 'category', 'size', 'shoe_size', 'gender', 'condition', 'color', 'description']
         labels = {
             'image': 'Foto pakaian',
             'name': 'Nama pakaian',
             'category': 'Kategori',
             'size': 'Ukuran',
+            'shoe_size': 'Ukuran sepatu (EU)',
             'gender': 'Gender pakaian',
             'condition': 'Kondisi',
             'color': 'Warna',
@@ -34,6 +35,13 @@ class ClothingItemForm(forms.ModelForm):
         widgets = {
             'image': forms.FileInput(attrs={'accept': 'image/jpeg,image/png', 'class': 'sr-only'}),
             'name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Contoh: Kemeja linen krem'}),
+            'shoe_size': forms.NumberInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Contoh: 38',
+                'min': ClothingItem.SHOE_SIZE_MIN,
+                'max': ClothingItem.SHOE_SIZE_MAX,
+                'inputmode': 'numeric',
+            }),
             'description': forms.Textarea(attrs={
                 'class': TEXTAREA_CLASS,
                 'rows': 4,
@@ -54,6 +62,11 @@ class ClothingItemForm(forms.ModelForm):
         for field in self.fields.values():
             field.error_messages['required'] = 'Wajib diisi.'
             field.error_messages['invalid_choice'] = 'Pilihan tidak valid.'
+        self.fields['shoe_size'].error_messages.update({
+            'min_value': f'Ukuran sepatu minimal {ClothingItem.SHOE_SIZE_MIN}.',
+            'max_value': f'Ukuran sepatu maksimal {ClothingItem.SHOE_SIZE_MAX}.',
+            'invalid': 'Ukuran sepatu harus berupa angka.',
+        })
         self.fields['image'].error_messages.update({
             'required': 'Foto pakaian wajib diunggah.',
             'invalid_image': 'File harus berupa foto JPG atau PNG.',
@@ -63,6 +76,23 @@ class ClothingItemForm(forms.ModelForm):
             choices = [c for c in field.choices if c[0] != '']
             field.choices = [('', placeholder)] + choices
             field.widget.attrs['class'] = INPUT_CLASS
+
+    @property
+    def is_footwear(self):
+        return self['category'].value() == 'footwear'
+
+    def clean(self):
+        cleaned = super().clean()
+        # Sepatu pakai ukuran angka (EU), pakaian lain pakai XS–XXL.
+        if cleaned.get('category') == 'footwear':
+            if not cleaned.get('shoe_size'):
+                self.add_error('shoe_size', 'Wajib diisi untuk sepatu.')
+            cleaned['size'] = ''
+        elif cleaned.get('category'):
+            if not cleaned.get('size'):
+                self.add_error('size', 'Wajib diisi.')
+            cleaned['shoe_size'] = None
+        return cleaned
 
     def clean_image(self):
         image = self.cleaned_data.get('image')

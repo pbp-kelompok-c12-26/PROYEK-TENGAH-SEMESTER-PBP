@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # menyajikan file static (juga saat DEBUG = False)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -139,6 +140,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # hasil collectstatic
+WHITENOISE_USE_FINDERS = True  # file static app tetap tersaji walau collectstatic belum dijalankan
 
 # Media files (upload foto pakaian di Digital Wardrobe)
 MEDIA_URL = '/media/'
