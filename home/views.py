@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from accounts.forms import ProfileSetupForm, SizePreferenceForm
-from accounts.models import Profile
+from accounts.models import UserProfile
 from digital_wardrobe.models import ClothingItem
 
 PAGE_SIZE = 12
@@ -27,7 +27,7 @@ ONBOARDING_TOTAL_STEPS = 3
 def onboarding(request):
     """Onboarding di login pertama: 1) welcome, 2) set up profil, 3) preferensi ukuran.
     Yang mengarahkan ke sini hanya login pertama (lihat accounts.views.login_user)."""
-    profile = Profile.for_user(request.user)
+    profile = UserProfile.for_user(request.user)
 
     try:
         step = int(request.GET.get('step', '1'))
@@ -65,9 +65,9 @@ def onboarding(request):
 @require_POST
 def onboarding_skip(request):
     """Lewati onboarding. Tetap dianggap selesai supaya tidak muncul lagi."""
-    profile = Profile.for_user(request.user)
+    profile = UserProfile.for_user(request.user)
     profile.onboarding_completed = True
-    profile.save(update_fields=['onboarding_completed', 'updated_at'])
+    profile.save(update_fields=['onboarding_completed'])
     return redirect('home:index')
 
 

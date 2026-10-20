@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from .models import Profile
+from .models import UserProfile
 
 
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'display_name', 'onboarding_completed', 'created_at')
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'display_name', 'phone_number', 'domicile', 'onboarding_completed')
     list_filter = ('onboarding_completed',)
-    search_fields = ('user__username', 'display_name')
+    search_fields = ('user__username', 'display_name', 'phone_number')

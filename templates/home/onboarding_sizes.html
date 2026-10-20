@@ -20,7 +20,7 @@
                 <legend class="text-sm font-bold text-swNavy">Ukuran pakaian</legend>
                 <p class="text-xs text-swSlate mb-3">Kamu bisa pilih lebih dari satu sesuai preferensi ukuranmu.</p>
                 <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                    {% for opt in form.clothing_sizes %}
+                    {% for opt in form.preferred_clothing_sizes %}
                     {% include 'home/partials/onboarding_chip.html' with option=opt size='h-11 px-2' %}
                     {% endfor %}
                 </div>
@@ -30,7 +30,7 @@
                 <legend class="text-sm font-bold text-swNavy">Ukuran sepatu <span class="font-medium text-swSlate">(standar EU)</span></legend>
                 <p class="text-xs text-swSlate mb-3">Kamu bisa pilih lebih dari satu.</p>
                 <div class="grid grid-cols-5 sm:grid-cols-7 gap-2">
-                    {% for opt in form.shoe_sizes %}
+                    {% for opt in form.preferred_shoe_sizes %}
                     {% include 'home/partials/onboarding_chip.html' with option=opt size='h-11 px-2' %}
                     {% endfor %}
                 </div>
