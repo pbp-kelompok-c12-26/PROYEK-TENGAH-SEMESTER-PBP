@@ -32,12 +32,23 @@
             </div>
             <div class="grid grid-cols-7 gap-1 sm:gap-2">
                 {% for week in weeks %}{% for day in week %}
-                {% if day.schedule %}
+               {% if day.schedule %}
+                {% with thumbs=day.schedule.thumbs %}
                 <a href="{% url 'outfit_calendar:schedule_detail' day.schedule.pk %}"
-                   class="min-h-[64px] sm:min-h-[92px] rounded-xl p-1.5 sm:p-2 text-left flex flex-col gap-1 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] text-white hover:opacity-90 {% if not day.in_month %}opacity-40{% endif %} {% if day.is_today %}ring-2 ring-swNavy ring-offset-1{% endif %}">
-                    <span class="text-xs font-bold">{{ day.date.day }}</span>
-                    <span class="text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2">{{ day.schedule.outfit.name }}</span>
+                   class="relative overflow-hidden min-h-[64px] sm:min-h-[92px] rounded-xl p-1.5 sm:p-2 text-left flex flex-col gap-1 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] text-white hover:opacity-90 {% if not day.in_month %}opacity-40{% endif %} {% if day.is_today %}ring-2 ring-swNavy ring-offset-1{% endif %}">
+                    {% if thumbs %}
+                    <div class="absolute inset-0 grid gap-px bg-white {% if thumbs|length > 1 %}grid-cols-2{% endif %} {% if thumbs|length > 2 %}grid-rows-2{% endif %}">
+                        {% for item in thumbs %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy"
+                             class="w-full h-full object-cover {% if thumbs|length == 3 and forloop.first %}row-span-2{% endif %}">
+                        {% endfor %}
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-swNavy/85 via-swNavy/10 to-swNavy/30"></div>
+                    {% endif %}
+                    <span class="relative text-xs font-bold">{{ day.date.day }}</span>
+                    <span class="relative mt-auto text-[10px] sm:text-xs font-semibold leading-tight line-clamp-2">{{ day.schedule.outfit.name }}</span>
                 </a>
+                {% endwith %}
                 {% else %}
                 <a href="{% url 'outfit_calendar:schedule_create' %}?date={{ day.date|date:'Y-m-d' }}"
                    class="group min-h-[64px] sm:min-h-[92px] rounded-xl p-1.5 sm:p-2 text-left flex flex-col border border-swNavy/10 hover:border-swPlum hover:bg-swCream {% if not day.in_month %}opacity-40{% endif %} {% if day.is_today %}ring-2 ring-swBerry{% endif %}">
