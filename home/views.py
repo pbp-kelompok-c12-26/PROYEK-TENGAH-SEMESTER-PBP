@@ -1,7 +1,13 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_POST
 
+from accounts.forms import ProfileSetupForm, SizePreferenceForm
+from accounts.models import Profile
 from digital_wardrobe.models import ClothingItem
 
 PAGE_SIZE = 12
@@ -13,49 +19,56 @@ SORT_OPTIONS = [
     ('kondisi', 'Kondisi terbaik'),
 ]
 
-ONBOARDING_STEPS = {
-    1: {
-        'eyebrow': 'SELAMAT DATANG',
-        'title': 'Hai, selamat datang di',
-        'highlight': 'Swapdrobe',
-        'text': 'Lemari digital, mix & match outfit, dan tukar pakaian pre-loved. Semua dalam satu tempat.',
-        'points': ['Pakai lagi, bagi cerita baru', 'Tukar pakaian, bukan jual-beli'],
-        'cta': 'Mulai',
-    },
-    2: {
-        'eyebrow': 'LEMARI DIGITAL',
-        'title': 'Semua bajumu,',
-        'highlight': 'rapi di satu tempat',
-        'text': 'Simpan pakaianmu, padu-padankan jadi outfit, lalu jadwalkan mau pakai apa di kalender.',
-        'points': ['Lemari Saya', 'Koleksi Outfit', 'Kalender Outfit'],
-        'cta': 'Lanjut',
-    },
-    3: {
-        'eyebrow': "SWAP, DON'T SHOP",
-        'title': 'Bosan sama bajumu?',
-        'highlight': 'Tukar aja!',
-        'text': 'Tawarkan pakaian yang jarang dipakai, ajukan swap ke orang lain, dan sambut pakaian baru di lemarimu.',
-        'points': ['Item Swap Saya', 'Permintaan Swap', 'Tanpa uang sepeser pun'],
-        'cta': 'Mulai jelajahi',
-    },
-}
+WELCOME_POINTS = ['Pakai lagi, bagi cerita baru', 'Tukar pakaian, bukan jual-beli']
+ONBOARDING_TOTAL_STEPS = 3
 
 
+@login_required(login_url='accounts:login')
 def onboarding(request):
+    """Onboarding di login pertama: 1) welcome, 2) set up profil, 3) preferensi ukuran.
+    Yang mengarahkan ke sini hanya login pertama (lihat accounts.views.login_user)."""
+    profile = Profile.for_user(request.user)
+
     try:
         step = int(request.GET.get('step', '1'))
     except ValueError:
         step = 0
-    if step not in ONBOARDING_STEPS:  # hanya step 1, 2, atau 3
+    if step not in range(1, ONBOARDING_TOTAL_STEPS + 1):
         return redirect('home:onboarding')
 
-    return render(request, 'home/onboarding.html', {
-        'step': step,
-        'steps': list(ONBOARDING_STEPS),
-        'content': ONBOARDING_STEPS[step],
-        'prev_step': step - 1 if step > 1 else None,
-        'next_step': step + 1 if step < len(ONBOARDING_STEPS) else None,
-    })
+    context = {'step': step, 'steps': list(range(1, ONBOARDING_TOTAL_STEPS + 1)), 'profile': profile}
+
+    if step == 1:
+        context['welcome_points'] = WELCOME_POINTS
+        return render(request, 'home/onboarding.html', context)
+
+    if step == 2:
+        form = ProfileSetupForm(request.POST or None, request.FILES or None, instance=profile)
+        if request.method == 'POST' and form.is_valid():
+            form.save()
+            return redirect(f"{reverse('home:onboarding')}?step=3")
+        context['form'] = form
+        return render(request, 'home/onboarding_profile.html', context)
+
+    form = SizePreferenceForm(request.POST or None, instance=profile)
+    if request.method == 'POST' and form.is_valid():
+        profile = form.save(commit=False)
+        profile.onboarding_completed = True
+        profile.save()
+        messages.success(request, f'Profilmu sudah siap, {profile.name}! Selamat menjelajah.')
+        return redirect('home:index')
+    context['form'] = form
+    return render(request, 'home/onboarding_sizes.html', context)
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def onboarding_skip(request):
+    """Lewati onboarding. Tetap dianggap selesai supaya tidak muncul lagi."""
+    profile = Profile.for_user(request.user)
+    profile.onboarding_completed = True
+    profile.save(update_fields=['onboarding_completed', 'updated_at'])
+    return redirect('home:index')
 
 
 def get_catalog_queryset(request):

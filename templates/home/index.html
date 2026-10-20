@@ -5,10 +5,18 @@
 {% block content %}
 <div class="space-y-8">
 
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <p class="rounded-2xl px-4 py-3 text-sm font-semibold {% if message.tags == 'error' %}bg-swBerry text-white{% else %}bg-swNavy text-white{% endif %}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- SAPAAN -->
     <header class="space-y-1">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-swNavy tracking-tight">Temukan pakaian barumu.</h1>
-        <p class="text-sm text-swSlate">Hai, <span class="font-bold text-swNavy">{{ user.username }}</span>! Ada banyak pakaian yang siap kamu ajak berpetualang lagi.</p>
+        <p class="text-sm text-swSlate">Hai, <span class="font-bold text-swNavy">{{ user.profile.name|default:user.username }}</span>! Ada banyak pakaian yang siap kamu ajak berpetualang lagi.</p>
     </header>
 
     {% include 'home/partials/hero_carousel.html' %}

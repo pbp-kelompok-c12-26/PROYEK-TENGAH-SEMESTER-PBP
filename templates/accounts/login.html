@@ -34,8 +34,17 @@
             Lemari dan inspirasi outfit kamu sudah menunggu.
         </p>
 
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+            <p class="rounded-xl px-4 py-3 text-sm font-semibold {% if message.tags == 'error' %}bg-red-50 text-red-700{% else %}bg-[#E4F3D5] text-[#3C6E2A]{% endif %}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <form method="POST" action="{% url 'accounts:login' %}" class="space-y-6">
             {% csrf_token %}
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
             {% for field in form %}
                 <div>

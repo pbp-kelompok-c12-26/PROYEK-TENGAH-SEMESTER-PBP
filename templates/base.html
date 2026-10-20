@@ -114,19 +114,19 @@
                 <details class="relative" data-account-menu>
                     <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer flex items-center gap-2 pl-3 pr-1 h-11 rounded-full border border-swNavy/20 hover:border-swPlum/60 transition-colors" aria-label="Menu akun">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-                        <span class="w-9 h-9 rounded-full bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-2 ring-white text-white text-sm font-bold flex items-center justify-center">
-                            {{ user.username|first|upper }}
+                        <span class="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-2 ring-white text-white text-sm font-bold flex items-center justify-center">
+                            {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="" class="w-full h-full object-cover">{% else %}{{ user.username|first|upper }}{% endif %}
                         </span>
                     </summary>
                     {% swap_item_count user as swap_count %}
                     <div class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-[0_16px_40px_-12px_rgba(23,31,99,0.35)] ring-1 ring-swNavy/10 overflow-hidden">
                         <div class="relative flex items-center gap-3 px-4 py-4 border-b border-swNavy/10">
                             <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]" aria-hidden="true"></div>
-                            <span class="w-12 h-12 shrink-0 rounded-full bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] text-white text-lg font-bold flex items-center justify-center shadow-sm" aria-hidden="true">
-                                {{ user.username|first|upper }}
+                            <span class="w-12 h-12 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] text-white text-lg font-bold flex items-center justify-center shadow-sm" aria-hidden="true">
+                                {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="" class="w-full h-full object-cover">{% else %}{{ user.username|first|upper }}{% endif %}
                             </span>
                             <div class="min-w-0">
-                                <p class="font-bold text-swNavy truncate">@{{ user.username }}</p>
+                                <p class="font-bold text-swNavy truncate">{% if user.profile.display_name %}{{ user.profile.display_name }} <span class="font-medium text-swSlate">@{{ user.username }}</span>{% else %}@{{ user.username }}{% endif %}</p>
                                 <p class="text-xs text-swPlum"><span class="font-bold">{{ swap_count }}</span> items for swap</p>
                             </div>
                         </div>
