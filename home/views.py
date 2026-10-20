@@ -13,18 +13,50 @@ SORT_OPTIONS = [
     ('kondisi', 'Kondisi terbaik'),
 ]
 
-def onboarding(request):
-    step = request.GET.get('step', '1')
+ONBOARDING_STEPS = {
+    1: {
+        'eyebrow': 'SELAMAT DATANG',
+        'title': 'Hai, selamat datang di',
+        'highlight': 'Swapdrobe',
+        'text': 'Lemari digital, mix & match outfit, dan tukar pakaian pre-loved. Semua dalam satu tempat.',
+        'points': ['Pakai lagi, bagi cerita baru', 'Tukar pakaian, bukan jual-beli'],
+        'cta': 'Mulai',
+    },
+    2: {
+        'eyebrow': 'LEMARI DIGITAL',
+        'title': 'Semua bajumu,',
+        'highlight': 'rapi di satu tempat',
+        'text': 'Simpan pakaianmu, padu-padankan jadi outfit, lalu jadwalkan mau pakai apa di kalender.',
+        'points': ['Lemari Saya', 'Koleksi Outfit', 'Kalender Outfit'],
+        'cta': 'Lanjut',
+    },
+    3: {
+        'eyebrow': "SWAP, DON'T SHOP",
+        'title': 'Bosan sama bajumu?',
+        'highlight': 'Tukar aja!',
+        'text': 'Tawarkan pakaian yang jarang dipakai, ajukan swap ke orang lain, dan sambut pakaian baru di lemarimu.',
+        'points': ['Item Swap Saya', 'Permintaan Swap', 'Tanpa uang sepeser pun'],
+        'cta': 'Mulai jelajahi',
+    },
+}
 
-    # Pastikan step hanya 1, 2, atau 3
-    if step not in ['1', '2', '3']:
+
+def onboarding(request):
+    try:
+        step = int(request.GET.get('step', '1'))
+    except ValueError:
+        step = 0
+    if step not in ONBOARDING_STEPS:  # hanya step 1, 2, atau 3
         return redirect('home:onboarding')
 
-    template_name = f'home/onboarding_{step}.html'
-
-    return render(request, template_name, {
-        'step': int(step),
+    return render(request, 'home/onboarding.html', {
+        'step': step,
+        'steps': list(ONBOARDING_STEPS),
+        'content': ONBOARDING_STEPS[step],
+        'prev_step': step - 1 if step > 1 else None,
+        'next_step': step + 1 if step < len(ONBOARDING_STEPS) else None,
     })
+
 
 def get_catalog_queryset(request):
     """

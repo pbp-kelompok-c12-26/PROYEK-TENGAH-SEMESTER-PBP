@@ -1,0 +1,209 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ content.title }} {{ content.highlight }} · Swapdrobe</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        swNavy: '#171F63', swBerry: '#AF3F5F', swPlum: '#6063B4', swPink: '#D788B2',
+                        swLilac: '#E6C4F9', swBlush: '#EDDFEE', swCream: '#F7F5F0', swSlate: '#56546A',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Tombol navy, hologram biru saat hover (sama dengan sw-btn-holo di base.html) */
+        .sw-btn-holo {
+            background-color: #26307F;
+            background-image:
+                linear-gradient(110deg, transparent 42%, rgba(255,255,255,.4) 50%, transparent 58%),
+                linear-gradient(110deg, #26307F 0%, #26307F 40%, #2B3A92 54%, #4A66CC 66%, #8FA9F2 76%, #5C7BDA 86%, #2B3A92 100%);
+            background-size: 250% 100%, 250% 100%;
+            background-position: 130% 0, 0% 0;
+            transition: background-position .7s ease, box-shadow .3s ease;
+        }
+        .sw-btn-holo:hover {
+            background-position: -30% 0, 100% 0;
+            box-shadow: 0 8px 22px -8px rgba(43, 58, 146, .55), 0 0 0 3px rgba(159, 180, 240, .45);
+        }
+        /* Panel hologram: gradien Holo Berry yang pelan-pelan berkilau */
+        .holo-panel {
+            background: linear-gradient(135deg, #AF3F5F 0%, #C65A86 30%, #C9A6E8 58%, #9FB4F0 80%, #D788B2 100%);
+            background-size: 220% 220%;
+            animation: holo-shift 9s ease-in-out infinite alternate;
+        }
+        .holo-shine {
+            background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 45%, transparent 60%);
+            background-size: 250% 100%;
+            animation: holo-sweep 6s ease-in-out infinite;
+        }
+        .holo-text {
+            background: linear-gradient(100deg, #AF3F5F 0%, #C46AA6 45%, #6063B4 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .float-a { animation: float 6s ease-in-out infinite; }
+        .float-b { animation: float 7s ease-in-out -2s infinite; }
+        .float-c { animation: float 8s ease-in-out -4s infinite; }
+        @keyframes holo-shift { from { background-position: 0% 30%; } to { background-position: 100% 70%; } }
+        @keyframes holo-sweep { 0%, 100% { background-position: 120% 0; } 50% { background-position: -20% 0; } }
+        @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+        @media (prefers-reduced-motion: reduce) {
+            .holo-panel, .holo-shine, .float-a, .float-b, .float-c { animation: none; }
+            .sw-btn-holo { transition: none; }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-swCream font-sans text-swNavy antialiased">
+    {% if user.is_authenticated %}{% url 'home:index' as finish_url %}{% else %}{% url 'accounts:login' as finish_url %}{% endif %}
+
+    <!-- Cahaya latar -->
+    <div class="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <div class="absolute -top-40 -left-32 w-[480px] h-[480px] rounded-full bg-swLilac/50 blur-3xl"></div>
+        <div class="absolute -bottom-48 -right-24 w-[520px] h-[520px] rounded-full bg-[#9FB4F0]/35 blur-3xl"></div>
+        <div class="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-swPink/25 blur-3xl"></div>
+    </div>
+
+    <div class="relative min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="max-w-6xl w-full mx-auto px-5 sm:px-8 pt-6 flex items-center justify-between">
+            <a href="{{ finish_url }}" aria-label="Swapdrobe">{% include 'home/partials/brand_logo.html' with class='h-8 sm:h-9 w-auto' %}</a>
+            {% if next_step %}
+            <a href="{{ finish_url }}" class="h-9 px-4 inline-flex items-center gap-1 rounded-full bg-white/70 backdrop-blur border border-swNavy/10 text-sm font-semibold text-swNavy hover:bg-white">
+                Lewati <span aria-hidden="true">›</span>
+            </a>
+            {% endif %}
+        </header>
+
+        <main class="flex-1 max-w-6xl w-full mx-auto px-5 sm:px-8 py-8 lg:py-12 grid lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-14 items-center">
+
+            <!-- Panel ilustrasi -->
+            <div class="holo-panel relative overflow-hidden rounded-[2rem] aspect-[5/4] sm:aspect-[4/3] lg:aspect-[5/4] shadow-[0_30px_60px_-30px_rgba(23,31,99,0.55)]">
+                {% include 'digital_wardrobe/partials/holo_bg.html' %}
+                <div class="holo-shine absolute inset-0" aria-hidden="true"></div>
+                <span class="absolute top-5 left-6 text-[11px] font-semibold tracking-[0.28em] text-white/85">0{{ step }} / 0{{ steps|length }}</span>
+                <span class="absolute top-[14%] right-[10%] text-2xl text-white/90 float-b" aria-hidden="true">✦</span>
+                <span class="absolute bottom-[12%] left-[8%] text-xl text-white/80 float-c" aria-hidden="true">✦</span>
+
+                {% if step == 1 %}
+                <div class="absolute inset-0 flex items-center justify-center p-6">
+                    <div class="absolute w-[62%] aspect-square rounded-full bg-white/45 blur-2xl" aria-hidden="true"></div>
+                    <img src="{% static 'images/burhan_onboarding.png' %}" alt="Burhan si burung hantu merapikan lemari pakaian"
+                         class="relative w-[118%] max-w-none h-auto object-contain float-a drop-shadow-[0_18px_24px_rgba(23,31,99,0.25)]">
+                </div>
+                <span class="absolute bottom-6 right-6 px-3 py-1.5 rounded-full bg-white/90 text-[11px] font-bold text-swBerry shadow float-b">♥ Pre-loved, still lovely</span>
+
+                {% elif step == 2 %}
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="relative w-[86%] h-[78%]">
+                        <!-- Kartu lemari -->
+                        <div class="absolute left-0 top-[6%] w-[54%] rounded-3xl bg-white/85 backdrop-blur p-3 shadow-xl -rotate-3 float-a">
+                            <p class="px-1 text-[10px] font-bold tracking-widest text-swSlate">LEMARI SAYA</p>
+                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                <div class="aspect-square rounded-2xl bg-[#FBE3EC] flex items-center justify-center"><svg class="w-3/5" viewBox="0 0 64 64" aria-hidden="true"><path d="M22 10 10 18l5 10 5-3v29h24V25l5 3 5-10-12-8c-2 4-6 6-10 6s-8-2-10-6z" fill="#E58FB1"/></svg></div>
+                                <div class="aspect-square rounded-2xl bg-[#E3F0DF] flex items-center justify-center"><svg class="w-3/5" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 8h24l10 12-6 4v32H16V24l-6-4z" fill="#86AE7E"/><path d="M32 8v48" stroke="#6E9566" stroke-width="2"/></svg></div>
+                                <div class="aspect-square rounded-2xl bg-[#DFE9FA] flex items-center justify-center"><svg class="w-3/5" viewBox="0 0 64 64" aria-hidden="true"><path d="M18 8h28l4 48H36l-4-30-4 30H14z" fill="#6F8FD0"/></svg></div>
+                                <div class="aspect-square rounded-2xl bg-[#F1E6FA] flex items-center justify-center"><svg class="w-3/5" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 40c8 0 14-6 18-12l8 4c4 2 10 4 16 4 4 0 6 4 6 8v4H8z" fill="#B89AD8"/><path d="M8 48h48v6H8z" fill="#8E70B8"/></svg></div>
+                            </div>
+                        </div>
+                        <!-- Kartu outfit -->
+                        <div class="absolute right-0 top-0 w-[44%] rounded-3xl bg-white/90 backdrop-blur p-3 shadow-xl rotate-3 float-b">
+                            <p class="text-[10px] font-bold tracking-widest text-swSlate">OUTFIT</p>
+                            <p class="text-sm font-extrabold text-swNavy leading-tight">Kuliah santai</p>
+                            <div class="mt-2 flex -space-x-2">
+                                <span class="w-9 h-9 rounded-full bg-[#FBE3EC] ring-2 ring-white"></span>
+                                <span class="w-9 h-9 rounded-full bg-[#DFE9FA] ring-2 ring-white"></span>
+                                <span class="w-9 h-9 rounded-full bg-[#F1E6FA] ring-2 ring-white"></span>
+                            </div>
+                        </div>
+                        <!-- Kartu kalender -->
+                        <div class="absolute right-[4%] bottom-0 w-[50%] rounded-3xl bg-white/90 backdrop-blur p-3 shadow-xl -rotate-2 float-c">
+                            <p class="text-[10px] font-bold tracking-widest text-swSlate">KALENDER · OKT</p>
+                            <div class="mt-2 grid grid-cols-7 gap-1 text-[9px] text-center text-swSlate">
+                                <span>8</span><span>9</span><span class="rounded-md sw-btn-holo text-white font-bold">10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+                            </div>
+                            <p class="mt-2 text-[10px] font-semibold text-swNavy">✓ Kuliah santai dijadwalkan</p>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="relative w-[86%] h-[74%]">
+                        <div class="absolute left-0 top-[4%] w-[42%] rounded-3xl bg-white/90 backdrop-blur p-3 shadow-xl -rotate-6 float-a">
+                            <div class="aspect-[4/5] rounded-2xl bg-[#F1E6FA] flex items-center justify-center">
+                                <svg class="w-3/5" viewBox="0 0 64 64" aria-hidden="true"><path d="M22 10 10 18l5 10 5-3v29h24V25l5 3 5-10-12-8c-2 4-6 6-10 6s-8-2-10-6z" fill="#C3A6E6"/><path d="M28 34c-2-2-1-5 1-5 1 0 2 1 3 2 1-1 2-2 3-2 2 0 3 3 1 5l-4 4z" fill="#fff"/></svg>
+                            </div>
+                            <p class="mt-2 text-xs font-bold text-swNavy">Sweater lilac</p>
+                            <p class="text-[10px] text-swSlate">dari lemarimu</p>
+                        </div>
+                        <div class="absolute right-0 top-[8%] w-[42%] rounded-3xl bg-white/90 backdrop-blur p-3 shadow-xl rotate-6 float-b">
+                            <div class="aspect-[4/5] rounded-2xl bg-[#E3F0DF] flex items-center justify-center">
+                                <svg class="w-3/5" viewBox="0 0 64 64" aria-hidden="true"><path d="M20 8h24l10 12-6 4v32H16V24l-6-4z" fill="#86AE7E"/><path d="M32 8v48" stroke="#6E9566" stroke-width="2"/><circle cx="35" cy="24" r="1.6" fill="#fff"/><circle cx="35" cy="32" r="1.6" fill="#fff"/><circle cx="35" cy="40" r="1.6" fill="#fff"/></svg>
+                            </div>
+                            <p class="mt-2 text-xs font-bold text-swNavy">Kardigan sage</p>
+                            <p class="text-[10px] text-swSlate">dari @dinda</p>
+                        </div>
+                        <div class="absolute left-1/2 top-[38%] -translate-x-1/2 w-14 h-14 sm:w-16 sm:h-16 rounded-full sw-btn-holo text-white flex items-center justify-center shadow-xl ring-4 ring-white/80">
+                            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>
+                        </div>
+                        <span class="absolute z-10 left-1/2 -bottom-[6%] -translate-x-1/2 px-3 py-1.5 rounded-full bg-white text-[11px] font-bold text-[#3E8E4E] shadow-lg whitespace-nowrap float-c">✓ Swap completed</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Teks -->
+            <section class="text-center lg:text-left">
+                <p class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-swPlum">{{ content.eyebrow }}</p>
+                <h1 class="mt-2 text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight text-swNavy">
+                    {{ content.title }} <span class="holo-text">{{ content.highlight }}</span>
+                </h1>
+                <p class="mt-4 text-base sm:text-lg leading-relaxed text-swSlate max-w-xl mx-auto lg:mx-0">{{ content.text }}</p>
+
+                <ul class="mt-5 flex flex-wrap justify-center lg:justify-start gap-2">
+                    {% for point in content.points %}
+                    <li class="h-8 px-3 inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur border border-swNavy/10 text-xs font-semibold text-swNavy">
+                        <span class="w-2 h-2 rounded-full bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0]" aria-hidden="true"></span>{{ point }}
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Progres -->
+                <nav class="mt-8 flex justify-center lg:justify-start items-center gap-2" aria-label="Langkah {{ step }} dari {{ steps|length }}">
+                    {% for s in steps %}
+                    <a href="{% url 'home:onboarding' %}?step={{ s }}" aria-label="Langkah {{ s }}"
+                       class="h-2 rounded-full transition-all {% if s == step %}w-10 bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]{% elif s < step %}w-5 bg-swNavy/40{% else %}w-5 bg-swNavy/15 hover:bg-swNavy/30{% endif %}"></a>
+                    {% endfor %}
+                </nav>
+
+                <!-- Tombol -->
+                <div class="mt-6 flex justify-center lg:justify-start gap-3">
+                    {% if prev_step %}
+                    <a href="{% url 'home:onboarding' %}?step={{ prev_step }}"
+                       class="h-14 px-6 inline-flex items-center rounded-full bg-white/80 backdrop-blur border border-swNavy/15 text-base font-semibold text-swNavy hover:bg-white">Kembali</a>
+                    {% endif %}
+                    <a href="{% if next_step %}{% url 'home:onboarding' %}?step={{ next_step }}{% else %}{{ finish_url }}{% endif %}"
+                       class="sw-btn-holo h-14 px-8 inline-flex items-center gap-3 rounded-full text-base font-bold text-white active:scale-[0.98]">
+                        {{ content.cta }}
+                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
