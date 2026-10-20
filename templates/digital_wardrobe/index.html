@@ -20,7 +20,7 @@
                 <p class="text-sm text-swSlate">Koleksi pakaian kamu</p>
                 <p class="text-4xl font-extrabold text-swNavy" data-total-items>{{ total_items }}</p>
                 <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
-                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swForest text-white text-sm font-semibold hover:bg-swForest/90 transition-colors">
+                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
                     <span aria-hidden="true">+</span> Tambah pakaian
                 </button>
             </div>
@@ -28,7 +28,7 @@
                 <p class="text-sm text-swSlate">Koleksi outfit kamu</p>
                 <p class="text-4xl font-extrabold text-swNavy" data-total-outfits>{{ total_outfits }}</p>
                 <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
-                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90 transition-colors">
+                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
                     <span aria-hidden="true">+</span> Tambah Outfit
                 </button>
             </div>
@@ -36,7 +36,7 @@
                 <p class="text-sm text-swSlate">Tersedia untuk swap</p>
                 <p class="text-4xl font-extrabold text-swNavy">{{ total_for_swap }}</p>
                 <a href="{% url 'items_for_swap:index' %}"
-                   class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-full bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90 transition-colors">
+                   class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-full sw-btn-holo text-white text-sm font-semibold">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     Kelola Items for Swap
                 </a>
@@ -66,7 +66,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p class="text-sm text-swSlate">Padukan sampai 5 pakaian dari lemarimu menjadi satu outfit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
-                class="self-start sm:self-auto h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90">
+                class="self-start sm:self-auto h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
             <span aria-hidden="true">+</span> Buat outfit
         </button>
     </div>
@@ -84,13 +84,13 @@
         {% if total_items %}
         <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Pilih beberapa pakaian dari lemarimu dan simpan sebagai outfit favorit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
-                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swPlum text-white text-sm font-semibold hover:bg-swPlum/90">
+                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
             <span aria-hidden="true">+</span> Buat outfit pertama
         </button>
         {% else %}
         <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Tambahkan pakaian ke lemarimu dulu, baru padu-padankan jadi outfit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
-                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swForest text-white text-sm font-semibold hover:bg-swForest/90">
+                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
             <span aria-hidden="true">+</span> Tambah pakaian
         </button>
         {% endif %}
@@ -160,7 +160,7 @@
         <h2 class="text-xl font-bold text-swNavy">Lemarimu masih kosong</h2>
         <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Tambahkan pakaian pertamamu supaya gampang dipadu-padankan jadi outfit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
-                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg bg-swForest text-white text-sm font-semibold hover:bg-swForest/90">
+                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
             <span aria-hidden="true">+</span> Tambah pakaian pertama
         </button>
         {% endif %}
