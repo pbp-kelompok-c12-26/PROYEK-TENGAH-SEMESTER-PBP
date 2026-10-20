@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
@@ -14,7 +12,6 @@ from .forms import ClothingItemForm, OutfitForm
 from .models import ClothingItem, Outfit
 
 PAGE_SIZE = 12
-IDLE_AFTER_DAYS = 90  # pakaian dianggap "jarang dipakai" setelah 90 hari tidak dipakai
 
 SORT_OPTIONS = {
     'newest': ('-created_at', 'Terbaru'),
@@ -37,11 +34,6 @@ def format_tanggal(value):
 
 def is_ajax(request):
     return request.headers.get('x-requested-with') == 'XMLHttpRequest'
-
-
-def idle_filter():
-    cutoff = timezone.localdate() - timedelta(days=IDLE_AFTER_DAYS)
-    return Q(is_idle=True) | Q(last_worn_date__isnull=True) | Q(last_worn_date__lt=cutoff)
 
 
 def _auto_open_url(request):
@@ -67,6 +59,7 @@ def _auto_open_url(request):
 # R -> Read: halaman Lemari Digital (daftar pakaian + filter)
 @login_required
 def index(request):
+    ClothingItem.objects.refresh_idle(request.user)  # is_idle selalu terbaru tiap lemari dibuka
     user_items = ClothingItem.objects.in_wardrobe(request.user)
 
     tab = request.GET.get('tab', 'pakaian')
@@ -83,7 +76,7 @@ def index(request):
 
     items = user_items
     if show == 'idle':
-        items = items.filter(idle_filter())
+        items = items.filter(is_idle=True)
     if category in dict(ClothingItem.CATEGORY_CHOICES):
         items = items.filter(category=category)
     if query:
