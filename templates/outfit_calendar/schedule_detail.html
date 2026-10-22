@@ -20,7 +20,7 @@
             <li class="rounded-xl border border-swNavy/10 overflow-hidden {% if entry.is_deleted %}bg-swCream{% endif %}">
                 <div class="relative aspect-square bg-swBlush">
                     {% if item and item.image %}
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover {% if item.is_listed_for_swap %}opacity-60{% endif %}">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover {% if item.status_label %}opacity-60{% endif %}">
                     {% endif %}
                     {% if item %}
                     <span class="absolute left-2 top-2">{% include 'digital_wardrobe/partials/item_status_badge.html' with item=item %}</span>
@@ -32,6 +32,8 @@
                     <p class="text-sm font-bold {% if entry.is_deleted %}text-swSlate line-through{% else %}text-swNavy{% endif %}">{{ entry.name }}</p>
                     {% if entry.is_deleted %}
                     <p class="text-xs font-semibold text-swBerry">Sudah dihapus dari lemari</p>
+                    {% elif item.unavailable_in_outfits %}
+                    <p class="text-xs font-semibold text-swBerry">Pakaian tidak tersedia</p>
                     {% else %}
                     <p class="text-xs text-swSlate">{{ item.get_category_display }}{% if item.size_label %} · {{ item.size_label }}{% endif %}</p>
                     {% endif %}

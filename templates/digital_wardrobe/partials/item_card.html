@@ -3,8 +3,8 @@
         {% if item.image %}
         <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
         {% endif %}
-        {% if item.is_listed_for_swap %}
-        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-swBerry via-[#C46AA6] to-swPlum text-white text-[11px] font-semibold">Listed for Swap</span>
+        {% if item.is_listed_for_swap or item.swap_request_locked %}
+        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-swBerry via-[#C46AA6] to-swPlum text-white text-[11px] font-semibold">{% if item.swap_request_locked %}Pakaian sedang ditawarkan{% else %}Listed for Swap{% endif %}</span>
         {% endif %}
     </a>
     <div class="pt-3 px-1 flex-grow">
@@ -19,9 +19,11 @@
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
             Edit
         </button>
-        <button type="button" data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ item.outfit_total|default:0 }}"
-                class="h-8 px-4 inline-flex items-center rounded-full bg-swBerry text-white text-xs font-semibold hover:bg-swBerry/90 transition-colors">
+        <button type="button" {% if not item.swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ item.outfit_total|default:0 }}"{% endif %}
+                {% if item.swap_request_locked %}disabled title="Batalkan swap request aktif terlebih dahulu" aria-describedby="swap-lock-{{ item.pk }}"{% endif %}
+                class="h-8 px-4 inline-flex items-center rounded-full text-xs font-semibold transition-colors {% if item.swap_request_locked %}bg-swCream text-swSlate cursor-not-allowed{% else %}bg-swBerry text-white hover:bg-swBerry/90{% endif %}">
             Hapus
         </button>
     </div>
+    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="px-1 text-[11px] text-swSlate">Batalkan request aktif sebelum menghapus atau menawarkan pakaian ini.</p>{% endif %}
 </article>

@@ -146,12 +146,22 @@ class OutfitForm(forms.ModelForm):
         allowed = Q(is_listed_for_swap=False, deleted_at__isnull=True)
         if self.instance.pk:
             allowed |= Q(pk__in=self.instance.items.values('pk'))
-        self.fields['items'].queryset = (
-            ClothingItem.objects.filter(user=user).filter(allowed).order_by('category', '-created_at')
-        )
+        eligible = ClothingItem.objects.filter(user=user).filter(allowed)
+        if self.instance.pk:
+            # Outfit tetap dapat mempertahankan dan melepas pakaian lama yang
+            # sudah berpindah ke pengguna lain setelah swap.
+            eligible = eligible | ClothingItem.objects.filter(pk__in=self.instance.items.values('pk'))
+        self.fields['items'].queryset = eligible.order_by('category', '-created_at')
         self.fields['name'].error_messages['required'] = 'Wajib diisi.'
 
     def clean_items(self):
         items = self.cleaned_data.get('items')
-        Outfit.validate_items(self.user, items)
+        items = list(items)
+        if not items:
+            raise forms.ValidationError('Pilih minimal 1 pakaian.')
+        if len(items) > Outfit.MAX_ITEMS:
+            raise forms.ValidationError(f'Satu outfit maksimal {Outfit.MAX_ITEMS} pakaian.')
+        existing_ids = set(self.instance.items.values_list('pk', flat=True)) if self.instance.pk else set()
+        if any(item.user_id != self.user.id and item.pk not in existing_ids for item in items):
+            raise forms.ValidationError('Pakaian baru harus berasal dari lemarimu sendiri.')
         return items

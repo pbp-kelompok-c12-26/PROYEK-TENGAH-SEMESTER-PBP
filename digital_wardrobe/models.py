@@ -118,6 +118,9 @@ class ClothingItem(models.Model):
     # Diisi saat pakaian dihapus padahal sudah dipakai di outfit / Kalender Outfit:
     # pakaian hilang dari lemari, tapi tetap tampil di outfit & kalender dengan status.
     deleted_at = models.DateTimeField(null=True, blank=True)
+    # Pakaian yang sudah berpindah lewat swap tetap tercatat di outfit lama,
+    # tetapi tidak lagi tersedia sebagai pakaian milik pembuat outfit tersebut.
+    unavailable_in_outfits = models.BooleanField(default=False)
 
     objects = ClothingItemQuerySet.as_manager()
 
@@ -149,6 +152,8 @@ class ClothingItem(models.Model):
         """Label status untuk ditampilkan di outfit & Kalender Outfit ('' jika ada di lemari)."""
         if self.is_deleted:
             return 'Sudah dihapus dari lemari'
+        if self.unavailable_in_outfits:
+            return 'Pakaian tidak tersedia'
         return 'Sedang ditawarkan' if self.is_listed_for_swap else ''
 
     def is_in_use(self):
@@ -161,10 +166,14 @@ class ClothingItem(models.Model):
     def remove_from_wardrobe(self):
         """
         Hapus pakaian dari lemari.
+        Pakaian yang masih dipakai request Pending/Awaiting harus dilepas dari request dulu.
         - Sudah dipakai di outfit/kalender: disembunyikan saja (deleted_at diisi), foto & data tetap.
         - Belum pernah dipakai: dihapus permanen beserta fotonya.
         Mengembalikan 'archived' atau 'deleted'.
         """
+        from swap_requests.models import SwapRequest
+        if SwapRequest.objects.has_active_request(self):
+            raise ValidationError('Pakaian ini sedang dipakai dalam swap request. Batalkan request terlebih dahulu sebelum menghapusnya.')
         if self.is_in_use():
             self.deleted_at = timezone.now()
             self.is_listed_for_swap = False

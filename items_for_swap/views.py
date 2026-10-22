@@ -1,9 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import NoReverseMatch, reverse
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from digital_wardrobe.models import ClothingItem
@@ -100,21 +101,33 @@ def return_item(request, pk):
 def detail(request, pk):
     listing = get_object_or_404(ItemForSwap.objects.select_related('clothing_item', 'user'), pk=pk)
     is_owner = listing.user_id == request.user.pk
-    if not is_owner and not listing.is_available:
-        raise Http404
+    existing_request = None
+    completed_participant = False
+    if not is_owner:
+        from swap_requests.models import SwapRequest
+        if listing.is_available and listing.clothing_item.deleted_at is None and listing.clothing_item.is_listed_for_swap:
+            existing_request = SwapRequest.objects.filter(
+                requester=request.user,
+                requested_item_id=listing.clothing_item_id,
+                status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+                requester_hidden=False,
+            ).order_by('-created_at').first()
+        has_related_request = SwapRequest.objects.visible_to(request.user).filter(
+            requested_item_id=listing.clothing_item_id,
+        ).exists()
+        if not (listing.is_available and listing.clothing_item.deleted_at is None
+                and listing.clothing_item.is_listed_for_swap) and not has_related_request:
+            raise Http404
 
     others = (ItemForSwap.objects.available().filter(user=listing.user)
               .exclude(pk=listing.pk).select_related('clothing_item')[:3])
 
     request_url = None
-    if not is_owner:
-        try:
-            # TODO (Zahran): samakan nama URL ini dengan modul Swap Request
-            request_url = reverse('swap_requests:create', args=[listing.pk])
-        except NoReverseMatch:
-            pass
+    if not is_owner and listing.is_available and not existing_request:
+        request_url = f"{reverse('swap_requests:create')}?item={listing.clothing_item_id}"
 
     return render(request, 'items_for_swap/detail.html', {
         'listing': listing, 'item': listing.clothing_item,
         'is_owner': is_owner, 'others': others, 'request_url': request_url,
+        'existing_request': existing_request,
     })

@@ -21,7 +21,7 @@
         <h3 class="font-bold text-sm text-swNavy leading-snug">
             <a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="hover:text-swPlum">{{ outfit.name }}</a>
         </h3>
-        <p class="text-xs text-swSlate mt-0.5">{{ outfit.item_total }} pakaian{% if outfit.listed_total %} · {{ outfit.listed_total }} sedang ditawarkan{% endif %}{% if outfit.deleted_total %} · {{ outfit.deleted_total }} sudah dihapus{% endif %}</p>
+        <p class="text-xs text-swSlate mt-0.5">{{ outfit.item_total }} pakaian{% if outfit.listed_total %} · {{ outfit.listed_total }} sedang ditawarkan{% endif %}{% if outfit.deleted_total %} · {{ outfit.deleted_total }} sudah dihapus{% endif %}{% if outfit.unavailable_total %} · {{ outfit.unavailable_total }} tidak tersedia{% endif %}</p>
     </div>
     <div class="flex gap-2 pt-3 px-1 pb-1">
         <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_update' outfit.pk %}"

@@ -13,15 +13,17 @@
         </div>
         <div class="flex gap-2">
             {% if swap.can_delete %}
-            <form method="post" action="{% url 'swap_requests:delete' swap.pk %}" data-confirm="Swap request {{ swap.code }} akan dihapus permanen." data-confirm-yes="Ya, hapus" data-confirm-danger="1">
+            <form method="post" action="{% url 'swap_requests:delete' swap.pk %}"
+                  data-confirm="{% if swap.status == 'pending' and role == 'owner' %}Request akan ditolak dan dihapus dari daftar masukmu. Pengirim tetap melihat status Rejected.{% elif swap.status == 'pending' and role == 'requester' %}Ajuan ini akan dihapus untuk kamu dan penerima.{% else %}Request akan dihapus dari daftarmu saja.{% endif %}"
+                  data-confirm-yes="Ya, lanjutkan" data-confirm-danger="1">
                 {% csrf_token %}
                 <button type="submit" class="h-10 px-4 inline-flex items-center gap-2 rounded-full bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
-                    Hapus swap request
+                    {% if swap.status == 'pending' and role == 'requester' %}Batalkan request{% else %}Hapus dari daftarku{% endif %}
                 </button>
             </form>
             {% else %}
-            <span class="h-10 px-4 inline-flex items-center gap-2 rounded-full bg-[#ECEAF1] text-swSlate text-sm font-semibold cursor-not-allowed" title="Tidak bisa dihapus saat menunggu pertukaran">Hapus swap request</span>
+            <span class="h-10 px-4 inline-flex items-center gap-2 rounded-full bg-[#ECEAF1] text-swSlate text-sm font-semibold cursor-not-allowed" title="Menunggu kedua pihak menyelesaikan atau menyetujui pembatalan">Hapus swap request</span>
             {% endif %}
             {% if can_edit %}
             <a href="{% url 'swap_requests:update' swap.pk %}" class="h-10 px-4 inline-flex items-center gap-2 rounded-full border border-swNavy/25 bg-white text-swNavy text-sm font-semibold hover:bg-swCream">
@@ -60,6 +62,16 @@
                 </div>
                 <p class="text-xs text-swSlate">{{ swap.status_note }}</p>
 
+                {% if not requested_listing %}
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-swCream px-3 py-2 text-xs font-semibold text-swSlate/70 cursor-not-allowed" aria-disabled="true">
+                    Detail item untuk swap sudah tidak tersedia
+                </span>
+                {% else %}
+                <a href="{% url 'items_for_swap:detail' requested_listing.pk %}" class="inline-flex items-center gap-1.5 rounded-full bg-swCream px-3 py-2 text-xs font-bold text-swPlum hover:bg-swBlush transition-colors">
+                    Lihat detail item untuk swap <span aria-hidden="true">&rarr;</span>
+                </a>
+                {% endif %}
+
                 {% if swap.status == 'awaiting_exchange' %}
                 <div class="rounded-xl bg-[#EEF4FF] px-3 py-2.5 text-xs text-swNavy flex gap-2">
                     <svg class="w-4 h-4 shrink-0 text-swPlum" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
@@ -73,7 +85,7 @@
                         {% csrf_token %}
                         <button type="submit" name="action" value="reject" class="h-9 px-4 rounded-full border border-swBerry/40 text-swBerry text-xs font-bold hover:bg-swBlush">Tolak swap</button>
                     </form>
-                    <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" data-confirm="Setujui swap ini? Request lain untuk kedua pakaian ini otomatis jadi Item not available." data-confirm-yes="Ya, setujui">
+                    <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" data-confirm="Setujui swap ini? Request lain tetap pada statusnya, tetapi tidak bisa diterima selama salah satu pakaian masih dalam pertukaran ini." data-confirm-yes="Ya, setujui">
                         {% csrf_token %}
                         <button type="submit" name="action" value="accept" class="h-9 px-4 inline-flex items-center gap-1.5 rounded-full sw-btn-holo text-white text-xs font-bold">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
@@ -85,18 +97,18 @@
             </section>
 
             <!-- Konfirmasi penyelesaian -->
-            {% if swap.status == 'awaiting_exchange' or swap.status == 'completed' or swap.status == 'cancelled' %}
+            {% if show_confirmations %}
             <section class="bg-white rounded-2xl border border-swNavy/10 p-4 sm:p-5 space-y-3">
                 <div>
                     <h2 class="text-sm font-extrabold text-swNavy">Konfirmasi Penyelesaian</h2>
-                    <p class="text-xs text-swSlate">Swap selesai setelah kalian berdua memilih <b>Selesai swap</b>. Kalau salah satu memilih <b>Batalkan swap</b>, pertukaran dibatalkan.</p>
+                    <p class="text-xs text-swSlate">Swap selesai setelah kalian berdua memilih <b>Selesai swap</b>. Pembatalan baru disetujui setelah kalian berdua memilih <b>Batalkan swap</b>.</p>
                 </div>
                 <div class="rounded-xl bg-[#F3F8EC] p-3 space-y-2">
                     <!-- Pilihan saya -->
                     <div class="flex items-center gap-2">
                         {% include 'swap_requests/partials/avatar.html' with person=request.user size='w-8 h-8 text-xs' %}
                         {% if swap.status == 'awaiting_exchange' %}
-                        <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" class="flex-1 flex gap-2" data-confirm="Simpan pilihanmu? Pilihan ini tidak bisa diubah setelah kedua pihak memilih." data-confirm-yes="Ya, simpan">
+                        <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" class="flex-1 flex gap-2" data-confirm="Simpan pilihanmu? Request tetap menunggu sampai pihak lain memilih opsi yang sama." data-confirm-yes="Ya, simpan">
                             {% csrf_token %}
                             <select name="choice" required class="flex-1 h-9 px-2 rounded-lg bg-white border border-swNavy/15 text-xs text-swNavy">
                                 <option value="">Pilih opsi</option>

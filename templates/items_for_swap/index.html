@@ -65,7 +65,7 @@
             </div>
           </div>
         </td>
-        <td>{% include 'digital_wardrobe/partials/item_status_badge.html' with item=listing.clothing_item %}</td>
+        <td><span class="ifs-btn {% if listing.status == 'available' %}blue{% else %}red{% endif %}">{{ listing.get_status_display }}</span></td>
         {% if tab == 'active' %}
         <td class="ifs-sub">{% if listing.request_count %}{{ listing.request_count }} permintaan aktif{% else %}Belum ada permintaan{% endif %}</td>
         {% endif %}
@@ -73,10 +73,13 @@
           <a class="ifs-btn blue" href="{% url 'items_for_swap:detail' listing.pk %}">Lihat detail</a>
           {% if listing.is_available %}
             <a class="ifs-btn grey" href="{% url 'items_for_swap:edit' listing.pk %}">Edit</a>
-            <button type="button" class="ifs-btn red"
-                    data-return-url="{% url 'items_for_swap:return_item' listing.pk %}"
-                    data-name="{{ listing.clothing_item.name }}"
-                    data-requests="{{ listing.request_count }}">Kembalikan</button>
+            {% if listing.has_locking_request %}
+              <button type="button" class="ifs-btn grey" disabled title="Pertukaran Awaiting harus diselesaikan atau dibatalkan bersama">Menunggu pertukaran</button>
+            {% else %}
+              <button type="button" class="ifs-btn red"
+                      data-return-url="{% url 'items_for_swap:return_item' listing.pk %}"
+                      data-name="{{ listing.clothing_item.name }}">Kembalikan</button>
+            {% endif %}
           {% endif %}
         </td>
       </tr>
@@ -94,7 +97,7 @@
     {% csrf_token %}
     <h3>Kembalikan ke lemari?</h3>
     <p>"<span id="ret-name"></span>" akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p>
-    <p id="ret-warning" class="ifs-sub" hidden>Masih ada permintaan swap yang menunggu. Permintaan tersebut akan dibatalkan otomatis.</p>
+    <p class="ifs-sub">Request aktif untuk item ini akan berubah menjadi Rejected. Request Completed tidak terpengaruh.</p>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button type="button" class="ifs-btn grey" id="ret-cancel">Batal</button>
       <button type="submit" class="ifs-btn red">Ya, kembalikan</button>
@@ -107,7 +110,6 @@
   document.querySelectorAll('[data-return-url]').forEach(btn => btn.addEventListener('click', () => {
     document.getElementById('ret-form').action = btn.dataset.returnUrl;
     document.getElementById('ret-name').textContent = btn.dataset.name;
-    document.getElementById('ret-warning').hidden = !(parseInt(btn.dataset.requests, 10) > 0);
     dlg.showModal();
   }));
   document.getElementById('ret-cancel').addEventListener('click', () => dlg.close());

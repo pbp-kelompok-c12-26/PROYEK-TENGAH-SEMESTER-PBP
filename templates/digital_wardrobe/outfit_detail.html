@@ -38,10 +38,11 @@
     <section class="relative overflow-hidden rounded-3xl p-4 sm:p-6 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] shadow-[0_10px_30px_-12px_rgba(23,31,99,0.35)]">
         {% include 'digital_wardrobe/partials/holo_bg.html' %}
         <h2 class="relative text-lg font-bold text-white mb-1">Isi outfit</h2>
-        {% if has_listed or has_deleted %}
+        {% if has_listed or has_deleted or has_unavailable %}
         <p class="relative text-xs text-white/90 mb-4">
             {% if has_listed %}Pakaian berlabel "Sedang ditawarkan" sedang ada di Items for Swap. Kembalikan ke lemari untuk memakainya lagi.{% endif %}
             {% if has_deleted %}Pakaian berlabel "Sudah dihapus dari lemari" tetap disimpan di outfit ini sebagai kenangan. Edit outfit kalau mau melepasnya.{% endif %}
+            {% if has_unavailable %}Pakaian berlabel "Pakaian tidak tersedia" tetap tercatat di outfit, tetapi sudah berpindah melalui swap.{% endif %}
         </p>
         {% else %}
         <div class="mb-3"></div>
@@ -55,7 +56,7 @@
                     {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover opacity-60">{% endif %}
                     <span class="absolute left-2 top-2">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>
                 </span>
-                <span class="pt-2 px-1 text-sm font-bold {% if item.is_deleted %}text-swSlate{% else %}text-swNavy{% endif %}">{{ item.name }}</span>
+                <span class="pt-2 px-1 text-sm font-bold {% if item.status_label %}text-swSlate{% else %}text-swNavy{% endif %}">{{ item.name }}</span>
                 <span class="px-1 pb-1 text-xs text-swSlate">{{ item.get_category_display }} · {{ item.size_label }}</span>
             </div>
             {% else %}

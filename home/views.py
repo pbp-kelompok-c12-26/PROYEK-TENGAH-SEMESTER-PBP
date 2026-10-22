@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from accounts.forms import ProfileSetupForm, SizePreferenceForm
 from accounts.models import UserProfile
 from digital_wardrobe.models import ClothingItem
+from items_for_swap.models import ItemForSwap
 
 PAGE_SIZE = 12
 
@@ -72,19 +73,10 @@ def onboarding_skip(request):
 
 
 def get_catalog_queryset(request):
-    """
-    Sumber data katalog "Pilihan yang cocok buat kamu".
-
-    Untuk sekarang masih kosong karena model Items for Swap (modul Rico) belum ada.
-    Nanti cukup ganti isi fungsi ini, misalnya:
-
-        return (ItemForSwap.objects.filter(status='available')
-                .exclude(user=request.user)
-                .select_related('clothing_item', 'user'))
-
-    lalu panggil apply_filters(..., prefix='clothing_item__').
-    """
-    return ClothingItem.objects.none()
+    """Listing aktif milik pengguna lain, dengan pakaian wardrobe sebagai datanya."""
+    return (ItemForSwap.objects.catalog_for(request.user)
+            .filter(clothing_item__deleted_at__isnull=True,
+                    clothing_item__is_listed_for_swap=True))
 
 
 def read_filters(request):
@@ -94,6 +86,7 @@ def read_filters(request):
 
     filters = {
         'q': get.get('q', '').strip(),
+        'location': get.get('location', '').strip(),
         'category': valid(get.get('category', ''), ClothingItem.CATEGORY_CHOICES),
         'gender': valid(get.get('gender', ''), ClothingItem.GENDER_CHOICES),
         'size': valid(get.get('size', ''), ClothingItem.SIZE_CHOICES),
@@ -136,6 +129,8 @@ def apply_filters(queryset, filters, prefix=''):
             | Q(**{f('description__icontains'): query})
             | Q(**{f('user__username__icontains'): query})
         )
+    if filters['location'] and prefix:
+        queryset = queryset.filter(meeting_location__icontains=filters['location'])
     for field in ('category', 'gender', 'size', 'color', 'condition'):
         if filters[field]:
             queryset = queryset.filter(**{f(field): filters[field]})
@@ -147,8 +142,9 @@ def apply_filters(queryset, filters, prefix=''):
         queryset = queryset.filter(**{f('shoe_size__lte'): bounds['shoe_max']})
 
     sort = filters['sort']
+    posted_field = 'posted_at' if prefix else f('created_at')
     if sort == 'terlama':
-        queryset = queryset.order_by(f('created_at'))
+        queryset = queryset.order_by(posted_field)
     elif sort == 'kondisi':
         # urutan kondisi mengikuti CONDITION_CHOICES: Brand New, Like New, Good, Fair
         condition_rank = Case(
@@ -157,9 +153,9 @@ def apply_filters(queryset, filters, prefix=''):
             default=Value(len(ClothingItem.CONDITION_CHOICES)),
             output_field=IntegerField(),
         )
-        queryset = queryset.annotate(condition_rank=condition_rank).order_by('condition_rank', f'-{prefix}created_at')
+        queryset = queryset.annotate(condition_rank=condition_rank).order_by('condition_rank', f'-{posted_field}')
     else:  # rekomendasi & terbaru: yang paling baru dulu
-        queryset = queryset.order_by(f'-{prefix}created_at')
+        queryset = queryset.order_by(f'-{posted_field}')
     return queryset
 
 
@@ -168,13 +164,13 @@ def index(request):
         return redirect('accounts:login')
 
     filters = read_filters(request)
-    catalog = apply_filters(get_catalog_queryset(request), filters)
+    catalog = apply_filters(get_catalog_queryset(request), filters, prefix='clothing_item__')
     page = Paginator(catalog, PAGE_SIZE).get_page(request.GET.get('page'))
 
     params = request.GET.copy()
     params.pop('page', None)
 
-    active_filters = any(filters[key] for key in ('q', 'category', 'gender', 'size', 'color', 'condition', 'shoe_min', 'shoe_max'))
+    active_filters = any(filters[key] for key in ('q', 'location', 'category', 'gender', 'size', 'color', 'condition', 'shoe_min', 'shoe_max'))
 
     return render(request, 'home/index.html', {
         'filters': filters,

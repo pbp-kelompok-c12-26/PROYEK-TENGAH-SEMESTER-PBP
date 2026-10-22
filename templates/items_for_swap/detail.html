@@ -1,106 +1,118 @@
 {% extends 'base.html' %}
+{% block title %}{{ item.name }} · Item Swap · Swapdrobe{% endblock %}
+
 {% block content %}
-<style>
-  .ifs-d{max-width:1200px;margin:0 auto;padding:24px 16px}
-  .ifs-d h1{color:#00007a;margin:0}
-  .ifs-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-top:24px}
-  @media(max-width:800px){.ifs-grid{grid-template-columns:1fr}}
-  .ifs-d img.main{width:100%;border-radius:16px;display:block}
-  .ifs-box{background:#fff;border-radius:14px;padding:14px 18px;margin-bottom:12px}
-  .ifs-box small{display:block;color:#777}
-  .ifs-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .ifs-facts .ifs-box{margin:0}
-  .ifs-pill{display:inline-block;padding:8px 24px;border-radius:999px;font-weight:700;color:#fff;background:#16a34a}
-  .ifs-pill.light{background:#c7f9a8;color:#166534;font-weight:500}
-  .ifs-pill.swapped{background:#f9a8d4;color:#9d174d}
-  .ifs-owner{background:#e6f7fd}
-  .ifs-btn{display:inline-block;padding:10px 24px;border-radius:12px;border:0;font-weight:600;color:#fff;text-decoration:none;cursor:pointer}
-  .ifs-btn.blue{background:#3a5fa8}.ifs-btn.red{background:#d0114f}.ifs-btn.grey{background:#ddd;color:#777}
-  .ifs-others{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px}
-  .ifs-others a{background:#fff;border-radius:16px;padding:10px;color:#00007a;text-decoration:none;font-weight:600}
-  .ifs-others img{width:100%;border-radius:12px}
-  dialog.ifs-dialog{border:0;border-radius:16px;padding:24px;max-width:420px}
-  dialog.ifs-dialog::backdrop{background:rgba(0,0,0,.4)}
-</style>
+<div class="max-w-6xl mx-auto space-y-7">
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <p class="rounded-2xl px-4 py-3 text-sm font-semibold {% if message.tags == 'error' %}bg-swBerry text-white{% else %}bg-swNavy text-white{% endif %}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-<div class="ifs-d">
-  <h1>{{ item.name }}</h1>
-  <small>diposting pada {{ listing.posted_at|date:"j F Y" }}</small>
+    <a href="{% if is_owner %}{% url 'items_for_swap:index' %}{% else %}{% url 'home:index' %}{% endif %}"
+       class="inline-flex items-center gap-2 text-sm font-semibold text-swPlum hover:underline">&larr; Kembali</a>
 
-  <div class="ifs-grid">
-    <div>
-      {% if listing.photo_url %}<img class="main" src="{{ listing.photo_url }}" alt="{{ item.name }}">{% endif %}
-      <div class="ifs-box" style="margin-top:16px">
-        <strong>{% if is_owner %}Anda adalah pemilik{% else %}Kenalan dengan pemilik{% endif %}</strong><br>
-        {{ listing.user.get_full_name|default:listing.user.username }}
-      </div>
+    <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-6 items-start">
+        <section class="bg-white rounded-3xl border border-swNavy/5 shadow-sm p-3">
+            <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-swCream">
+                {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">{% endif %}
+            </div>
+            <div class="flex items-center justify-between gap-3 p-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white font-bold flex items-center justify-center">{{ listing.user.username|first|upper }}</span>
+                    <div class="min-w-0">
+                        <p class="text-xs text-swSlate">{% if is_owner %}Ditawarkan oleh{% else %}Pemilik pakaian{% endif %}</p>
+                        <p class="font-bold text-swNavy truncate">{{ listing.user.get_full_name|default:listing.user.username }}</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-bold {% if listing.status == 'available' %}bg-[#E3F1E3] text-swForest{% else %}bg-swBlush text-swBerry{% endif %}">{{ listing.get_status_display }}</span>
+            </div>
+        </section>
+
+        <section class="space-y-5">
+            <header>
+                <p class="text-xs uppercase tracking-[0.2em] font-bold text-swPlum">Item untuk swap</p>
+                <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy">{{ item.name }}</h1>
+                <p class="mt-2 text-sm text-swSlate">Ditawarkan {{ listing.posted_at|date:"j F Y" }}</p>
+            </header>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Kategori</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_category_display }}</p></div>
+                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Ukuran</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.size_label }}</p></div>
+                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Kondisi</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_condition_display }}</p></div>
+                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Warna</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_color_display }}</p></div>
+                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Gender pakaian</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_gender_display }}</p></div>
+                {% if listing.is_available %}
+                <div class="bg-[#E3F1E3] rounded-2xl border border-swForest/10 p-4"><p class="text-[11px] text-swForest">Request berlangsung</p><p class="mt-1 text-lg font-extrabold text-swForest">{{ listing.request_count }}</p></div>
+                {% endif %}
+            </div>
+
+            <div class="bg-white rounded-2xl border border-swNavy/5 p-5 space-y-3">
+                <div>
+                    <p class="text-xs font-bold text-swNavy">Lokasi bertemu</p>
+                    <p class="mt-1 text-sm text-swSlate">{{ listing.meeting_location }}</p>
+                </div>
+                {% if listing.reason %}
+                <div class="border-t border-swNavy/5 pt-3">
+                    <p class="text-xs font-bold text-swNavy">Tentang pakaian ini</p>
+                    <p class="mt-1 text-sm text-swSlate whitespace-pre-line">{{ listing.reason }}</p>
+                </div>
+                {% endif %}
+                <p class="border-t border-swNavy/5 pt-3 text-xs text-swSlate">Atur detail pertukaran dengan pengguna lain setelah request disetujui.</p>
+            </div>
+
+            <div class="flex flex-wrap justify-end gap-2">
+                {% if is_owner %}
+                    {% if listing.is_available %}
+                    <a href="{% url 'items_for_swap:edit' listing.pk %}" class="h-11 px-5 inline-flex items-center rounded-full border border-swNavy/20 text-swNavy text-sm font-bold hover:bg-swCream">Edit listing</a>
+                    {% if listing.has_locking_request %}
+                    <button type="button" disabled title="Pertukaran Awaiting harus diselesaikan atau dibatalkan bersama" class="h-11 px-5 rounded-full bg-swCream text-swSlate text-sm font-bold cursor-not-allowed">Menunggu pertukaran</button>
+                    {% else %}
+                    <button type="button" id="open-return" class="h-11 px-5 rounded-full bg-swBlush text-swBerry text-sm font-bold">Kembalikan ke lemari</button>
+                    {% endif %}
+                    {% endif %}
+                {% elif existing_request %}
+                    <div class="max-w-sm rounded-2xl bg-[#EEF4FF] px-4 py-3 text-right">
+                        <p class="text-xs font-semibold text-swNavy">Kamu sudah punya request aktif untuk pakaian ini.</p>
+                        <a href="{% url 'swap_requests:detail' existing_request.pk %}" class="mt-1 inline-flex text-xs font-bold text-swPlum hover:underline">Lihat detail request &rarr;</a>
+                    </div>
+                {% elif request_url %}
+                    <a href="{{ request_url }}" class="h-11 px-6 inline-flex items-center rounded-full sw-btn-holo text-white text-sm font-bold">Ajukan swap</a>
+                {% endif %}
+            </div>
+        </section>
     </div>
 
-    <div>
-      <p>
-        <span class="ifs-pill {% if not listing.is_available %}swapped{% endif %}">{{ listing.get_status_display }}</span>
-        {% if listing.is_available %}<span class="ifs-pill light">{{ listing.request_count }} request(s)</span>{% endif %}
-      </p>
-      <div class="ifs-facts">
-        <div class="ifs-box"><small>Kategori</small>{{ item.get_category_display }}</div>
-        <div class="ifs-box"><small>Ukuran</small>{{ item.size_label }}</div>
-        <div class="ifs-box"><small>Kondisi</small>{{ item.get_condition_display }}</div>
-      </div>
-      <div class="ifs-facts" style="grid-template-columns:repeat(2,1fr);margin-top:8px">
-        <div class="ifs-box"><small>Warna</small>{{ item.get_color_display }}</div>
-        <div class="ifs-box"><small>Gender Pakaian</small>{{ item.get_gender_display }}</div>
-      </div>
-      <div class="ifs-box" style="margin-top:12px"><strong>Meeting Location</strong><br>{{ listing.meeting_location }}</div>
-      {% if listing.reason %}<div class="ifs-box">{{ listing.reason|linebreaksbr }}</div>{% endif %}
-
-      <div class="ifs-box ifs-owner">
-        <small>Komunikasi lanjutan dengan nomor telepon dilakukan setelah kesepakatan request disepakati bersama. Pastikan kamu mempercayai orang yang bertukar denganmu.</small>
-      </div>
-
-      <div style="text-align:right">
-        {% if is_owner %}
-          {% if listing.is_available %}
-            <a class="ifs-btn blue" href="{% url 'items_for_swap:edit' listing.pk %}">Edit</a>
-            <button type="button" class="ifs-btn red" id="open-return">Kembalikan</button>
-          {% endif %}
-        {% elif request_url %}
-          <a class="ifs-btn blue" href="{{ request_url }}">Ajukan swap</a>
-        {% else %}
-          <span class="ifs-btn grey">Ajukan swap (segera hadir)</span>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  {% if others %}
-  <h2 style="color:#00007a;margin-top:32px">Lainnya dari lemari {{ listing.user.get_full_name|default:listing.user.username }}</h2>
-  <div class="ifs-others">
-    {% for other in others %}
-      <a href="{% url 'items_for_swap:detail' other.pk %}">
-        {% if other.photo_url %}<img src="{{ other.photo_url }}" alt="{{ other.clothing_item.name }}">{% endif %}
-        <div>{{ other.clothing_item.name }}</div>
-      </a>
-    {% endfor %}
-  </div>
-  {% endif %}
+    {% if others %}
+    <section class="space-y-4">
+        <div><h2 class="text-xl font-extrabold text-swNavy">Pakaian lain dari {{ listing.user.get_full_name|default:listing.user.username }}</h2><p class="text-sm text-swSlate mt-1">Lihat penawaran lain dari pengguna ini.</p></div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {% for other in others %}
+            <a href="{% url 'items_for_swap:detail' other.pk %}" class="group bg-white rounded-2xl border border-swNavy/5 p-3 hover:shadow-md transition-shadow">
+                <div class="aspect-[4/3] rounded-xl overflow-hidden bg-swCream">{% if other.clothing_item.image %}<img src="{{ other.clothing_item.image.url }}" alt="{{ other.clothing_item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">{% endif %}</div>
+                <p class="mt-3 text-sm font-bold text-swNavy">{{ other.clothing_item.name }}</p>
+                <p class="text-xs text-swSlate">{{ other.clothing_item.get_category_display }} · {{ other.clothing_item.size_label }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 </div>
 
-{% if is_owner and listing.is_available %}
-<dialog id="ret-dialog" class="ifs-dialog">
-  <form method="post" action="{% url 'items_for_swap:return_item' listing.pk %}">
-    {% csrf_token %}
-    <h3>Kembalikan ke lemari?</h3>
-    <p>"{{ item.name }}" akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button type="button" class="ifs-btn grey" id="ret-cancel">Batal</button>
-      <button type="submit" class="ifs-btn red">Ya, kembalikan</button>
-    </div>
-  </form>
+{% if is_owner and listing.is_available and not listing.has_locking_request %}
+<dialog id="ret-dialog" class="rounded-2xl p-0 w-[calc(100%-2rem)] max-w-sm backdrop:bg-swNavy/40">
+    <form method="post" action="{% url 'items_for_swap:return_item' listing.pk %}" class="p-6 space-y-4">
+        {% csrf_token %}
+        <div><h2 class="text-lg font-extrabold text-swNavy">Kembalikan ke lemari?</h2><p class="mt-2 text-sm text-swSlate">“{{ item.name }}” akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p><p class="mt-2 text-xs text-swSlate">Request yang masih aktif untuk item ini akan berubah menjadi Rejected. Request Completed tidak terpengaruh.</p></div>
+        <div class="flex justify-end gap-2"><button type="button" id="ret-cancel" class="h-10 px-4 rounded-full border border-swNavy/15 text-swNavy text-sm font-bold">Batal</button><button type="submit" class="h-10 px-4 rounded-full bg-swBerry text-white text-sm font-bold">Ya, kembalikan</button></div>
+    </form>
 </dialog>
 <script>
-  const dlg = document.getElementById('ret-dialog');
-  document.getElementById('open-return').addEventListener('click', () => dlg.showModal());
-  document.getElementById('ret-cancel').addEventListener('click', () => dlg.close());
+    const returnDialog = document.getElementById('ret-dialog');
+    document.getElementById('open-return').addEventListener('click', () => returnDialog.showModal());
+    document.getElementById('ret-cancel').addEventListener('click', () => returnDialog.close());
 </script>
 {% endif %}
 {% endblock %}

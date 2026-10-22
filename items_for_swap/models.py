@@ -77,14 +77,21 @@ class ItemForSwap(models.Model):
 
     @property
     def request_count(self):
-        # TODO (Zahran): hitung request aktif (Pending/Nego) untuk listing ini
-        # setelah model SwapRequest jadi.
-        return 0
+        from swap_requests.models import SwapRequest
+        return SwapRequest.objects.filter(
+            requested_item_id=self.clothing_item_id,
+            status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+        ).count()
 
     # ---------- validasi & simpan ----------
     def clean(self):
         if self.clothing_item_id and self.user_id and self.clothing_item.user_id != self.user_id:
             raise ValidationError('Pakaian ini bukan milik pengguna tersebut.')
+        if self.clothing_item_id and not self.pk:
+            manager = self._swap_request_manager()
+            has_active_request = getattr(manager, 'has_active_request', None)
+            if has_active_request and has_active_request(self.clothing_item):
+                raise ValidationError('Pakaian ini sedang dipakai dalam swap request. Batalkan request terlebih dahulu.')
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
@@ -106,6 +113,10 @@ class ItemForSwap(models.Model):
                 raise ValidationError('Pakaian ini sudah dihapus dari lemari.')
             if item.is_listed_for_swap:
                 raise ValidationError('Pakaian ini sudah ditawarkan.')
+            manager = cls._swap_request_manager()
+            has_active_request = getattr(manager, 'has_active_request', None)
+            if has_active_request and has_active_request(item):
+                raise ValidationError('Pakaian ini sedang dipakai dalam swap request. Batalkan request terlebih dahulu.')
             return cls.objects.create(
                 clothing_item=item, user=user,
                 meeting_location=meeting_location, reason=reason,
@@ -121,8 +132,7 @@ class ItemForSwap(models.Model):
         return SwapRequest.objects
 
     def has_locking_request(self):
-        """True kalau ada request Awaiting exchange / Accepted.
-        TODO (Zahran): sampai SwapRequest.objects.is_locked() ada, selalu False."""
+        """True kalau ada request Awaiting exchange untuk pakaian ini."""
         manager = self._swap_request_manager()
         checker = getattr(manager, 'is_locked', None)
         return bool(checker and checker(self.clothing_item))
@@ -135,10 +145,6 @@ class ItemForSwap(models.Model):
         with transaction.atomic():
             # flag is_listed_for_swap direset oleh signal post_delete di bawah
             self.delete()
-            manager = self._swap_request_manager()
-            sync = getattr(manager, 'sync_availability', None)
-            if sync:
-                sync()   # request Pending/Nego -> "Item not available"
 
 
 @receiver(post_delete, sender=ItemForSwap)
@@ -146,3 +152,7 @@ def reset_listed_flag(sender, instance, **kwargs):
     """Listing available dihapus (lewat view maupun admin) -> baju kembali ke lemari."""
     if instance.status == ItemForSwap.AVAILABLE:
         ClothingItem.objects.filter(pk=instance.clothing_item_id).update(is_listed_for_swap=False)
+        manager = ItemForSwap._swap_request_manager()
+        sync = getattr(manager, 'sync_availability', None)
+        if sync:
+            sync()  # Request aktif terkait listing ini berubah menjadi Rejected.
