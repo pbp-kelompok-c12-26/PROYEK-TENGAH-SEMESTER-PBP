@@ -2,12 +2,14 @@ from collections import Counter, OrderedDict
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from digital_wardrobe.models import ClothingItem
+from items_for_swap.models import ItemForSwap
 from .forms import ConfirmForm, SwapRequestForm, offerable_items
 from .models import SwapRequest
 
@@ -15,13 +17,13 @@ BULAN = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
          'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
 INCOMING_FILTERS = [('', 'Semua status'), (SwapRequest.PENDING, 'Pending'),
-                    (SwapRequest.AWAITING, 'Awaiting exchange'), (SwapRequest.COMPLETED, 'Completed')]
-OUTGOING_FILTERS = [('', 'Semua status'), (SwapRequest.PENDING, 'Pending'), (SwapRequest.REJECTED, 'Rejected'),
                     (SwapRequest.AWAITING, 'Awaiting exchange'), (SwapRequest.COMPLETED, 'Completed'),
-                    (SwapRequest.UNAVAILABLE, 'Item not available')]
+                    (SwapRequest.REJECTED, 'Rejected')]
+OUTGOING_FILTERS = [('', 'Semua status'), (SwapRequest.PENDING, 'Pending'), (SwapRequest.REJECTED, 'Rejected'),
+                    (SwapRequest.AWAITING, 'Awaiting exchange'), (SwapRequest.COMPLETED, 'Completed')]
 # urutan "status terpenting" untuk ringkasan per pakaian di Request masuk
-STATUS_PRIORITY = [SwapRequest.AWAITING, SwapRequest.PENDING, SwapRequest.COMPLETED,
-                   SwapRequest.REJECTED, SwapRequest.CANCELLED, SwapRequest.UNAVAILABLE]
+STATUS_PRIORITY = [SwapRequest.COMPLETED, SwapRequest.AWAITING,
+                   SwapRequest.PENDING, SwapRequest.REJECTED]
 
 
 def format_tanggal(dt):
@@ -34,13 +36,14 @@ def _base_qs():
 
 def _get_for_user(request, pk):
     """Request hanya boleh dilihat oleh pengirim atau pemilik pakaian."""
-    return get_object_or_404(_base_qs().filter(Q(requester=request.user) | Q(owner=request.user)), pk=pk)
+    return get_object_or_404(_base_qs().visible_to(request.user), pk=pk)
 
 
 # R: daftar request (tab Request masuk / Request kamu)
 @login_required(login_url='accounts:login')
 def index(request):
     SwapRequest.objects.sync_availability()
+    SwapRequest.objects.mark_seen_by(request.user)
     tab = 'kamu' if request.GET.get('tab') == 'kamu' else 'masuk'
     filters = OUTGOING_FILTERS if tab == 'kamu' else INCOMING_FILTERS
     status = request.GET.get('status', '')
@@ -49,7 +52,7 @@ def index(request):
 
     groups, outgoing = [], []
     if tab == 'masuk':
-        qs = _base_qs().filter(owner=request.user)
+        qs = _base_qs().filter(owner=request.user, owner_hidden=False)
         if status:
             qs = qs.filter(status=status)
         grouped = OrderedDict()
@@ -58,7 +61,14 @@ def index(request):
             grouped.setdefault(key, []).append(swap)
         for swaps in grouped.values():
             counts = Counter(s.status for s in swaps)
-            top = next(s for s in STATUS_PRIORITY if counts[s])
+            if counts[SwapRequest.COMPLETED]:
+                top = SwapRequest.COMPLETED
+            elif counts[SwapRequest.AWAITING]:
+                top = SwapRequest.AWAITING
+            elif counts[SwapRequest.PENDING]:
+                top = SwapRequest.PENDING
+            else:
+                top = SwapRequest.REJECTED
             groups.append({
                 'item': swaps[0].requested_item,
                 'name': swaps[0].requested_item_name,
@@ -70,7 +80,7 @@ def index(request):
                 'top_style': SwapRequest.STATUS_STYLES[top],
             })
     else:
-        qs = _base_qs().filter(requester=request.user)
+        qs = _base_qs().filter(requester=request.user, requester_hidden=False)
         if status:
             qs = qs.filter(status=status)
         outgoing = list(qs)
@@ -87,7 +97,9 @@ def index(request):
 @login_required(login_url='accounts:login')
 def item_requests(request, item_id):
     SwapRequest.objects.sync_availability()
-    swaps = list(_base_qs().filter(owner=request.user, requested_item_id=item_id))
+    request_qs = _base_qs().filter(owner=request.user, owner_hidden=False, requested_item_id=item_id)
+    request_qs.mark_seen_by(request.user)
+    swaps = list(request_qs)
     item = get_object_or_404(ClothingItem, pk=item_id) if not swaps else swaps[0].requested_item
     if item.user_id != request.user.pk and not swaps:
         return redirect('swap_requests:index')
@@ -106,7 +118,22 @@ def create(request):
     item_id = request.GET.get('item', '')
     requested_item = None
     if item_id.isdigit():
-        requested_item = ClothingItem.objects.filter(pk=item_id, is_listed_for_swap=True).select_related('user').first()
+        existing = SwapRequest.objects.filter(
+            requester=request.user,
+            requested_item_id=item_id,
+            status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+            requester_hidden=False,
+        ).order_by('-created_at').first()
+        if existing:
+            messages.info(request, 'Kamu sudah memiliki request aktif untuk pakaian ini. Lanjutkan dari detail request tersebut.')
+            return redirect('swap_requests:detail', pk=existing.pk)
+        # `item` is the ClothingItem ID used by the catalogue card and listing detail.
+        listing = (ItemForSwap.objects.available()
+                   .filter(clothing_item_id=item_id,
+                           clothing_item__deleted_at__isnull=True,
+                           clothing_item__is_listed_for_swap=True)
+                   .select_related('clothing_item__user').first())
+        requested_item = listing.clothing_item if listing else None
     if requested_item is None:
         messages.error(request, 'Pakaian yang ingin kamu tukar tidak ditemukan atau sudah tidak tersedia.')
         return redirect('swap_requests:index')
@@ -116,6 +143,16 @@ def create(request):
 
     form = SwapRequestForm(request.POST or None, user=request.user, requested_item=requested_item)
     if request.method == 'POST' and form.is_valid():
+        # Pemeriksaan ulang saat POST agar request aktif tidak terduplikasi.
+        existing = SwapRequest.objects.filter(
+            requester=request.user,
+            requested_item=requested_item,
+            status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+            requester_hidden=False,
+        ).order_by('-created_at').first()
+        if existing:
+            messages.info(request, 'Kamu sudah memiliki request aktif untuk pakaian ini. Lanjutkan dari detail request tersebut.')
+            return redirect('swap_requests:detail', pk=existing.pk)
         swap = form.save()
         return redirect('swap_requests:sent', pk=swap.pk)
     return render(request, 'swap_requests/form.html', {
@@ -127,7 +164,7 @@ def create(request):
 
 @login_required(login_url='accounts:login')
 def sent(request, pk):
-    swap = get_object_or_404(_base_qs(), pk=pk, requester=request.user)
+    swap = get_object_or_404(_base_qs(), pk=pk, requester=request.user, requester_hidden=False)
     return render(request, 'swap_requests/sent.html', {'swap': swap, 'tanggal': format_tanggal(swap.created_at)})
 
 
@@ -136,8 +173,18 @@ def sent(request, pk):
 def detail(request, pk):
     SwapRequest.objects.sync_availability()
     swap = _get_for_user(request, pk)
+    swap.mark_seen_by(request.user)
     role = swap.role_of(request.user)
     me_requester = role == 'requester'
+    show_confirmations = (
+        swap.status in (SwapRequest.AWAITING, SwapRequest.COMPLETED)
+        or (swap.status == SwapRequest.REJECTED
+            and bool(swap.requester_confirmation or swap.owner_confirmation))
+    )
+    requested_listing = ItemForSwap.objects.filter(
+        clothing_item_id=swap.requested_item_id,
+        user=swap.owner,
+    ).order_by('-posted_at').first() if swap.requested_item_id else None
     return render(request, 'swap_requests/detail.html', {
         'swap': swap,
         'role': role,
@@ -151,8 +198,10 @@ def detail(request, pk):
         'my_confirmation': swap.requester_confirmation if me_requester else swap.owner_confirmation,
         'other_confirmation': swap.owner_confirmation if me_requester else swap.requester_confirmation,
         'confirm_choices': SwapRequest.CONFIRM_CHOICES,
+        'show_confirmations': show_confirmations,
         'can_edit': swap.can_edit(request.user),
         'can_respond': swap.can_respond(request.user),
+        'requested_listing': requested_listing,
     })
 
 
@@ -182,10 +231,14 @@ def respond(request, pk):
     if not swap.can_respond(request.user):
         messages.error(request, 'Request ini sudah tidak bisa direspons.')
     elif request.POST.get('action') == 'accept':
-        swap.accept()
-        messages.success(request, 'Swap disetujui. Hubungi pengirim untuk mengatur pertukaran.')
+        try:
+            swap.accept()
+        except ValidationError as error:
+            messages.error(request, ' '.join(error.messages))
+        else:
+            messages.success(request, 'Swap disetujui. Hubungi pengirim untuk mengatur pertukaran.')
     elif request.POST.get('action') == 'reject':
-        swap.reject()
+        swap.reject(actor=request.user)
         messages.success(request, 'Swap request ditolak.')
     return redirect('swap_requests:detail', pk=pk)
 
@@ -202,10 +255,10 @@ def confirm(request, pk):
         swap.confirm(request.user, form.cleaned_data['choice'])
         if swap.status == SwapRequest.COMPLETED:
             messages.success(request, 'Pertukaran selesai! Pakaian barumu sudah masuk ke Lemari Saya.')
-        elif swap.status == SwapRequest.CANCELLED:
-            messages.success(request, 'Pertukaran dibatalkan. Pakaian kembali tersedia untuk ditukar.')
+        elif swap.status == SwapRequest.REJECTED:
+            messages.success(request, 'Kalian sepakat membatalkan pertukaran. Request lain tetap bisa diproses.')
         else:
-            messages.success(request, 'Konfirmasi tersimpan. Menunggu konfirmasi dari pihak lain.')
+            messages.success(request, 'Pilihan tersimpan. Menunggu pihak lain memilih opsi yang sama.')
     return redirect('swap_requests:detail', pk=pk)
 
 
@@ -217,7 +270,21 @@ def delete(request, pk):
     if not swap.can_delete:
         messages.error(request, 'Request yang sedang menunggu pertukaran tidak bisa dihapus.')
         return redirect('swap_requests:detail', pk=pk)
-    tab = 'kamu' if swap.role_of(request.user) == 'requester' else 'masuk'
-    swap.delete()
-    messages.success(request, 'Swap request dihapus.')
+    role = swap.role_of(request.user)
+    tab = 'kamu' if role == 'requester' else 'masuk'
+    if swap.status == SwapRequest.PENDING and role == 'requester':
+        swap.delete()  # Pengirim membatalkan ajuan: hilang dari kedua pihak.
+    elif swap.status == SwapRequest.PENDING and role == 'owner':
+        swap.status = SwapRequest.REJECTED
+        swap.owner_hidden = True
+        swap.responded_at = timezone.now()
+        swap.record_status_change(actor=request.user)
+        swap.save(update_fields=['status', 'owner_hidden', 'responded_at', 'updated_at'])
+    elif role == 'requester':
+        swap.requester_hidden = True
+        swap.save(update_fields=['requester_hidden', 'updated_at'])
+    else:
+        swap.owner_hidden = True
+        swap.save(update_fields=['owner_hidden', 'updated_at'])
+    messages.success(request, 'Swap request dihapus dari daftar kamu.')
     return redirect(f"{reverse('swap_requests:index')}?tab={tab}")

@@ -16,7 +16,7 @@
             <div class="bg-white rounded-2xl p-4 sm:p-5 space-y-3">
                 <h2 class="text-sm font-bold text-swNavy">Pakaian yang kamu tawarkan</h2>
                 <div class="aspect-[4/3] rounded-xl bg-swCream border border-dashed border-swNavy/20 flex items-center justify-center overflow-hidden" data-offer-box>
-                    <p class="text-xs text-swSlate text-center px-6" data-offer-empty>Pilih pakaian dari daftar di samping. Hanya pakaian yang sedang kamu tawarkan di Item Swap Saya yang bisa dipilih.</p>
+                    <p class="text-xs text-swSlate text-center px-6" data-offer-empty>Pilih pakaian dari lemarimu. Pakaian yang sedang dipakai request aktif tidak bisa dipilih.</p>
                     {% for it in offer_items %}
                     <div class="w-full h-full hidden" data-offer-preview="{{ it.pk }}">
                         {% if it.image %}<img src="{{ it.image.url }}" alt="{{ it.name }}" class="w-full h-full object-cover">{% else %}<div class="w-full h-full flex items-center justify-center text-sm font-bold text-swNavy">{{ it.name }}</div>{% endif %}
@@ -50,7 +50,7 @@
                 </div>
                 {% endfor %}
                 {% if not has_offerable %}
-                <p class="text-xs text-swNavy bg-swBlush rounded-xl px-3 py-2">Kamu belum menawarkan pakaian apa pun. Tawarkan dulu pakaianmu di <a href="{% url 'items_for_swap:index' %}" class="font-bold text-swBerry underline">Item Swap Saya</a>.</p>
+                <p class="text-xs text-swNavy bg-swBlush rounded-xl px-3 py-2">Belum ada pakaian yang bisa ditawarkan. Tambahkan pakaian ke <a href="{% url 'digital_wardrobe:index' %}" class="font-bold text-swBerry underline">Wardrobe Digital</a> atau selesaikan request aktif yang sedang memakai pakaianmu.</p>
                 {% endif %}
             </div>
         </div>

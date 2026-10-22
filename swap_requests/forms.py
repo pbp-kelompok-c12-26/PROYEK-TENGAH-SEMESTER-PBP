@@ -1,6 +1,7 @@
 from django import forms
 
 from digital_wardrobe.models import ClothingItem
+from items_for_swap.models import ItemForSwap
 from .models import SwapRequest
 
 INPUT_CLASS = ('w-full h-11 px-3 rounded-xl bg-white border border-swNavy/15 text-sm text-swNavy '
@@ -8,11 +9,11 @@ INPUT_CLASS = ('w-full h-11 px-3 rounded-xl bg-white border border-swNavy/15 tex
 
 
 def offerable_items(user):
-    """Pakaian milik user yang sedang ditawarkan dan tidak sedang dalam proses tukar."""
-    locked = SwapRequest.objects.filter(status=SwapRequest.AWAITING)
-    return (ClothingItem.objects.listed_for_swap(user)
-            .exclude(pk__in=locked.values('requested_item'))
-            .exclude(pk__in=locked.values('offered_item'))
+    """Pakaian wardrobe yang tidak sedang dipakai request Pending/Awaiting."""
+    active = SwapRequest.objects.filter(status__in=(SwapRequest.PENDING, SwapRequest.AWAITING))
+    return (ClothingItem.objects.in_wardrobe(user)
+            .exclude(pk__in=active.exclude(requested_item__isnull=True).values('requested_item_id'))
+            .exclude(pk__in=active.exclude(offered_item__isnull=True).values('offered_item_id'))
             .order_by('name'))
 
 
@@ -42,12 +43,13 @@ class SwapRequestForm(forms.ModelForm):
     def clean(self):
         cleaned = super().clean()
         item = self.requested_item
-        if item is None or not item.is_listed_for_swap:
+        if (item is None or not item.is_listed_for_swap
+                or not ItemForSwap.objects.available().filter(
+                    clothing_item=item, clothing_item__deleted_at__isnull=True,
+                ).exists()):
             raise forms.ValidationError('Pakaian yang kamu minta sudah tidak tersedia untuk ditukar.')
         if item.user_id == self.user.pk:
             raise forms.ValidationError('Kamu tidak bisa mengajukan swap untuk pakaianmu sendiri.')
-        if SwapRequest.objects.is_locked(item):
-            raise forms.ValidationError('Pakaian ini sedang dalam proses tukar dengan orang lain.')
         offered = cleaned.get('offered_item')
         if offered and not self.instance.pk:
             duplicate = SwapRequest.objects.filter(

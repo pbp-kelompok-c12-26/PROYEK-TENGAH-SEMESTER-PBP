@@ -90,14 +90,11 @@
                     {% include 'home/partials/filter_select.html' with name='color' label='Warna' placeholder='Semua warna' choices=color_choices selected=filters.color %}
                     {% include 'home/partials/filter_select.html' with name='condition' label='Kondisi' placeholder='Semua kondisi' choices=condition_choices selected=filters.condition %}
 
-                    <div class="flex flex-col gap-1.5">
-                        <label for="filter-location" class="text-xs font-bold text-swNavy">Lokasi</label>
-                        <select id="filter-location" disabled
-                                class="w-full h-10 px-3 rounded-lg bg-swCream border border-swNavy/10 text-sm text-swSlate cursor-not-allowed">
-                            <option>Semua lokasi</option>
-                        </select>
-                        <p class="text-[11px] text-swSlate">Filter lokasi aktif setelah Items for Swap tersedia.</p>
-                    </div>
+                    <label for="filter-location" class="flex flex-col gap-1.5">
+                        <span class="text-xs font-bold text-swNavy">Lokasi bertemu</span>
+                        <input id="filter-location" type="search" name="location" value="{{ filters.location }}" placeholder="Cari lokasi..."
+                               class="w-full h-10 px-3 rounded-lg bg-white border border-swNavy/15 text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+                    </label>
 
                     <div class="flex items-center gap-3 pt-1">
                         <button type="submit" class="h-10 px-5 rounded-lg sw-btn-holo text-white text-sm font-bold">Terapkan filter</button>
@@ -127,7 +124,7 @@
                 {% if page.object_list %}
                 <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-3 gap-4">
                     {% for entry in page.object_list %}
-                        {% include 'home/partials/catalog_card.html' with item=entry %}
+                        {% include 'home/partials/catalog_card.html' with item=entry.clothing_item listing=entry %}
                     {% endfor %}
                 </div>
 

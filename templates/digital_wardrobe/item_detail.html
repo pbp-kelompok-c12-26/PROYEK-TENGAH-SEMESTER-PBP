@@ -14,6 +14,8 @@
             <h1 class="text-2xl sm:text-3xl font-bold text-swNavy">{{ item.name }}</h1>
             {% if item.is_listed_for_swap %}
             <span class="px-3 py-1 rounded-full bg-swBerry text-white text-xs font-semibold">Listed for Swap</span>
+            {% elif swap_request_locked %}
+            <span class="px-3 py-1 rounded-full bg-swBerry text-white text-xs font-semibold">Pakaian sedang ditawarkan</span>
             {% endif %}
         </div>
         <p class="text-sm italic text-swSlate mt-1">Ditambahkan pada: {{ added_label }}</p>
@@ -79,8 +81,9 @@
             </div>
 
             <div class="flex items-center justify-between gap-3 pt-2">
-                <button type="button" data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ outfit_count }}"
-                        class="h-10 px-6 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
+                <button type="button" {% if not swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ outfit_count }}"{% endif %}
+                        {% if swap_request_locked %}disabled title="Batalkan swap request aktif terlebih dahulu" aria-describedby="swap-request-lock-note"{% endif %}
+                        class="h-10 px-6 rounded-lg text-sm font-semibold {% if swap_request_locked %}bg-swCream text-swSlate cursor-not-allowed{% else %}bg-swBerry text-white hover:bg-swBerry/90{% endif %}">
                     Hapus
                 </button>
                 <div class="flex flex-wrap justify-end gap-2">
@@ -96,6 +99,9 @@
                     </button>
                 </div>
             </div>
+            {% if swap_request_locked %}
+            <p id="swap-request-lock-note" class="text-xs text-swBerry">Pakaian ini sedang dipakai dalam swap request. Batalkan request aktif terlebih dahulu sebelum menghapus atau menawarkannya di Items for Swap.</p>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
+from django.core.exceptions import ValidationError
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -81,7 +82,14 @@ def index(request):
         items = items.filter(category=category)
     if query:
         items = items.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    items = items.annotate(outfit_total=Count('outfits')).order_by(SORT_OPTIONS[sort][0])
+    from swap_requests.models import SwapRequest
+    active_requests = SwapRequest.objects.filter(
+        status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+    ).filter(Q(requested_item_id=OuterRef('pk')) | Q(offered_item_id=OuterRef('pk')))
+    items = items.annotate(
+        outfit_total=Count('outfits'),
+        swap_request_locked=Exists(active_requests),
+    ).order_by(SORT_OPTIONS[sort][0])
 
     filtered_total = items.count()
     params = request.GET.copy()
@@ -141,8 +149,10 @@ def item_detail(request, pk):
         return redirect('digital_wardrobe:index')
     if item.is_listed_for_swap:
         return _listed_response(request, item)
+    from swap_requests.models import SwapRequest
     return render(request, 'digital_wardrobe/item_detail.html', {
         'item': item,
+        'swap_request_locked': SwapRequest.objects.has_active_request(item),
         'added_label': format_tanggal(item.created_at),
         'last_worn_label': format_tanggal(item.last_worn_date),
         'outfit_count': item.outfits.count(),
@@ -161,6 +171,8 @@ def _form_modal(request, form, item=None):
 
 def _card(request, item):
     item.outfit_total = item.outfits.count()
+    from swap_requests.models import SwapRequest
+    item.swap_request_locked = SwapRequest.objects.has_active_request(item)
     return render_to_string('digital_wardrobe/partials/item_card.html', {'item': item}, request=request)
 
 
@@ -229,9 +241,18 @@ def item_delete(request, pk):
     if item.is_listed_for_swap:
         messages.error(request, LISTED_MESSAGE.format(name=item.name))
         return redirect('digital_wardrobe:index')
+    from swap_requests.models import SwapRequest
+    if SwapRequest.objects.has_active_request(item):
+        messages.error(request, f'"{item.name}" sedang dipakai dalam swap request. Batalkan request terlebih dahulu sebelum menghapusnya.')
+        return redirect('digital_wardrobe:item_detail', pk=item.pk)
 
     name = item.name
-    if item.remove_from_wardrobe() == 'archived':
+    try:
+        result = item.remove_from_wardrobe()
+    except ValidationError as error:
+        messages.error(request, ' '.join(error.messages))
+        return redirect('digital_wardrobe:item_detail', pk=item.pk)
+    if result == 'archived':
         messages.success(request, f'"{name}" sudah dihapus dari lemarimu. '
                                   'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
     else:
@@ -261,6 +282,7 @@ def with_tiles(outfit):
     outfit.item_total = len(items)
     outfit.listed_total = sum(1 for item in items if item.is_listed_for_swap and not item.is_deleted)
     outfit.deleted_total = sum(1 for item in items if item.is_deleted)
+    outfit.unavailable_total = sum(1 for item in items if item.unavailable_in_outfits and not item.is_deleted)
     return outfit
 
 
@@ -331,6 +353,7 @@ def outfit_detail(request, pk):
         'outfit_items': outfit_items,
         'has_listed': any(item.is_listed_for_swap and not item.is_deleted for item in outfit_items),
         'has_deleted': any(item.is_deleted for item in outfit_items),
+        'has_unavailable': any(item.unavailable_in_outfits and not item.is_deleted for item in outfit_items),
         'added_label': format_tanggal(outfit.created_at),
     })
 
