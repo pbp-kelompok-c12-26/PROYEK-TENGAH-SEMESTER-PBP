@@ -106,7 +106,7 @@
                 <a href="{% url 'home:index' %}" class="hidden sm:inline text-sm font-medium text-swNavy hover:text-swBerry transition-colors">
                     Swap your fits
                 </a>
-                <a href="{% url 'home:liked_items' %}" class="w-10 h-10 flex items-center justify-center rounded-full text-swNavy hover:bg-swBlush transition-colors" aria-label="Pakaian yang kamu sukai" title="Pakaian yang kamu sukai" {% if request.resolver_match.view_name == 'home:liked_items' %}aria-current="page"{% endif %}>
+                <a href="{% url 'home:liked_items' %}"{% if not user.is_authenticated %} data-auth-required{% endif %} class="w-10 h-10 flex items-center justify-center rounded-full text-swNavy hover:bg-swBlush transition-colors" aria-label="Pakaian yang kamu sukai" title="Pakaian yang kamu sukai" {% if request.resolver_match.view_name == 'home:liked_items' %}aria-current="page"{% endif %}>
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="{% if request.resolver_match.view_name == 'home:liked_items' %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
                 </a>
 
@@ -158,19 +158,19 @@
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>
                     <span>Jelajahi</span>
                 </a>
-                <a href="{% url 'digital_wardrobe:index' %}"{% if request.resolver_match.app_name == 'digital_wardrobe' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'digital_wardrobe' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                <a href="{% url 'digital_wardrobe:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %}{% if request.resolver_match.app_name == 'digital_wardrobe' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'digital_wardrobe' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
                     <span>Lemari Saya</span>
                 </a>
-                <a href="{% url 'outfit_calendar:index' %}"{% if request.resolver_match.app_name == 'outfit_calendar' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'outfit_calendar' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                <a href="{% url 'outfit_calendar:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %}{% if request.resolver_match.app_name == 'outfit_calendar' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'outfit_calendar' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01"/></svg>
                     <span>Kalender Outfit</span>
                 </a>
-                <a href="{% url 'items_for_swap:index' %}"{% if request.resolver_match.app_name == 'items_for_swap' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'items_for_swap' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                <a href="{% url 'items_for_swap:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %}{% if request.resolver_match.app_name == 'items_for_swap' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'items_for_swap' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12M15 3l4 4-4 4M17 17H5M9 13l-4 4 4 4"/></svg>
                     <span>Item Swap Saya</span>
                 </a>
-                <a href="{% url 'swap_requests:index' %}"{% if request.resolver_match.app_name == 'swap_requests' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'swap_requests' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
+                <a href="{% url 'swap_requests:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %}{% if request.resolver_match.app_name == 'swap_requests' %} aria-current="page"{% endif %} class="flex flex-col items-center gap-1 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-colors {% if request.resolver_match.app_name == 'swap_requests' %}bg-swLilac text-swNavy font-semibold{% else %}text-swNavy/80 hover:bg-swBlush hover:text-swNavy{% endif %}">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></svg>
                     <span class="relative inline-flex items-center gap-1.5">
                         Permintaan Swap
@@ -220,15 +220,15 @@
                         <p class="text-xs font-bold tracking-[0.16em] text-[#C1C7D6] mb-3">JELAJAHI</p>
                         <ul class="space-y-2.5">
                             <li><a href="{% url 'home:index' %}" class="text-sm font-medium text-white hover:text-swPink transition-colors">Jelajahi</a></li>
-                            <li><a href="{% url 'digital_wardrobe:index' %}" class="text-sm font-medium text-white hover:text-swPink transition-colors">Lemari Saya</a></li>
-                            <li><a href="{% url 'outfit_calendar:index' %}" class="text-sm font-medium text-white hover:text-swPink transition-colors">Kalender Outfit</a></li>
+                            <li><a href="{% url 'digital_wardrobe:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %} class="text-sm font-medium text-white hover:text-swPink transition-colors">Lemari Saya</a></li>
+                            <li><a href="{% url 'outfit_calendar:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %} class="text-sm font-medium text-white hover:text-swPink transition-colors">Kalender Outfit</a></li>
                         </ul>
                     </div>
                     <div>
                         <p class="text-xs font-bold tracking-[0.16em] text-[#C1C7D6] mb-3">TUKAR</p>
                         <ul class="space-y-2.5">
-                            <li><a href="{% url 'items_for_swap:index' %}" class="text-sm font-medium text-white hover:text-swPink transition-colors">Item Swap Saya</a></li>
-                            <li><a href="{% url 'swap_requests:index' %}" class="text-sm font-medium text-white hover:text-swPink transition-colors">Permintaan Swap</a></li>
+                            <li><a href="{% url 'items_for_swap:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %} class="text-sm font-medium text-white hover:text-swPink transition-colors">Item Swap Saya</a></li>
+                            <li><a href="{% url 'swap_requests:index' %}"{% if not user.is_authenticated %} data-auth-required{% endif %} class="text-sm font-medium text-white hover:text-swPink transition-colors">Permintaan Swap</a></li>
                         </ul>
                     </div>
                 </div>
@@ -239,6 +239,46 @@
             </div>
         </div>
     </footer>
+
+    {% if not user.is_authenticated %}
+    <dialog id="auth-required-modal" aria-labelledby="auth-required-title" aria-describedby="auth-required-description"
+            class="w-[calc(100%-2rem)] max-w-[34rem] rounded-3xl border-0 bg-white p-0 text-swNavy shadow-2xl backdrop:bg-black/75">
+        <div class="px-5 py-6 sm:px-7 sm:py-7">
+            <h2 id="auth-required-title" class="text-center text-2xl sm:text-3xl font-extrabold tracking-tight text-swNavy">Login atau Daftar Akun</h2>
+            <div class="my-4 border-t border-swNavy/15"></div>
+            <p id="auth-required-description" class="text-center text-sm sm:text-base text-swSlate">Kamu perlu memiliki akun untuk melanjutkan aksi ini.</p>
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-[1.2fr_1fr] gap-3">
+                <a href="{% url 'home:index' %}" class="min-h-12 inline-flex items-center justify-center rounded-2xl bg-[#D50959] px-4 py-2.5 text-center text-sm sm:text-base font-bold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[#D50959] focus:ring-offset-2">Lanjutkan tanpa akun</a>
+                <a href="{% url 'accounts:login' %}" class="min-h-12 inline-flex items-center justify-center rounded-2xl bg-[#0DA35A] px-4 py-2.5 text-center text-sm sm:text-base font-bold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-[#0DA35A] focus:ring-offset-2">Log In</a>
+            </div>
+        </div>
+    </dialog>
+    {% endif %}
+
+    <script>
+        // Aksi akun untuk pengunjung membuka modal, tanpa meninggalkan halaman Jelajahi.
+        (() => {
+            const modal = document.getElementById('auth-required-modal');
+            if (!modal) return;
+            const openModal = () => { if (!modal.open) modal.showModal(); };
+
+            document.addEventListener('click', (event) => {
+                const trigger = event.target.closest('[data-auth-required]');
+                if (!trigger) return;
+                event.preventDefault();
+                openModal();
+            });
+            document.addEventListener('submit', (event) => {
+                const form = event.target;
+                if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-auth-required')) return;
+                event.preventDefault();
+                openModal();
+            }, true);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) modal.close();
+            });
+        })();
+    </script>
 
     <script>
         // Tutup menu akun saat klik di luar menu
@@ -253,7 +293,7 @@
         // Toggle like tanpa reload agar posisi scroll pengguna tetap sama.
         document.addEventListener('submit', async (event) => {
             const form = event.target.closest('form[data-like-toggle]');
-            if (!form || !window.fetch) return;
+            if (event.defaultPrevented || !form || !window.fetch) return;
             event.preventDefault();
 
             const submitButton = form.querySelector('[data-like-button]');

@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -100,17 +100,21 @@ def return_item(request, pk):
     return redirect('items_for_swap:index')
 
 
-@login_required
 def detail(request, pk):
     listing = get_object_or_404(
         ItemForSwap.objects.select_related('clothing_item', 'user').annotate(like_count=Count('likes')),
         pk=pk,
     )
-    listing.is_liked = LikedSwapItem.objects.filter(user=request.user, listing=listing).exists()
-    is_owner = listing.user_id == request.user.pk
+    is_authenticated = request.user.is_authenticated
+    listing.is_liked = (
+        LikedSwapItem.objects.filter(user=request.user, listing=listing).exists()
+        if is_authenticated else False
+    )
+    is_owner = is_authenticated and listing.user_id == request.user.pk
     existing_request = None
     completed_participant = False
-    if not is_owner:
+    has_related_request = False
+    if not is_owner and is_authenticated:
         from swap_requests.models import SwapRequest
         if listing.is_available and listing.clothing_item.deleted_at is None and listing.clothing_item.is_listed_for_swap:
             existing_request = SwapRequest.objects.filter(
@@ -122,15 +126,24 @@ def detail(request, pk):
         has_related_request = SwapRequest.objects.visible_to(request.user).filter(
             requested_item_id=listing.clothing_item_id,
         ).exists()
-        if not (listing.is_available and listing.clothing_item.deleted_at is None
-                and listing.clothing_item.is_listed_for_swap) and not has_related_request and not listing.is_liked:
-            raise Http404
+
+    can_browse_listing = (
+        listing.is_available
+        and listing.clothing_item.deleted_at is None
+        and listing.clothing_item.is_listed_for_swap
+    )
+    if not is_owner and not can_browse_listing and not has_related_request and not listing.is_liked:
+        raise Http404
 
     others = (ItemForSwap.objects.available().filter(user=listing.user)
-              .exclude(pk=listing.pk).select_related('clothing_item')
-              .annotate(is_liked=Exists(LikedSwapItem.objects.filter(
-                  user=request.user, listing_id=OuterRef('pk'),
-              )))[:3])
+              .exclude(pk=listing.pk).select_related('clothing_item'))
+    if is_authenticated:
+        others = others.annotate(is_liked=Exists(LikedSwapItem.objects.filter(
+            user=request.user, listing_id=OuterRef('pk'),
+        )))
+    else:
+        others = others.annotate(is_liked=Value(False, output_field=BooleanField()))
+    others = others[:3]
 
     request_url = None
     if not is_owner and listing.is_available and not existing_request:

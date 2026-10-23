@@ -41,6 +41,7 @@
                 {% if listing.status == 'available' or listing.is_liked %}
                 <form method="post" action="{% url 'home:toggle_like' listing.pk %}"
                       data-like-toggle data-liked="{{ listing.is_liked|yesno:'true,false' }}" data-item-name="{{ item.name }}"
+                      {% if not request.user.is_authenticated %}data-auth-required{% endif %}
                       class="shrink-0">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -107,7 +108,7 @@
                         <a href="{% url 'swap_requests:detail' existing_request.pk %}" class="mt-1 inline-flex text-xs font-bold text-swPlum hover:underline">Lihat detail request &rarr;</a>
                     </div>
                 {% elif request_url %}
-                    <a href="{{ request_url }}" class="h-11 px-6 inline-flex items-center rounded-full sw-btn-holo text-white text-sm font-bold">Ajukan swap</a>
+                    <a href="{{ request_url }}"{% if not request.user.is_authenticated %} data-auth-required{% endif %} class="h-11 px-6 inline-flex items-center rounded-full sw-btn-holo text-white text-sm font-bold">Ajukan swap</a>
                 {% endif %}
             </div>
         </section>

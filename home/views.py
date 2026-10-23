@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Case, Exists, IntegerField, OuterRef, Q, Value, When
+from django.db.models import BooleanField, Case, Exists, IntegerField, OuterRef, Q, Value, When
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -76,10 +76,14 @@ def onboarding_skip(request):
 
 
 def get_catalog_queryset(request):
-    """Listing aktif milik pengguna lain, dengan pakaian wardrobe sebagai datanya."""
-    return (ItemForSwap.objects.catalog_for(request.user)
-            .filter(clothing_item__deleted_at__isnull=True,
-                    clothing_item__is_listed_for_swap=True))
+    """Listing aktif yang dapat dilihat pengguna; anonim dapat menjelajah semua item."""
+    listings = ItemForSwap.objects.available()
+    if request.user.is_authenticated:
+        listings = listings.exclude(user=request.user)
+    return listings.select_related('clothing_item', 'user').filter(
+        clothing_item__deleted_at__isnull=True,
+        clothing_item__is_listed_for_swap=True,
+    )
 
 
 def read_filters(request):
@@ -163,13 +167,14 @@ def apply_filters(queryset, filters, prefix=''):
 
 
 def index(request):
-    if not request.user.is_authenticated:
-        return redirect('accounts:login')
-
     filters = read_filters(request)
-    catalog = get_catalog_queryset(request).annotate(
-        is_liked=Exists(LikedSwapItem.objects.filter(user=request.user, listing_id=OuterRef('pk')))
-    )
+    catalog = get_catalog_queryset(request)
+    if request.user.is_authenticated:
+        catalog = catalog.annotate(
+            is_liked=Exists(LikedSwapItem.objects.filter(user=request.user, listing_id=OuterRef('pk')))
+        )
+    else:
+        catalog = catalog.annotate(is_liked=Value(False, output_field=BooleanField()))
     catalog = apply_filters(catalog, filters, prefix='clothing_item__')
     page = Paginator(catalog, PAGE_SIZE).get_page(request.GET.get('page'))
 

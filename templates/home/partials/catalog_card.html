@@ -39,7 +39,7 @@ Kartu katalog. Butuh `item` (ClothingItem). Opsional dari Items for Swap: `listi
            class="h-10 inline-flex items-center justify-center rounded-xl border border-swNavy/15 text-swNavy text-xs font-bold hover:bg-swCream transition-colors">
             Lihat detail
         </a>
-        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}"
+        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}"{% if not request.user.is_authenticated %} data-auth-required{% endif %}
            class="h-10 inline-flex items-center justify-center rounded-xl sw-btn-holo text-white text-xs font-bold">
             Ajukan swap
         </a>
