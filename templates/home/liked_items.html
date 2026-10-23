@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Pakaian Disukai · Swapdrobe{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <p class="rounded-2xl px-4 py-3 text-sm font-semibold {% if message.tags == 'error' %}bg-swBerry text-white{% else %}bg-swNavy text-white{% endif %}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <header class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-swBlush via-[#D9D9E2] to-[#7895C5] px-6 py-7 sm:px-8 sm:py-9">
+        <div class="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.16em] text-swPlum">Koleksi pribadimu</p>
+                <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy">Pakaian yang kamu sukai</h1>
+                <p class="mt-2 text-sm text-swNavy/70">{{ total }} pakaian yang menarik perhatianmu, dalam satu tempat.</p>
+            </div>
+            <a href="{% url 'home:index' %}" class="h-11 px-5 inline-flex items-center justify-center gap-2 rounded-full bg-white text-swNavy text-sm font-bold shadow-md hover:bg-swCream transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                Sukai lebih banyak pakaian
+            </a>
+        </div>
+    </header>
+
+    <form method="get" class="relative">
+        <label for="liked-search" class="sr-only">Cari pakaian yang disukai</label>
+        <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="liked-search" type="search" name="q" value="{{ query }}" placeholder="Cari pakaian yang kamu sukai..."
+               class="w-full h-11 pl-11 pr-4 rounded-xl bg-white border border-swNavy/10 text-sm text-swNavy placeholder:text-swSlate/70 focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+    </form>
+
+    {% if page.object_list %}
+    <div data-liked-grid class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-3 gap-4">
+        {% for liked in page.object_list %}
+            {% include 'home/partials/catalog_card.html' with item=liked.listing.clothing_item listing=liked.listing %}
+        {% endfor %}
+    </div>
+
+    <section data-liked-empty class="hidden rounded-3xl bg-white border border-swNavy/5 px-6 py-12 text-center shadow-sm">
+        <h2 class="text-lg font-extrabold text-swNavy">Belum ada pakaian yang disukai</h2>
+        <p class="mt-1 text-sm text-swSlate">Sukai pakaian dari Jelajahi untuk menyimpannya di sini.</p>
+        <a href="{% url 'home:index' %}" class="mt-5 inline-flex h-10 px-5 items-center rounded-full sw-btn-holo text-white text-sm font-bold">Jelajahi pakaian</a>
+    </section>
+
+    {% if page.paginator.num_pages > 1 %}
+    <nav data-liked-pagination class="flex items-center justify-center gap-2 pt-2" aria-label="Halaman pakaian disukai">
+        {% for number in page.paginator.page_range %}
+        <a href="?{% if query_without_page %}{{ query_without_page }}&amp;{% endif %}page={{ number }}"
+           class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold {% if number == page.number %}bg-swNavy text-white{% else %}bg-white text-swNavy border border-swNavy/10 hover:bg-swBlush{% endif %}"
+           {% if number == page.number %}aria-current="page"{% endif %}>{{ number }}</a>
+        {% endfor %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <section class="rounded-3xl bg-white border border-swNavy/5 px-6 py-12 text-center shadow-sm">
+        <span class="mx-auto w-14 h-14 rounded-full bg-swBlush text-swBerry flex items-center justify-center" aria-hidden="true">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
+        </span>
+        <h2 class="mt-4 text-lg font-extrabold text-swNavy">{% if query %}Tidak ada pakaian yang cocok{% else %}Belum ada pakaian yang disukai{% endif %}</h2>
+        <p class="mt-1 text-sm text-swSlate">Tekan ikon love pada pakaian di Jelajahi untuk menyimpannya di sini.</p>
+        <a href="{% url 'home:index' %}" class="mt-5 inline-flex h-10 px-5 items-center rounded-full sw-btn-holo text-white text-sm font-bold">Jelajahi pakaian</a>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

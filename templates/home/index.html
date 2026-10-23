@@ -5,6 +5,9 @@
 {% block content %}
 <div class="space-y-8">
 
+    {# Form asosiasi agar kontrol filter dapat berada di sidebar tanpa membungkus kartu yang memiliki form like. #}
+    <form method="get" id="catalog-filter-form" class="hidden"></form>
+
     {% if messages %}
     <div class="space-y-2">
         {% for message in messages %}
@@ -21,17 +24,17 @@
 
     {% include 'home/partials/hero_carousel.html' %}
 
-    <form method="get" id="katalog" class="space-y-6 scroll-mt-28">
+    <div id="katalog" class="space-y-6 scroll-mt-28">
 
         <!-- PENCARIAN -->
         <div class="flex flex-col sm:flex-row gap-3">
             <label class="relative flex-grow">
                 <span class="sr-only">Cari pakaian</span>
                 <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input type="search" name="q" value="{{ filters.q }}" placeholder="Cari pakaian, kategori, atau pemilik..."
+                <input type="search" name="q" form="catalog-filter-form" value="{{ filters.q }}" placeholder="Cari pakaian, kategori, atau pemilik..."
                     class="w-full h-12 pl-11 pr-4 rounded-xl bg-white border border-swNavy/10 text-sm text-swNavy placeholder:text-swSlate/70 focus:outline-none focus:ring-2 focus:ring-swPlum/40">
             </label>
-            <button type="submit"
+            <button type="submit" form="catalog-filter-form"
                     class="h-12 px-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-swPlum to-swNavy text-white text-sm font-bold hover:opacity-90 transition-opacity">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                 Cari pakaian
@@ -68,13 +71,13 @@
                         <div class="grid grid-cols-2 gap-2">
                             <label class="flex flex-col gap-1">
                                 <span class="text-[11px] text-swSlate">Min</span>
-                                <input type="number" name="shoe_min" value="{{ filters.shoe_min }}" min="{{ shoe_min_limit }}" max="{{ shoe_max_limit }}" inputmode="numeric" placeholder="{{ shoe_min_limit }}"
+                        <input type="number" name="shoe_min" form="catalog-filter-form" value="{{ filters.shoe_min }}" min="{{ shoe_min_limit }}" max="{{ shoe_max_limit }}" inputmode="numeric" placeholder="{{ shoe_min_limit }}"
                                        class="w-full h-10 px-3 rounded-lg bg-white border text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40 {% if filters.shoe_error %}border-swBerry{% else %}border-swNavy/15{% endif %}"
                                        {% if filters.shoe_error %}aria-invalid="true" aria-describedby="shoe-error"{% endif %}>
                             </label>
                             <label class="flex flex-col gap-1">
                                 <span class="text-[11px] text-swSlate">Max</span>
-                                <input type="number" name="shoe_max" value="{{ filters.shoe_max }}" min="{{ shoe_min_limit }}" max="{{ shoe_max_limit }}" inputmode="numeric" placeholder="{{ shoe_max_limit }}"
+                        <input type="number" name="shoe_max" form="catalog-filter-form" value="{{ filters.shoe_max }}" min="{{ shoe_min_limit }}" max="{{ shoe_max_limit }}" inputmode="numeric" placeholder="{{ shoe_max_limit }}"
                                        class="w-full h-10 px-3 rounded-lg bg-white border text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40 {% if filters.shoe_error %}border-swBerry{% else %}border-swNavy/15{% endif %}"
                                        {% if filters.shoe_error %}aria-invalid="true" aria-describedby="shoe-error"{% endif %}>
                             </label>
@@ -92,12 +95,12 @@
 
                     <label for="filter-location" class="flex flex-col gap-1.5">
                         <span class="text-xs font-bold text-swNavy">Lokasi bertemu</span>
-                        <input id="filter-location" type="search" name="location" value="{{ filters.location }}" placeholder="Cari lokasi..."
+                        <input id="filter-location" type="search" name="location" form="catalog-filter-form" value="{{ filters.location }}" placeholder="Cari lokasi..."
                                class="w-full h-10 px-3 rounded-lg bg-white border border-swNavy/15 text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40">
                     </label>
 
                     <div class="flex items-center gap-3 pt-1">
-                        <button type="submit" class="h-10 px-5 rounded-lg sw-btn-holo text-white text-sm font-bold">Terapkan filter</button>
+                        <button type="submit" form="catalog-filter-form" class="h-10 px-5 rounded-lg sw-btn-holo text-white text-sm font-bold">Terapkan filter</button>
                         <a href="{% url 'home:index' %}#katalog" class="text-xs font-semibold text-swPlum hover:underline lg:hidden">Reset</a>
                     </div>
                 </div>
@@ -112,7 +115,7 @@
                     </div>
                     <label class="flex items-center gap-2 self-start sm:self-auto">
                         <span class="text-xs font-semibold text-swSlate">Urutkan</span>
-                        <select name="sort" onchange="this.form.submit()"
+                        <select name="sort" form="catalog-filter-form" onchange="document.getElementById('catalog-filter-form').requestSubmit()"
                                 class="h-10 px-3 rounded-xl bg-white border border-swNavy/10 text-sm font-semibold text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40">
                             {% for value, text in sort_choices %}
                             <option value="{{ value }}" {% if value == filters.sort %}selected{% endif %}>{{ text }}</option>
@@ -166,7 +169,7 @@
                 {% endif %}
             </section>
         </div>
-    </form>
+    </div>
 </div>
 
 <script>

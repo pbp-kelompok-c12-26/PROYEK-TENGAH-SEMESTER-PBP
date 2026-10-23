@@ -16,7 +16,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-6 items-start">
         <section class="bg-white rounded-3xl border border-swNavy/5 shadow-sm p-3">
-            <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-swCream">
+            <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-swCream">
                 {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">{% endif %}
             </div>
             <div class="flex items-center justify-between gap-3 p-3">
@@ -32,10 +32,38 @@
         </section>
 
         <section class="space-y-5">
-            <header>
-                <p class="text-xs uppercase tracking-[0.2em] font-bold text-swPlum">Item untuk swap</p>
-                <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy">{{ item.name }}</h1>
-                <p class="mt-2 text-sm text-swSlate">Ditawarkan {{ listing.posted_at|date:"j F Y" }}</p>
+            <header class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="text-xs uppercase tracking-[0.2em] font-bold text-swPlum">Item untuk swap</p>
+                    <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy">{{ item.name }}</h1>
+                    <p class="mt-2 text-sm text-swSlate">Ditawarkan {{ listing.posted_at|date:"j F Y" }}</p>
+                </div>
+                {% if listing.status == 'available' or listing.is_liked %}
+                <form method="post" action="{% url 'home:toggle_like' listing.pk %}"
+                      data-like-toggle data-liked="{{ listing.is_liked|yesno:'true,false' }}" data-item-name="{{ item.name }}"
+                      class="shrink-0">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" data-like-button aria-label="{% if listing.is_liked %}Hapus suka{% else %}Sukai{% endif %} {{ item.name }}; {{ listing.like_count }} suka"
+                            aria-pressed="{{ listing.is_liked|yesno:'true,false' }}"
+                            class="inline-flex h-12 items-center gap-3 rounded-2xl border border-swNavy/10 bg-white px-3.5 text-swNavy shadow-sm transition-all duration-200 hover:border-swPlum/30 hover:shadow-md">
+                        <span data-like-orb class="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 {% if listing.is_liked %}bg-[#D50959] shadow-sm{% else %}bg-transparent{% endif %}">
+                            <svg class="h-6 w-6 transition-transform duration-200 {% if listing.is_liked %}scale-105{% endif %}" viewBox="0 0 24 24" aria-hidden="true">
+                                <defs><linearGradient id="detail-heart-{{ listing.pk }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F6A9C4"/><stop offset="52%" stop-color="#FFF9FB"/><stop offset="100%" stop-color="#A9C8FF"/></linearGradient></defs>
+                                <path data-like-heart d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21l7.78-7.55 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" fill="{% if listing.is_liked %}url(#detail-heart-{{ listing.pk }}){% else %}none{% endif %}" stroke="#171F63" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span data-like-count class="min-w-[3.5rem] text-left text-sm font-bold tabular-nums">{{ listing.like_count }} likes</span>
+                    </button>
+                </form>
+                {% else %}
+                <span class="inline-flex h-12 shrink-0 items-center gap-3 rounded-2xl border border-swNavy/10 bg-white px-3.5 text-swNavy shadow-sm" aria-label="{{ listing.like_count }} suka">
+                    <span class="flex h-9 w-9 items-center justify-center rounded-full">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
+                    </span>
+                    <span class="min-w-[3.5rem] text-left text-sm font-bold tabular-nums">{{ listing.like_count }} likes</span>
+                </span>
+                {% endif %}
             </header>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -90,11 +118,16 @@
         <div><h2 class="text-xl font-extrabold text-swNavy">Pakaian lain dari {{ listing.user.get_full_name|default:listing.user.username }}</h2><p class="text-sm text-swSlate mt-1">Lihat penawaran lain dari pengguna ini.</p></div>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {% for other in others %}
-            <a href="{% url 'items_for_swap:detail' other.pk %}" class="group bg-white rounded-2xl border border-swNavy/5 p-3 hover:shadow-md transition-shadow">
-                <div class="aspect-[4/3] rounded-xl overflow-hidden bg-swCream">{% if other.clothing_item.image %}<img src="{{ other.clothing_item.image.url }}" alt="{{ other.clothing_item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">{% endif %}</div>
-                <p class="mt-3 text-sm font-bold text-swNavy">{{ other.clothing_item.name }}</p>
+            <article class="group bg-white rounded-2xl border border-swNavy/5 p-3 hover:shadow-md transition-shadow">
+                <div class="relative aspect-[4/3] rounded-xl overflow-hidden bg-swCream">
+                    <a href="{% url 'items_for_swap:detail' other.pk %}" aria-label="Lihat detail {{ other.clothing_item.name }}" class="block w-full h-full">
+                        {% if other.clothing_item.image %}<img src="{{ other.clothing_item.image.url }}" alt="{{ other.clothing_item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">{% endif %}
+                    </a>
+                    {% include 'home/partials/like_button.html' with listing=other item=other.clothing_item %}
+                </div>
+                <a href="{% url 'items_for_swap:detail' other.pk %}" class="mt-3 block text-sm font-bold text-swNavy hover:text-swPlum">{{ other.clothing_item.name }}</a>
                 <p class="text-xs text-swSlate">{{ other.clothing_item.get_category_display }} · {{ other.clothing_item.size_label }}</p>
-            </a>
+            </article>
             {% endfor %}
         </div>
     </section>
