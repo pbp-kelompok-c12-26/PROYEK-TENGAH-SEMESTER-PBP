@@ -1,15 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Case, IntegerField, Q, Value, When
-from django.shortcuts import redirect, render
+from django.db.models import Case, Exists, IntegerField, OuterRef, Q, Value, When
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from accounts.forms import ProfileSetupForm, SizePreferenceForm
 from accounts.models import UserProfile
 from digital_wardrobe.models import ClothingItem
 from items_for_swap.models import ItemForSwap
+from .models import LikedSwapItem
 
 PAGE_SIZE = 12
 
@@ -164,7 +167,10 @@ def index(request):
         return redirect('accounts:login')
 
     filters = read_filters(request)
-    catalog = apply_filters(get_catalog_queryset(request), filters, prefix='clothing_item__')
+    catalog = get_catalog_queryset(request).annotate(
+        is_liked=Exists(LikedSwapItem.objects.filter(user=request.user, listing_id=OuterRef('pk')))
+    )
+    catalog = apply_filters(catalog, filters, prefix='clothing_item__')
     page = Paginator(catalog, PAGE_SIZE).get_page(request.GET.get('page'))
 
     params = request.GET.copy()
@@ -187,3 +193,61 @@ def index(request):
         'shoe_min_limit': ClothingItem.SHOE_SIZE_MIN,
         'shoe_max_limit': ClothingItem.SHOE_SIZE_MAX,
     })
+
+
+@login_required(login_url='accounts:login')
+def liked_items(request):
+    """Koleksi Items for Swap yang disukai, termasuk listing yang sudah Swapped."""
+    query = request.GET.get('q', '').strip()
+    likes = (LikedSwapItem.objects.filter(
+        user=request.user,
+        listing__status__in=(ItemForSwap.AVAILABLE, ItemForSwap.SWAPPED),
+        listing__clothing_item__deleted_at__isnull=True,
+    ).select_related('listing__clothing_item', 'listing__user'))
+    if query:
+        likes = likes.filter(
+            Q(listing__clothing_item__name__icontains=query)
+            | Q(listing__clothing_item__description__icontains=query)
+            | Q(listing__user__username__icontains=query)
+            | Q(listing__meeting_location__icontains=query)
+        )
+    page = Paginator(likes, PAGE_SIZE).get_page(request.GET.get('page'))
+    for liked in page.object_list:
+        liked.listing.is_liked = True
+
+    params = request.GET.copy()
+    params.pop('page', None)
+    return render(request, 'home/liked_items.html', {
+        'page': page,
+        'query': query,
+        'query_without_page': params.urlencode(),
+        'total': page.paginator.count,
+    })
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def toggle_like(request, listing_id):
+    listing = get_object_or_404(ItemForSwap.objects.select_related('clothing_item'), pk=listing_id)
+    liked = LikedSwapItem.objects.filter(user=request.user, listing=listing).first()
+
+    if liked:
+        liked.delete()
+        is_liked = False
+    elif (listing.is_available and listing.clothing_item.deleted_at is None
+          and listing.clothing_item.is_listed_for_swap):
+        LikedSwapItem.objects.get_or_create(user=request.user, listing=listing)
+        is_liked = True
+    else:
+        is_liked = False
+
+    like_count = LikedSwapItem.objects.filter(listing=listing).count()
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'liked': is_liked, 'like_count': like_count})
+
+    next_url = request.POST.get('next', '')
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        next_url = reverse('home:index')
+    return redirect(next_url)

@@ -1,13 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from digital_wardrobe.models import ClothingItem
+from home.models import LikedSwapItem
 
 from .forms import ItemForSwapEditForm, ItemForSwapForm
 from .models import ItemForSwap, get_photo_url
@@ -20,7 +21,9 @@ def index(request):
     q = request.GET.get('q', '').strip()
     sort = 'oldest' if request.GET.get('sort') == 'oldest' else 'newest'
 
-    listings = ItemForSwap.objects.mine(request.user)
+    listings = ItemForSwap.objects.mine(request.user).annotate(
+        is_liked=Exists(LikedSwapItem.objects.filter(user=request.user, listing_id=OuterRef('pk')))
+    )
     listings = listings.swapped() if tab == 'done' else listings.available()
     if q:
         listings = listings.filter(clothing_item__name__icontains=q)
@@ -99,7 +102,11 @@ def return_item(request, pk):
 
 @login_required
 def detail(request, pk):
-    listing = get_object_or_404(ItemForSwap.objects.select_related('clothing_item', 'user'), pk=pk)
+    listing = get_object_or_404(
+        ItemForSwap.objects.select_related('clothing_item', 'user').annotate(like_count=Count('likes')),
+        pk=pk,
+    )
+    listing.is_liked = LikedSwapItem.objects.filter(user=request.user, listing=listing).exists()
     is_owner = listing.user_id == request.user.pk
     existing_request = None
     completed_participant = False
@@ -116,11 +123,14 @@ def detail(request, pk):
             requested_item_id=listing.clothing_item_id,
         ).exists()
         if not (listing.is_available and listing.clothing_item.deleted_at is None
-                and listing.clothing_item.is_listed_for_swap) and not has_related_request:
+                and listing.clothing_item.is_listed_for_swap) and not has_related_request and not listing.is_liked:
             raise Http404
 
     others = (ItemForSwap.objects.available().filter(user=listing.user)
-              .exclude(pk=listing.pk).select_related('clothing_item')[:3])
+              .exclude(pk=listing.pk).select_related('clothing_item')
+              .annotate(is_liked=Exists(LikedSwapItem.objects.filter(
+                  user=request.user, listing_id=OuterRef('pk'),
+              )))[:3])
 
     request_url = None
     if not is_owner and listing.is_available and not existing_request:

@@ -57,7 +57,10 @@
       <tr>
         <td>
           <div class="ifs-item">
-            {% if listing.photo_url %}<img class="ifs-thumb" src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}<div class="ifs-thumb"></div>{% endif %}
+            <div style="position:relative;flex:0 0 88px;width:88px;height:88px">
+              {% if listing.photo_url %}<img class="ifs-thumb" src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}<div class="ifs-thumb"></div>{% endif %}
+              {% include 'home/partials/like_button.html' with listing=listing item=listing.clothing_item compact=True %}
+            </div>
             <div>
               <a href="{% url 'items_for_swap:detail' listing.pk %}">{{ listing.clothing_item.name }}</a>
               <div class="ifs-sub">{{ listing.clothing_item.size_label }} · {{ listing.clothing_item.get_condition_display }}</div>
