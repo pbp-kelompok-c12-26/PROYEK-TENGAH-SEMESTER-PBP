@@ -1,0 +1,12 @@
+{% comment %}
+Avatar bulat seragam dengan navbar & onboarding.
+Pemakaian:
+  {% include 'accounts/partials/avatar.html' with profile=profile size='w-24 h-24 text-3xl' %}
+{% endcomment %}
+<span class="{{ size|default:'w-20 h-20 text-2xl' }} shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-4 ring-white shadow-md flex items-center justify-center font-extrabold text-white select-none">
+    {% if profile.profile_picture %}
+    <img src="{{ profile.profile_picture.url }}" alt="Foto profil {{ profile.name }}" class="w-full h-full object-cover">
+    {% else %}
+    {{ profile.user.username|first|upper }}
+    {% endif %}
+</span>
