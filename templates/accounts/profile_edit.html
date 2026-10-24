@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profil · Swapdrobe{% endblock %}
+
+{% block extra_head %}
+<style>
+    .sw-edit-hero {
+        background: linear-gradient(125deg, #DB8796 0%, #F4C4C8 24%, #FBF0DF 52%, #C9D2E6 78%, #6378AC 100%);
+    }
+    .sw-chip { transition: background-color .2s ease, box-shadow .2s ease, color .2s ease; }
+    .peer:checked + .sw-chip { background: #E6C4F9; color: #171F63; box-shadow: inset 0 0 0 1.5px #B98DE0; }
+    .peer:focus-visible + .sw-chip { outline: 2px solid #6063B4; outline-offset: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-5">
+    <!-- HEADER & TAB NAVIGASI -->
+    <div class="space-y-4">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-swNavy tracking-tight">Edit Profil Kamu</h1>
+
+        <nav class="flex items-center gap-7 border-b border-swNavy/10" aria-label="Navigasi pengaturan akun">
+            <a href="{% url 'accounts:edit_profile' %}"
+               aria-current="page"
+               class="pb-2.5 text-base sm:text-lg font-bold text-[#2B59A2] border-b-2 border-[#2B59A2]">
+                Informasi Profil
+            </a>
+            <a href="{% url 'accounts:change_password' %}"
+               class="pb-2.5 text-base sm:text-lg font-bold text-swSlate/80 hover:text-swNavy transition-colors">
+                Keamanan Akun
+            </a>
+        </nav>
+    </div>
+
+    {% include 'accounts/partials/messages.html' %}
+
+    {% if form.non_field_errors %}
+    <div class="rounded-2xl bg-swBlush/90 border border-swBerry/30 px-4 py-3 text-xs font-semibold text-swBerry space-y-1" role="alert">
+        {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- CONTAINER GRADIEN UTAMA -->
+    <section class="sw-edit-hero rounded-[2rem] p-5 sm:p-7 lg:p-8 shadow-[0_24px_48px_-28px_rgba(23,31,99,0.45)]">
+        <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
+            <!-- KOLOM KIRI: INFO BOX -->
+            <aside class="space-y-4">
+                <div class="rounded-2xl bg-[#CBEBF5] p-4 sm:p-5 flex items-start gap-3 shadow-sm">
+                    <svg class="w-5 h-5 text-swNavy shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                    </svg>
+                    <div class="space-y-1">
+                        <p class="text-xs font-extrabold text-swNavy">Informasi Profil</p>
+                        <p class="text-xs text-swSlate leading-relaxed">
+                            Foto, nama tampilan, domisili, bio, serta preferensi gaya &amp; ukuran membantu pengguna lain mengenalmu. Nomor HP tetap tersimpan pribadi.
+                        </p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- KOLOM KANAN: FORM CARD + TOMBOL AKSI -->
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm space-y-7">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-swNavy">Informasi profilmu</h2>
+                        <p class="mt-0.5 text-xs text-swSlate">Lengkapi profilmu agar proses bertukar pakaian semakin nyaman.</p>
+                    </div>
+
+                    <!-- Foto profil -->
+                    <div class="p-4 rounded-2xl bg-swCream/60 border border-swNavy/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                            <span class="relative w-16 h-16 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-4 ring-white shadow flex items-center justify-center text-xl font-bold text-white">
+                                <span data-avatar-initial {% if profile.profile_picture %}class="hidden"{% endif %}>{{ request.user.username|first|upper }}</span>
+                                <img data-avatar-preview alt="Pratinjau foto profil" class="absolute inset-0 w-full h-full object-cover {% if not profile.profile_picture %}hidden{% endif %}" {% if profile.profile_picture %}src="{{ profile.profile_picture.url }}"{% endif %}>
+                            </span>
+                            <div>
+                                <p class="text-sm font-bold text-swNavy">Foto Profil</p>
+                                <p class="text-xs text-swSlate">Format JPG atau PNG, maksimal 5 MB.</p>
+                            </div>
+                        </div>
+
+                        <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer self-start sm:self-auto rounded-xl bg-[#DCEBFF] px-4 py-2.5 inline-flex items-center gap-2.5 hover:bg-[#CFE2FF] transition-colors">
+                            <svg class="w-4 h-4 text-swNavy shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                            <span class="text-xs font-bold text-swNavy" data-avatar-name>{% if profile.profile_picture %}Ganti foto{% else %}Upload fotomu{% endif %}</span>
+                        </label>
+                        {{ form.profile_picture }}
+                    </div>
+                    {% for e in form.profile_picture.errors %}<p class="-mt-4 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+
+                    <!-- Grid Display Name, Domisili, Nomor HP -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="sm:col-span-2">
+                            <label for="{{ form.display_name.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Display Name</label>
+                            {{ form.display_name }}
+                            <p class="mt-1 text-[11px] text-swSlate">Maksimal 15 karakter. Kosongkan jika ingin menampilkan @{{ request.user.username }}.</p>
+                            {% for e in form.display_name.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.phone_number.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Nomor HP*</label>
+                            {{ form.phone_number }}
+                            <p class="mt-1 text-[11px] text-swSlate">Hanya terlihat olehmu (tidak tampil di profil publik).</p>
+                            {% for e in form.phone_number.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.domicile.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Domisili*</label>
+                            {{ form.domicile }}
+                            <p class="mt-1 text-[11px] text-swSlate">Kota/daerah tempat tinggal untuk lokasi ketemuan swap.</p>
+                            {% for e in form.domicile.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Biografi -->
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <label for="{{ form.bio.id_for_label }}" class="block text-xs font-bold text-swNavy">Biografi</label>
+                            <span class="text-[11px] font-semibold text-swSlate tabular-nums"><span data-bio-count>{{ form.bio.value|default:''|length }}</span>/300</span>
+                        </div>
+                        {{ form.bio }}
+                        <p class="mt-1 text-[11px] text-swSlate">Opsional, maksimal 300 karakter.</p>
+                        {% for e in form.bio.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                    </div>
+
+                    <hr class="border-swNavy/10">
+
+                    <!-- Preferensi Gaya & Ukuran -->
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-base font-extrabold text-swNavy">Preferensi Gaya &amp; Ukuran</h3>
+                            <p class="mt-0.5 text-xs text-swSlate">Kamu bisa memilih lebih dari satu pada setiap kategori.</p>
+                        </div>
+
+                        <!-- Style favorit -->
+                        <fieldset>
+                            <legend class="text-xs font-bold text-swNavy mb-2">Gaya pakaian favorit</legend>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                                {% for opt in form.preferred_styles %}
+                                {% include 'home/partials/onboarding_chip.html' with option=opt size='min-h-[40px] py-1.5 px-2 text-center leading-tight' %}
+                                {% endfor %}
+                            </div>
+                            {% for e in form.preferred_styles.errors %}<p class="mt-1.5 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                        </fieldset>
+
+                        <!-- Ukuran pakaian -->
+                        <fieldset>
+                            <legend class="text-xs font-bold text-swNavy mb-2">Ukuran pakaian favorit</legend>
+                            <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                                {% for opt in form.preferred_clothing_sizes %}
+                                {% include 'home/partials/onboarding_chip.html' with option=opt size='h-10 px-2' %}
+                                {% endfor %}
+                            </div>
+                            {% for e in form.preferred_clothing_sizes.errors %}<p class="mt-1.5 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                        </fieldset>
+
+                        <!-- Ukuran sepatu -->
+                        <fieldset>
+                            <legend class="text-xs font-bold text-swNavy mb-2">Ukuran alas kaki favorit <span class="font-normal text-swSlate">(standar EU)</span></legend>
+                            <div class="grid grid-cols-5 sm:grid-cols-7 gap-2">
+                                {% for opt in form.preferred_shoe_sizes %}
+                                {% include 'home/partials/onboarding_chip.html' with option=opt size='h-10 px-2' %}
+                                {% endfor %}
+                            </div>
+                            {% for e in form.preferred_shoe_sizes.errors %}<p class="mt-1.5 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- BARIS TOMBOL BATAL & SIMPAN PERUBAHAN -->
+                <div class="mt-5 flex flex-wrap items-center justify-end gap-3">
+                    <a href="{% url 'accounts:profile' %}"
+                       class="h-11 px-6 inline-flex items-center justify-center rounded-2xl bg-white text-sm font-bold text-swNavy shadow-sm hover:bg-swCream transition-colors">
+                        Batal
+                    </a>
+                    <button type="submit"
+                            class="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#169C46] hover:bg-[#12833A] text-sm font-bold text-white shadow-sm transition-colors active:scale-[0.98]">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                        Simpan perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const input = document.querySelector('[data-avatar-input]');
+    if (input) {
+        input.addEventListener('change', () => {
+            const file = input.files[0];
+            if (!file) return;
+            const img = document.querySelector('[data-avatar-preview]');
+            img.src = URL.createObjectURL(file);
+            img.classList.remove('hidden');
+            document.querySelector('[data-avatar-initial]')?.classList.add('hidden');
+            const nameEl = document.querySelector('[data-avatar-name]');
+            if (nameEl) nameEl.textContent = file.name;
+        });
+    }
+
+    const bioInput = document.querySelector('[data-bio-input]');
+    const bioCount = document.querySelector('[data-bio-count]');
+    if (bioInput && bioCount) {
+        const updateCount = () => { bioCount.textContent = bioInput.value.length; };
+        bioInput.addEventListener('input', updateCount);
+        updateCount();
+    }
+})();
+</script>
+{% endblock %}
