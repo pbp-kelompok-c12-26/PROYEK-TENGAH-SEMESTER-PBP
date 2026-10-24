@@ -152,7 +152,7 @@
     }
 
     // ---------- Modal hapus ----------
-    function openDelete(url, name, kind = 'item', outfitCount = 0) {
+    function openDelete(url, name, kind = 'item', outfitCount = 0, upcoming = 0, history = 0) {
         deleteModal.querySelector('[data-delete-form]').action = url;
         deleteModal.querySelector('[data-delete-name]').textContent = name;
         deleteModal.querySelector('[data-delete-title]').textContent =
@@ -163,6 +163,17 @@
         const count = parseInt(outfitCount, 10) || 0;
         deleteModal.querySelector('[data-delete-outfits]').textContent = count;
         deleteModal.querySelector('[data-delete-outfit-note]').classList.toggle('hidden', !(kind === 'item' && count > 0));
+        // Peringatan jadwal Kalender Outfit saat menghapus outfit
+        const upcomingCount = parseInt(upcoming, 10) || 0;
+        const historyCount = parseInt(history, 10) || 0;
+        const scheduleNote = deleteModal.querySelector('[data-delete-schedule-note]');
+        if (scheduleNote) {
+            scheduleNote.querySelector('[data-delete-upcoming]').textContent = upcomingCount;
+            scheduleNote.querySelector('[data-delete-history]').textContent = historyCount;
+            scheduleNote.querySelector('[data-delete-upcoming-text]').classList.toggle('hidden', upcomingCount === 0);
+            scheduleNote.querySelector('[data-delete-history-text]').classList.toggle('hidden', historyCount === 0);
+            scheduleNote.classList.toggle('hidden', !(kind === 'outfit' && (upcomingCount > 0 || historyCount > 0)));
+        }
         deleteModal.classList.remove('hidden');
         deleteModal.classList.add('flex');
         deleteModal.querySelector('[data-close-delete]').focus();
@@ -185,7 +196,7 @@
         const deleteBtn = e.target.closest('[data-delete-url]');
         if (deleteBtn) {
             lastTrigger = deleteBtn;
-            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName, deleteBtn.dataset.deleteKind, deleteBtn.dataset.deleteOutfits);
+            openDelete(deleteBtn.dataset.deleteUrl, deleteBtn.dataset.deleteName, deleteBtn.dataset.deleteKind, deleteBtn.dataset.deleteOutfits, deleteBtn.dataset.deleteUpcoming, deleteBtn.dataset.deleteHistory);
             return;
         }
         if (e.target.closest('[data-close-modal]')) closeModal();

@@ -14,8 +14,8 @@
         <p class="text-xs text-swSlate mt-0.5">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
     </div>
     <div class="flex gap-2 pt-3 px-1 pb-1">
-        <button type="button" data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"
-                class="h-8 px-4 inline-flex items-center gap-1.5 rounded-full border border-swNavy/25 text-swNavy text-xs font-semibold hover:bg-swCream transition-colors">
+        <button type="button" {% if not item.swap_request_locked %}data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"{% else %}disabled title="Batalkan swap request aktif terlebih dahulu"{% endif %}
+                class="h-8 px-4 inline-flex items-center gap-1.5 rounded-full border text-xs font-semibold transition-colors {% if item.swap_request_locked %}border-swNavy/10 text-swSlate cursor-not-allowed{% else %}border-swNavy/25 text-swNavy hover:bg-swCream{% endif %}">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
             Edit
         </button>
@@ -25,5 +25,5 @@
             Hapus
         </button>
     </div>
-    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="px-1 text-[11px] text-swSlate">Batalkan request aktif sebelum menghapus atau menawarkan pakaian ini.</p>{% endif %}
+    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="px-1 text-[11px] text-swSlate">Batalkan request aktif sebelum mengedit, menghapus, atau menawarkan pakaian ini.</p>{% endif %}
 </article>

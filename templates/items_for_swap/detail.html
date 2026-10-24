@@ -38,7 +38,7 @@
                     <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy">{{ item.name }}</h1>
                     <p class="mt-2 text-sm text-swSlate">Ditawarkan {{ listing.posted_at|date:"j F Y" }}</p>
                 </div>
-                {% if listing.status == 'available' or listing.is_liked %}
+                {% if listing.status == 'available' and listing.user_id != request.user.id or listing.is_liked %}
                 <form method="post" action="{% url 'home:toggle_like' listing.pk %}"
                       data-like-toggle data-liked="{{ listing.is_liked|yesno:'true,false' }}" data-item-name="{{ item.name }}"
                       class="shrink-0">

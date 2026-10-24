@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .forms import OutfitScheduleForm
-from .models import OutfitSchedule, ScheduledItem
+from .models import OutfitSchedule, ScheduledItem, recompute_last_worn
 
 BULAN = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
          'Agustus', 'September', 'Oktober', 'November', 'Desember']
@@ -109,6 +109,9 @@ def schedule_create(request):
 @login_required(login_url='accounts:login')
 def schedule_detail(request, pk):
     schedule = get_object_or_404(_schedules_for(request.user), pk=pk)
+    for entry in schedule.worn_items.all():
+        if entry.clothing_item:
+            entry.clothing_item.seen_by(schedule.user_id)  # pakaian yang sudah ditukar -> "tidak tersedia"
     return render(request, 'outfit_calendar/schedule_detail.html', {
         'schedule': schedule,
         'tanggal': format_tanggal(schedule.date, with_day=True),
@@ -118,11 +121,13 @@ def schedule_detail(request, pk):
 @login_required(login_url='accounts:login')
 def schedule_update(request, pk):
     schedule = get_object_or_404(OutfitSchedule, pk=pk, user=request.user)
+    old_item_ids = list(schedule.worn_items.values_list('clothing_item_id', flat=True))
     form = OutfitScheduleForm(request.POST or None, instance=schedule, user=request.user)
     if request.method == 'POST' and form.is_valid():
         schedule = form.save()
         schedule.save_snapshot()
-        schedule.update_last_worn()
+        # Tanggal/outfit bisa berubah: hitung ulang pakaian lama dan baru
+        recompute_last_worn(old_item_ids + list(schedule.worn_items.values_list('clothing_item_id', flat=True)))
         messages.success(request, 'Jadwal outfit diperbarui.')
         return redirect('outfit_calendar:schedule_detail', pk=schedule.pk)
     return render(request, 'outfit_calendar/schedule_form.html', {
@@ -135,6 +140,8 @@ def schedule_update(request, pk):
 def schedule_delete(request, pk):
     schedule = get_object_or_404(OutfitSchedule, pk=pk, user=request.user)
     tanggal = schedule.date
-    schedule.delete()  # last_worn_date baju TIDAK di-reset
+    item_ids = list(schedule.worn_items.values_list('clothing_item_id', flat=True))
+    schedule.delete()
+    recompute_last_worn(item_ids)  # last_worn_date kembali ke jadwal terakhir sebelumnya
     messages.success(request, f'Jadwal {format_tanggal(tanggal)} dihapus.')
     return redirect(_month_url(tanggal))

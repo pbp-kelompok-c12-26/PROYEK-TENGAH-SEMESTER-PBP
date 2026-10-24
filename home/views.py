@@ -234,7 +234,8 @@ def toggle_like(request, listing_id):
     if liked:
         liked.delete()
         is_liked = False
-    elif (listing.is_available and listing.clothing_item.deleted_at is None
+    elif (listing.user_id != request.user.pk  # pakaian sendiri tidak bisa di-like
+          and listing.is_available and listing.clothing_item.deleted_at is None
           and listing.clothing_item.is_listed_for_swap):
         LikedSwapItem.objects.get_or_create(user=request.user, listing=listing)
         is_liked = True

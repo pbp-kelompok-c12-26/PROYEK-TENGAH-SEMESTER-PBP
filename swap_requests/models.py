@@ -75,7 +75,7 @@ class SwapRequest(models.Model):
     }
     STATUS_NOTES = {
         PENDING: 'Menunggu pemilik pakaian menyetujui atau menolak request ini.',
-        REJECTED: 'Request ditolak, kedua pihak sepakat membatalkan pertukaran, atau item telah dibatalkan untuk ditawarkan.',
+        REJECTED: 'Request ditolak, salah satu pihak membatalkan pertukaran, atau item telah dibatalkan untuk ditawarkan.',
         AWAITING: 'Request disetujui. Hubungi satu sama lain untuk mengatur pertukaran, lalu konfirmasi penyelesaian di bawah.',
         COMPLETED: 'Pertukaran selesai. Pakaian sudah pindah ke lemari pemilik barunya.',
     }
@@ -199,7 +199,9 @@ class SwapRequest(models.Model):
             self.requester_confirmation = choice
         else:
             self.owner_confirmation = choice
-        if self.requester_confirmation == self.owner_confirmation == self.CANCEL:
+        if self.CANCEL in (self.requester_confirmation, self.owner_confirmation):
+            # Swap butuh persetujuan kedua pihak. Kalau salah satu membatalkan,
+            # pertukaran batal supaya kedua pakaian tidak terkunci selamanya.
             self.status = self.REJECTED
             self.responded_at = timezone.now()
             self.record_status_change(actor=user)
@@ -232,7 +234,6 @@ class SwapRequest(models.Model):
                     continue
                 item.user = new_owner
                 item.is_listed_for_swap = False
-                item.unavailable_in_outfits = True
                 item.last_worn_date = None
                 item.is_idle = False
                 item.save()

@@ -101,14 +101,14 @@
             <section class="bg-white rounded-2xl border border-swNavy/10 p-4 sm:p-5 space-y-3">
                 <div>
                     <h2 class="text-sm font-extrabold text-swNavy">Konfirmasi Penyelesaian</h2>
-                    <p class="text-xs text-swSlate">Swap selesai setelah kalian berdua memilih <b>Selesai swap</b>. Pembatalan baru disetujui setelah kalian berdua memilih <b>Batalkan swap</b>.</p>
+                    <p class="text-xs text-swSlate">Swap selesai setelah kalian berdua memilih <b>Selesai swap</b>. Kalau salah satu dari kalian memilih <b>Batalkan swap</b>, pertukaran langsung dibatalkan.</p>
                 </div>
                 <div class="rounded-xl bg-[#F3F8EC] p-3 space-y-2">
                     <!-- Pilihan saya -->
                     <div class="flex items-center gap-2">
                         {% include 'swap_requests/partials/avatar.html' with person=request.user size='w-8 h-8 text-xs' %}
                         {% if swap.status == 'awaiting_exchange' %}
-                        <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" class="flex-1 flex gap-2" data-confirm="Simpan pilihanmu? Request tetap menunggu sampai pihak lain memilih opsi yang sama." data-confirm-yes="Ya, simpan">
+                        <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" class="flex-1 flex gap-2" data-confirm="Simpan pilihanmu? Memilih Batalkan swap langsung membatalkan pertukaran ini." data-confirm-yes="Ya, simpan">
                             {% csrf_token %}
                             <select name="choice" required class="flex-1 h-9 px-2 rounded-lg bg-white border border-swNavy/15 text-xs text-swNavy">
                                 <option value="">Pilih opsi</option>
