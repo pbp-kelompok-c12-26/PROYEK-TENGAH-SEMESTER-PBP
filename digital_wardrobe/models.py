@@ -118,9 +118,6 @@ class ClothingItem(models.Model):
     # Diisi saat pakaian dihapus padahal sudah dipakai di outfit / Kalender Outfit:
     # pakaian hilang dari lemari, tapi tetap tampil di outfit & kalender dengan status.
     deleted_at = models.DateTimeField(null=True, blank=True)
-    # Pakaian yang sudah berpindah lewat swap tetap tercatat di outfit lama,
-    # tetapi tidak lagi tersedia sebagai pakaian milik pembuat outfit tersebut.
-    unavailable_in_outfits = models.BooleanField(default=False)
 
     objects = ClothingItemQuerySet.as_manager()
 
@@ -147,21 +144,38 @@ class ClothingItem(models.Model):
     def is_deleted(self):
         return self.deleted_at is not None
 
+    def seen_by(self, owner_id):
+        """Tandai pemilik outfit/jadwal tempat pakaian ini ditampilkan.
+        Dipakai status_label untuk tahu apakah pakaian sudah berpindah lewat swap."""
+        self.context_owner_id = owner_id
+        return self
+
+    @property
+    def is_swapped_away(self):
+        """True kalau pakaian ini tampil di outfit/jadwal milik orang yang sudah
+        tidak memilikinya lagi (sudah ditukar lewat Swap Request)."""
+        owner_id = getattr(self, 'context_owner_id', None)
+        return owner_id is not None and owner_id != self.user_id
+
     @property
     def status_label(self):
         """Label status untuk ditampilkan di outfit & Kalender Outfit ('' jika ada di lemari)."""
+        if self.is_swapped_away:
+            return 'Pakaian tidak tersedia'
         if self.is_deleted:
             return 'Sudah dihapus dari lemari'
-        if self.unavailable_in_outfits:
-            return 'Pakaian tidak tersedia'
         return 'Sedang ditawarkan' if self.is_listed_for_swap else ''
 
     def is_in_use(self):
-        """Sudah dipakai di outfit atau jadwal Kalender Outfit?"""
+        """Sudah dipakai di outfit, jadwal Kalender Outfit, atau punya riwayat swap?
+        Pakaian seperti ini hanya disembunyikan saat dihapus, supaya riwayatnya tetap ada."""
         if self.outfits.exists():
             return True
         scheduled = getattr(self, 'scheduled_entries', None)  # dari modul Kalender Outfit
-        return bool(scheduled is not None and scheduled.exists())
+        if scheduled is not None and scheduled.exists():
+            return True
+        listings = getattr(self, 'swap_listings', None)  # dari modul Items for Swap
+        return bool(listings is not None and listings.exists())
 
     def remove_from_wardrobe(self):
         """

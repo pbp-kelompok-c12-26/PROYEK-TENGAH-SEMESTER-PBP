@@ -92,15 +92,15 @@
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
                         Pakai untuk Outfit
                     </button>
-                    <button type="button" data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"
-                            class="h-10 px-6 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                    <button type="button" {% if not swap_request_locked %}data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"{% else %}disabled title="Batalkan swap request aktif terlebih dahulu"{% endif %}
+                            class="h-10 px-6 inline-flex items-center gap-2 rounded-lg text-sm font-semibold {% if swap_request_locked %}bg-swCream text-swSlate cursor-not-allowed{% else %}sw-btn-holo text-white{% endif %}">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
                         Edit
                     </button>
                 </div>
             </div>
             {% if swap_request_locked %}
-            <p id="swap-request-lock-note" class="text-xs text-swBerry">Pakaian ini sedang dipakai dalam swap request. Batalkan request aktif terlebih dahulu sebelum menghapus atau menawarkannya di Items for Swap.</p>
+            <p id="swap-request-lock-note" class="text-xs text-swBerry">Pakaian ini sedang dipakai dalam swap request. Batalkan request aktif terlebih dahulu sebelum mengedit, menghapus, atau menawarkannya di Items for Swap.</p>
             {% endif %}
         </div>
     </div>

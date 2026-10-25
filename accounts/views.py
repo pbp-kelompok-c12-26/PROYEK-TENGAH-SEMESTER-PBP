@@ -4,11 +4,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
+from .forms import RegisterForm
 from .models import UserProfile
 
 def register(request):
-    form = UserCreationForm(request.POST or None)
+    form = RegisterForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Akun berhasil dibuat. Silakan masuk.")
@@ -38,6 +40,8 @@ def login_user(request):
     context = {"form": form, "next": request.GET.get("next", "")}
     return render(request, "accounts/login.html", context)
 
+@require_POST
 def logout_user(request):
+    # Hanya lewat POST (form + CSRF) supaya link/gambar dari situs lain tidak bisa me-logout user.
     logout(request)
     return redirect("home:index")

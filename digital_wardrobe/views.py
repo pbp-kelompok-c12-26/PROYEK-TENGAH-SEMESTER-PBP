@@ -97,7 +97,11 @@ def index(request):
 
     outfits = []
     if tab == 'outfit':
-        outfits = [with_tiles(o) for o in Outfit.objects.filter(user=request.user).prefetch_related('items')]
+        today = timezone.localdate()
+        outfits = [with_tiles(o) for o in Outfit.objects.filter(user=request.user).prefetch_related('items').annotate(
+            upcoming_total=Count('schedules', filter=Q(schedules__date__gt=today), distinct=True),
+            history_total=Count('schedules', filter=Q(schedules__date__lte=today), distinct=True),
+        )]
 
     context = {
         'tab': tab,
@@ -209,6 +213,14 @@ def item_update(request, pk):
     item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
     if item.is_listed_for_swap:
         return _listed_response(request, item)
+    from swap_requests.models import SwapRequest
+    if SwapRequest.objects.has_active_request(item):
+        message = (f'"{item.name}" sedang dipakai dalam swap request, jadi belum bisa diedit. '
+                   'Batalkan request terlebih dahulu.')
+        if is_ajax(request):
+            return JsonResponse({'ok': False, 'message': message}, status=409)
+        messages.error(request, message)
+        return redirect('digital_wardrobe:item_detail', pk=item.pk)
     if request.method == 'POST':
         form = ClothingItemForm(request.POST, request.FILES, instance=item)
         if form.is_valid():
@@ -274,15 +286,31 @@ COLLAGE_SPANS = {
 }
 
 
+def outfit_items_for(outfit):
+    """Pakaian di outfit, ditandai pemilik outfit-nya supaya status swap terbaca benar."""
+    return [item.seen_by(outfit.user_id) for item in outfit.items.all()]
+
+
+def schedule_counts(outfit):
+    """(jadwal mendatang, riwayat jadwal) outfit ini di Kalender Outfit."""
+    if hasattr(outfit, 'upcoming_total'):
+        return outfit.upcoming_total, outfit.history_total
+    today = timezone.localdate()
+    schedules = outfit.schedules.all()
+    return schedules.filter(date__gt=today).count(), schedules.filter(date__lte=today).count()
+
+
 def with_tiles(outfit):
     """Tambahkan atribut `tiles` (pakaian + kelas grid) untuk kolase kartu outfit."""
-    items = list(outfit.items.all())[:Outfit.MAX_ITEMS]
+    items = outfit_items_for(outfit)[:Outfit.MAX_ITEMS]
     spans = COLLAGE_SPANS.get(len(items), [])
     outfit.tiles = [{'item': item, 'span': span} for item, span in zip(items, spans)]
     outfit.item_total = len(items)
-    outfit.listed_total = sum(1 for item in items if item.is_listed_for_swap and not item.is_deleted)
-    outfit.deleted_total = sum(1 for item in items if item.is_deleted)
-    outfit.unavailable_total = sum(1 for item in items if item.unavailable_in_outfits and not item.is_deleted)
+    outfit.unavailable_total = sum(1 for item in items if item.is_swapped_away)
+    outfit.listed_total = sum(1 for item in items
+                              if item.is_listed_for_swap and not item.is_deleted and not item.is_swapped_away)
+    outfit.deleted_total = sum(1 for item in items if item.is_deleted and not item.is_swapped_away)
+    outfit.upcoming_total, outfit.history_total = schedule_counts(outfit)
     return outfit
 
 
@@ -297,7 +325,8 @@ def _outfit_modal(request, form, outfit=None):
     return render_to_string('digital_wardrobe/partials/outfit_form_modal.html', {
         'form': form,
         'outfit': outfit,
-        'wardrobe_items': form.fields['items'].queryset,
+        'wardrobe_items': [item.seen_by(outfit.user_id if outfit else request.user.pk)
+                           for item in form.fields['items'].queryset],
         'selected_ids': selected,
         'max_items': Outfit.MAX_ITEMS,
         'action_url': reverse('digital_wardrobe:outfit_update', args=[outfit.pk]) if outfit
@@ -347,14 +376,17 @@ def outfit_create(request):
 @login_required
 def outfit_detail(request, pk):
     outfit = get_object_or_404(Outfit.objects.prefetch_related('items'), pk=pk, user=request.user)
-    outfit_items = list(outfit.items.all())
+    outfit_items = outfit_items_for(outfit)
+    upcoming_total, history_total = schedule_counts(outfit)
     return render(request, 'digital_wardrobe/outfit_detail.html', {
         'outfit': outfit,
         'outfit_items': outfit_items,
-        'has_listed': any(item.is_listed_for_swap and not item.is_deleted for item in outfit_items),
-        'has_deleted': any(item.is_deleted for item in outfit_items),
-        'has_unavailable': any(item.unavailable_in_outfits and not item.is_deleted for item in outfit_items),
+        'has_listed': any(item.status_label == 'Sedang ditawarkan' for item in outfit_items),
+        'has_deleted': any(item.status_label == 'Sudah dihapus dari lemari' for item in outfit_items),
+        'has_unavailable': any(item.is_swapped_away for item in outfit_items),
         'added_label': format_tanggal(outfit.created_at),
+        'upcoming_total': upcoming_total,
+        'history_total': history_total,
     })
 
 
@@ -392,6 +424,11 @@ def outfit_update(request, pk):
 def outfit_delete(request, pk):
     outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
     name = outfit.name
+    # Jadwal mendatang ikut dihapus; riwayat (hari ini & sebelumnya) tetap ada di Kalender Outfit.
+    upcoming = outfit.schedules.filter(date__gt=timezone.localdate())
+    removed = upcoming.count()
+    upcoming.delete()
     outfit.delete()
-    messages.success(request, f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.')
+    note = f' {removed} jadwal mendatang di Kalender Outfit ikut dihapus.' if removed else ''
+    messages.success(request, f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.{note}')
     return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit")

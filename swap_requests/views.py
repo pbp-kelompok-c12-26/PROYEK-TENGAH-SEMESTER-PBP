@@ -140,6 +140,9 @@ def create(request):
     if requested_item.user_id == request.user.pk:
         messages.error(request, 'Itu pakaianmu sendiri.')
         return redirect('swap_requests:index')
+    if SwapRequest.objects.is_locked(requested_item):
+        messages.error(request, 'Pakaian ini sedang dalam proses tukar dengan orang lain. Coba lagi nanti.')
+        return redirect('swap_requests:index')
 
     form = SwapRequestForm(request.POST or None, user=request.user, requested_item=requested_item)
     if request.method == 'POST' and form.is_valid():
@@ -256,9 +259,9 @@ def confirm(request, pk):
         if swap.status == SwapRequest.COMPLETED:
             messages.success(request, 'Pertukaran selesai! Pakaian barumu sudah masuk ke Lemari Saya.')
         elif swap.status == SwapRequest.REJECTED:
-            messages.success(request, 'Kalian sepakat membatalkan pertukaran. Request lain tetap bisa diproses.')
+            messages.success(request, 'Pertukaran dibatalkan. Request lain untuk pakaian ini tetap bisa diproses.')
         else:
-            messages.success(request, 'Pilihan tersimpan. Menunggu pihak lain memilih opsi yang sama.')
+            messages.success(request, 'Pilihan tersimpan. Menunggu pihak lain memilih Selesai swap.')
     return redirect('swap_requests:detail', pk=pk)
 
 

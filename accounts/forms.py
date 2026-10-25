@@ -1,5 +1,10 @@
 
+import re
+
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.db import transaction
+
 from .models import (
     UserProfile,
     STYLE_CHOICES,
@@ -94,3 +99,47 @@ class SizePreferenceForm(forms.ModelForm):
 
 # Nama lama dari versi onboarding sebelumnya
 OnboardingSizesForm = SizePreferenceForm
+
+
+class RegisterForm(UserCreationForm):
+    """Register: username + password, ditambah nomor HP & domisili untuk profil."""
+    phone_number = forms.CharField(
+        label='Nomor HP', max_length=20,
+        widget=forms.TextInput(attrs={'placeholder': 'Contoh: 081234567890', 'inputmode': 'tel', 'autocomplete': 'tel'}),
+    )
+    domicile = forms.CharField(
+        label='Domisili', max_length=100,
+        widget=forms.TextInput(attrs={'placeholder': 'Contoh: Depok', 'autocomplete': 'address-level2'}),
+    )
+
+    class Meta(UserCreationForm.Meta):
+        fields = ('username', 'phone_number', 'domicile')
+
+    def clean_phone_number(self):
+        raw = self.cleaned_data['phone_number']
+        phone = re.sub(r'[\s\-().]', '', raw)
+        if phone.startswith('+62'):
+            phone = '0' + phone[3:]
+        elif phone.startswith('62'):
+            phone = '0' + phone[2:]
+        if not re.fullmatch(r'0\d{8,13}', phone):
+            raise forms.ValidationError('Masukkan nomor HP yang valid, mis. 081234567890.')
+        if UserProfile.objects.filter(phone_number=phone).exists():
+            raise forms.ValidationError('Nomor HP ini sudah dipakai akun lain.')
+        return phone
+
+    def clean_domicile(self):
+        domicile = self.cleaned_data['domicile'].strip()
+        if not domicile:
+            raise forms.ValidationError('Wajib diisi.')
+        return domicile
+
+    def save(self, commit=True):
+        with transaction.atomic():
+            user = super().save(commit=commit)
+            if commit:
+                profile = UserProfile.for_user(user)
+                profile.phone_number = self.cleaned_data['phone_number']
+                profile.domicile = self.cleaned_data['domicile']
+                profile.save(update_fields=['phone_number', 'domicile'])
+        return user

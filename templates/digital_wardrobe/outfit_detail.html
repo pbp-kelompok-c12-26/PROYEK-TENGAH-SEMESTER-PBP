@@ -15,7 +15,7 @@
             <p class="text-sm italic text-swSlate mt-1">Dibuat pada: {{ added_label }} · {{ outfit_items|length }} pakaian</p>
         </div>
         <div class="flex gap-3">
-            <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit"
+            <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit" data-delete-upcoming="{{ upcoming_total }}" data-delete-history="{{ history_total }}"
                     class="h-10 px-6 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
                 Hapus
             </button>

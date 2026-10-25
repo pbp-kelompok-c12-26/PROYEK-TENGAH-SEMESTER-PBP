@@ -136,10 +136,13 @@
                                 <span class="font-semibold whitespace-nowrap">Pengaturan Profil/Akun</span>
                                 <span class="ml-auto px-2 py-0.5 rounded-full bg-swBlush text-[10px] font-semibold text-swBerry whitespace-nowrap">segera hadir</span>
                             </span>
-                            <a href="{% url 'accounts:logout' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-swBerry font-semibold hover:bg-swBlush transition-colors">
-                                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"/><path d="M10 12h10M16 8l4 4-4 4"/></svg>
-                                Log Out
-                            </a>
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-swBerry font-semibold hover:bg-swBlush transition-colors text-left">
+                                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"/><path d="M10 12h10M16 8l4 4-4 4"/></svg>
+                                    Log Out
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </details>
