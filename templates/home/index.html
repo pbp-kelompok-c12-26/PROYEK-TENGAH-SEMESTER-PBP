@@ -19,7 +19,11 @@
     <!-- SAPAAN -->
     <header class="space-y-1">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-swNavy tracking-tight">Temukan pakaian barumu.</h1>
+        {% if user.is_authenticated %}
         <p class="text-sm text-swSlate">Hai, <span class="font-bold text-swNavy">{{ user.profile.name|default:user.username }}</span>! Ada banyak pakaian yang siap kamu ajak berpetualang lagi.</p>
+        {% else %}
+        <p class="text-sm text-swSlate">Jelajahi pakaian yang siap kamu ajak berpetualang lagi. Masuk untuk mengajukan swap dan menyukai item.</p>
+        {% endif %}
     </header>
 
     {% include 'home/partials/hero_carousel.html' %}
@@ -160,7 +164,7 @@
                     {% else %}
                     <h3 class="relative text-lg font-extrabold text-swNavy">Belum ada pakaian yang ditawarkan</h3>
                     <p class="relative text-sm text-swSlate mt-2 max-w-md mx-auto">Jadilah yang pertama! Tawarkan pakaian dari lemarimu supaya bisa ditukar dengan pengguna lain.</p>
-                    <a href="{% url 'items_for_swap:index' %}" class="relative mt-5 inline-flex h-11 px-5 items-center gap-2 rounded-full sw-btn-holo text-white text-sm font-bold">
+                    <a href="{% url 'items_for_swap:index' %}"{% if not request.user.is_authenticated %} data-auth-required{% endif %} class="relative mt-5 inline-flex h-11 px-5 items-center gap-2 rounded-full sw-btn-holo text-white text-sm font-bold">
                         Tawarkan pakaian
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </a>

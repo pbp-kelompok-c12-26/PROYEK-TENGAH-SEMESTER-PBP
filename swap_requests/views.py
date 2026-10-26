@@ -3,12 +3,15 @@ from collections import Counter, OrderedDict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from accounts.models import UserProfile
 from digital_wardrobe.models import ClothingItem
+from home.models import LikedSwapItem
 from items_for_swap.models import ItemForSwap
 from .forms import ConfirmForm, SwapRequestForm, offerable_items
 from .models import SwapRequest
@@ -37,6 +40,19 @@ def _base_qs():
 def _get_for_user(request, pk):
     """Request hanya boleh dilihat oleh pengirim atau pemilik pakaian."""
     return get_object_or_404(_base_qs().visible_to(request.user), pk=pk)
+
+
+def _party_summary(user):
+    """Data ringkas pemilik pakaian yang ditampilkan pada overview request."""
+    profile = UserProfile.for_user(user)
+    return {
+        'profile': profile,
+        'wardrobe_count': ClothingItem.objects.in_wardrobe(user).count(),
+        'likes_count': LikedSwapItem.objects.filter(listing__user=user).count(),
+        'completed_swap_count': SwapRequest.objects.filter(
+            Q(requester=user) | Q(owner=user), status=SwapRequest.COMPLETED,
+        ).count(),
+    }
 
 
 # R: daftar request (tab Request masuk / Request kamu)
@@ -188,11 +204,34 @@ def detail(request, pk):
         clothing_item_id=swap.requested_item_id,
         user=swap.owner,
     ).order_by('-posted_at').first() if swap.requested_item_id else None
+    requester_summary = _party_summary(swap.requester)
+    owner_summary = _party_summary(swap.owner)
+    created_at_local = timezone.localtime(
+        swap.created_at,
+        timezone=timezone.get_fixed_timezone(7 * 60),
+    )
+    my_summary = requester_summary if me_requester else owner_summary
+    other_summary = owner_summary if me_requester else requester_summary
+    get_summary = owner_summary if me_requester else requester_summary
+    give_summary = requester_summary if me_requester else owner_summary
+    get_caption = (
+        f"{get_summary['profile'].name} akan memberikan ke kamu"
+        if me_requester else f"{get_summary['profile'].name} menawarkan"
+    )
     return render(request, 'swap_requests/detail.html', {
         'swap': swap,
         'role': role,
         'other': swap.other_party(request.user),
-        'tanggal': format_tanggal(swap.created_at),
+        'my_profile': my_summary['profile'],
+        'other_profile': other_summary['profile'],
+        'get_profile': get_summary['profile'],
+        'give_profile': give_summary['profile'],
+        'get_stats': get_summary,
+        'give_stats': give_summary,
+        'get_caption': get_caption,
+        'give_caption': 'Kamu memberikan',
+        'tanggal': format_tanggal(created_at_local),
+        'waktu': created_at_local.strftime('%H.%M'),
         # kiri: pakaian yang kamu dapat, kanan: pakaian yang kamu berikan
         'get_item': swap.requested_item if me_requester else swap.offered_item,
         'get_name': swap.requested_item_name if me_requester else swap.offered_item_name,

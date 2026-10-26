@@ -1,2 +1,8 @@
-{% comment %}Avatar inisial. Pakai: include 'swap_requests/partials/avatar.html' with person=user size='w-9 h-9 text-sm'{% endcomment %}
-<span class="{{ size|default:'w-9 h-9 text-sm' }} shrink-0 rounded-full bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-2 ring-white text-white font-bold inline-flex items-center justify-center" title="@{{ person.username }}">{{ person.username|first|upper }}</span>
+{% comment %}Avatar foto profil bila tersedia, dengan fallback inisial.{% endcomment %}
+<span class="{{ size|default:'w-9 h-9 text-sm' }} shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-2 ring-white text-white font-bold inline-flex items-center justify-center" title="@{{ person.username }}">
+    {% if profile and profile.profile_picture %}
+    <img src="{{ profile.profile_picture.url }}" alt="Foto profil {{ profile.name }}" class="w-full h-full object-cover">
+    {% else %}
+    {{ person.username|first|upper }}
+    {% endif %}
+</span>
