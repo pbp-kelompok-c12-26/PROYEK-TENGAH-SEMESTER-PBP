@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Profil {{ target_profile.name }} (@{{ target_user.username }}) · Swapdrobe{% endblock %}
+
+{% block extra_head %}
+<style>
+    .sw-profile-hero {
+        background: linear-gradient(115deg, #F5BFC1 0%, #FBF0DF 24%, #C2CCE2 58%, #475E97 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    {% include 'accounts/partials/messages.html' %}
+
+    <!-- HERO CONTAINER PROFIL PUBLIK -->
+    <section class="sw-profile-hero rounded-[2rem] p-5 sm:p-7 lg:p-8 shadow-[0_24px_48px_-28px_rgba(23,31,99,0.45)] space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-swNavy tracking-tight">Profil Pengguna</h1>
+            {% if is_own_profile %}
+            <a href="{% url 'accounts:profile' %}"
+               class="h-10 px-5 inline-flex items-center gap-2 rounded-full bg-white text-xs sm:text-sm font-bold text-swNavy shadow-sm hover:bg-swCream transition-colors">
+                Ke Profil Saya
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- KARTU PUTIH IDENTITAS & PREFERENSI (TANPA NOMOR HP) -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 min-w-0 flex-1">
+                    {% include 'accounts/partials/avatar.html' with profile=target_profile size='w-24 h-24 sm:w-28 sm:h-28 text-3xl' %}
+
+                    <div class="min-w-0 flex-1 space-y-1.5">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-swNavy truncate">{{ target_profile.name }}</h2>
+                        <p class="text-xs sm:text-sm font-semibold text-[#3C78D8]">@{{ target_user.username }}</p>
+
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-swSlate pt-0.5">
+                            <span class="inline-flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-swNavy shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
+                                </svg>
+                                {% if target_profile.domicile %}
+                                <span>{{ target_profile.domicile }}</span>
+                                {% else %}
+                                <span class="italic text-swSlate/70">Domisili belum diisi</span>
+                                {% endif %}
+                            </span>
+                            <span aria-hidden="true">·</span>
+                            <span>Bergabung {{ target_user.date_joined|date:"F Y" }}</span>
+                        </div>
+
+                        {% if target_profile.bio %}
+                        <p class="pt-1.5 text-xs sm:text-sm text-swNavy/90 leading-relaxed whitespace-pre-line">{{ target_profile.bio }}</p>
+                        {% else %}
+                        <p class="pt-1.5 text-xs sm:text-sm italic text-swSlate/70">Belum ada biografi.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Kanan: 3 Badge Preferensi -->
+                <div class="flex flex-col sm:items-start lg:items-end gap-2.5 shrink-0">
+                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#D4F5B2] text-xs text-swNavy">
+                        <strong class="font-bold">Ukuran pakaian favorit</strong>
+                        <span>·</span>
+                        <span class="font-semibold">
+                            {% if target_profile.preferred_clothing_sizes %}
+                                {{ target_profile.preferred_clothing_sizes|join:", " }}
+                            {% else %}
+                                Belum diisi
+                            {% endif %}
+                        </span>
+                    </span>
+
+                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#FCE7CF] text-xs text-swNavy">
+                        <strong class="font-bold">Ukuran alas kaki favorit</strong>
+                        <span>·</span>
+                        <span class="font-semibold">
+                            {% if target_profile.preferred_shoe_sizes %}
+                                {% for shoe in target_profile.preferred_shoe_sizes %}EU {{ shoe }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            {% else %}
+                                Belum diisi
+                            {% endif %}
+                        </span>
+                    </span>
+
+                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#EFE2FA] text-xs text-swNavy">
+                        <strong class="font-bold">Gaya</strong>
+                        <span>·</span>
+                        <span class="font-semibold text-[#3C2A78]">
+                            {% if target_profile.style_labels %}
+                                {{ target_profile.style_labels|join:", " }}
+                            {% else %}
+                                Belum dipilih
+                            {% endif %}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 KARTU STATISTIK -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Ringkasan statistik pengguna">
+            <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
+                <p class="text-xs font-medium text-swSlate">Pakaian tersedia untuk swap</p>
+                <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ swap_count }}</p>
+            </div>
+            <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
+                <p class="text-xs font-medium text-swSlate">Swap selesai</p>
+                <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ completed_swap_count }}</p>
+            </div>
+            <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
+                <p class="text-xs font-medium text-swSlate">Like didapatkan</p>
+                <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ likes_received_count }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTER TAB -->
+    <nav class="flex flex-wrap items-center gap-2.5" aria-label="Filter pakaian swap">
+        <a href="?tab=all"
+           class="h-9 px-5 inline-flex items-center rounded-full text-xs font-bold transition-colors {% if tab == 'all' %}bg-[#3B66AC] text-white shadow-sm{% else %}bg-white text-[#3B66AC] border border-swNavy/10 hover:bg-swBlush/40{% endif %}">
+            Semua
+        </a>
+        <a href="?tab=available"
+           class="h-9 px-5 inline-flex items-center rounded-full text-xs font-bold transition-colors {% if tab == 'available' %}bg-[#3B66AC] text-white shadow-sm{% else %}bg-white text-[#3B66AC] border border-swNavy/10 hover:bg-swBlush/40{% endif %}">
+            Available untuk swap
+        </a>
+        <a href="?tab=reserved"
+           class="h-9 px-5 inline-flex items-center rounded-full text-xs font-bold transition-colors {% if tab == 'reserved' %}bg-[#3B66AC] text-white shadow-sm{% else %}bg-white text-[#3B66AC] border border-swNavy/10 hover:bg-swBlush/40{% endif %}">
+            Reserved
+        </a>
+    </nav>
+
+    <!-- DAFTAR ITEM SWAP PENGGUNA -->
+    {% if swap_listings %}
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for listing in swap_listings %}
+            {% include 'accounts/partials/listing_card.html' with listing=listing owner_profile=target_profile %}
+        {% endfor %}
+    </section>
+    {% else %}
+    <section class="bg-white rounded-3xl border border-swNavy/10 p-10 text-center space-y-2 shadow-sm">
+        <p class="text-base font-extrabold text-swNavy">Belum ada pakaian yang sedang ditawarkan untuk swap.</p>
+        <p class="text-xs text-swSlate">{{ target_profile.name }} belum memiliki item aktif pada filter ini.</p>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
