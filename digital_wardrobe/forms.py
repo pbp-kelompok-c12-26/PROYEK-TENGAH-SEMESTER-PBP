@@ -7,14 +7,9 @@ MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_IMAGE_TYPES = ('image/jpeg', 'image/png')
 ALLOWED_IMAGE_EXTS = ('.jpg', '.jpeg', '.png')
 
-INPUT_CLASS = (
-    'w-full h-10 px-3 rounded-lg border border-swNavy/15 bg-white text-sm text-swNavy '
-    'placeholder:text-swSlate/70 focus:outline-none focus:ring-2 focus:ring-swPlum/40 focus:border-swPlum'
-)
-TEXTAREA_CLASS = (
-    'w-full px-3 py-2.5 rounded-lg border border-swNavy/15 bg-white text-sm text-swNavy '
-    'placeholder:text-swSlate/70 focus:outline-none focus:ring-2 focus:ring-swPlum/40 focus:border-swPlum'
-)
+# Class CSS untuk input form; style-nya ada di static/digital_wardrobe/css/wardrobe.css
+INPUT_CLASS = 'wd-input'
+TEXTAREA_CLASS = 'wd-textarea'
 
 
 class ClothingItemForm(forms.ModelForm):
@@ -33,7 +28,7 @@ class ClothingItemForm(forms.ModelForm):
             'description': 'Deskripsi',
         }
         widgets = {
-            'image': forms.FileInput(attrs={'accept': 'image/jpeg,image/png', 'class': 'sr-only'}),
+            'image': forms.FileInput(attrs={'accept': 'image/jpeg,image/png', 'class': 'wd-sr-only'}),
             'name': forms.TextInput(attrs={'class': INPUT_CLASS, 'placeholder': 'Contoh: Kemeja linen krem'}),
             'shoe_size': forms.NumberInput(attrs={
                 'class': INPUT_CLASS,

@@ -889,3 +889,369 @@ body.wd-no-scroll {
 .wd-dialog__btn--danger:hover {
     background-color: rgb(175 63 95 / 0.9);
 }
+
+/* =========================================================
+   Form: field, input, modal tambah/edit pakaian
+   (partials/field.html, partials/item_form_modal.html, forms.py)
+   ========================================================= */
+
+/* Satu field form: label + input + pesan error */
+.wd-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.wd-field__label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-required {
+    color: var(--sw-berry);
+}
+
+.wd-error {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-berry);
+}
+
+.wd-hint {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+
+/* Class input dipasang lewat widget di digital_wardrobe/forms.py */
+.wd-input {
+    height: 2.5rem;
+    width: 100%;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.15);
+    background-color: var(--sw-white);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+}
+
+.wd-input::-moz-placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.wd-input::placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.wd-input:focus {
+    border-color: var(--sw-plum);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(96 99 180 / 0.4);
+}
+
+.wd-textarea {
+    width: 100%;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.15);
+    background-color: var(--sw-white);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+}
+
+.wd-textarea::-moz-placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.wd-textarea::placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.wd-textarea:focus {
+    border-color: var(--sw-plum);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(96 99 180 / 0.4);
+}
+
+.wd-form-row {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .wd-form-row--2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 640px) {
+    .wd-form-row--3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+
+/* ---------- Modal (dipakai form pakaian & form outfit) ---------- */
+.wd-modal {
+    position: fixed;
+    inset: 0px;
+    z-index: 60;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+@media (min-width: 640px) {
+    .wd-modal {
+        align-items: center;
+    }
+}
+
+.wd-modal__panel {
+    position: relative;
+    isolation: isolate;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 56rem;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background-image: linear-gradient(to bottom right, #F2B8CF, #E2CDF5, #C3D0F7);
+    padding: 1rem;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+@media (min-width: 640px) {
+    .wd-modal__panel {
+        padding: 1.25rem;
+    }
+}
+
+.wd-modal__glow {
+    pointer-events: none;
+    position: absolute;
+    right: -4rem;
+    top: -5rem;
+    z-index: -10;
+    height: 16rem;
+    width: 16rem;
+    border-radius: 9999px;
+    background-color: rgb(255 255 255 / 0.4);
+    filter: blur(64px);
+}
+
+.wd-modal__head {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.wd-modal__title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+@media (min-width: 640px) {
+    .wd-modal__title {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+}
+
+.wd-modal__close {
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    color: var(--sw-navy);
+}
+
+.wd-modal__close:hover {
+    background-color: rgb(255 255 255 / 0.6);
+}
+
+.wd-modal__close svg {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.wd-modal__alert {
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    background-color: var(--sw-white);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-berry);
+}
+
+.wd-modal__footer {
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.wd-modal__cancel {
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.25);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-modal__cancel:hover {
+    background-color: var(--sw-cream);
+}
+
+.wd-modal__submit:disabled {
+    opacity: 0.6;
+}
+
+
+/* Kotak putih di dalam modal */
+.wd-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-radius: 1rem;
+    background-color: var(--sw-white);
+    padding: 1.25rem;
+}
+
+.wd-panel__title {
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+
+/* ---------- Isi form pakaian ---------- */
+.wd-item-form__grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .wd-item-form__grid {
+        grid-template-columns: minmax(0,1fr) minmax(0,2fr);
+    }
+}
+
+.wd-photo-drop {
+    position: relative;
+    display: block;
+    aspect-ratio: 4/3;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-style: dashed;
+    border-color: rgb(23 31 99 / 0.2);
+    background-color: var(--sw-cream);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.wd-photo-drop:hover {
+    border-color: var(--sw-plum);
+}
+
+.wd-photo-drop__img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.wd-photo-drop__placeholder {
+    position: absolute;
+    inset: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.wd-photo-drop__plus {
+    font-size: 1.5rem;
+    line-height: 1;
+    color: var(--sw-navy);
+}
+
+.wd-btn-file {
+    display: inline-flex;
+    height: 2.25rem;
+    cursor: pointer;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-start;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.2);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-btn-file:hover {
+    background-color: var(--sw-cream);
+}
+
+.wd-btn-file svg {
+    height: 1rem;
+    width: 1rem;
+}
+
+.wd-file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-navy);
+}

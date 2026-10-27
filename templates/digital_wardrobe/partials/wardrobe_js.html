@@ -32,7 +32,7 @@
         modalRoot.innerHTML = html;
         document.body.classList.add('wd-no-scroll');  // kunci scroll halaman di belakang modal
         bindForm(modalRoot.querySelector('[data-item-form]'));
-        const first = modalRoot.querySelector('input:not([type=hidden]):not(.sr-only), select, textarea');
+        const first = modalRoot.querySelector('input:not([type=hidden]):not(.wd-sr-only), select, textarea');
         if (first) first.focus();
     }
 
@@ -64,8 +64,8 @@
         if (category && sizeField && shoeField) {
             const syncSize = () => {
                 const isShoe = category.value === 'footwear';
-                sizeField.classList.toggle('hidden', isShoe);
-                shoeField.classList.toggle('hidden', !isShoe);
+                sizeField.hidden = isShoe;
+                shoeField.hidden = !isShoe;
             };
             category.addEventListener('change', syncSize);
             syncSize();
@@ -94,8 +94,8 @@
                 return;
             }
             preview.src = URL.createObjectURL(file);
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
+            preview.hidden = false;
+            placeholder.hidden = true;
             fileName.textContent = file.name;
         });
 
