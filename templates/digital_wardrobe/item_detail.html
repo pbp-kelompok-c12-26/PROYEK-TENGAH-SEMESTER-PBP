@@ -8,104 +8,105 @@
 {% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <a href="{% url 'digital_wardrobe:index' %}" class="inline-flex items-center gap-1.5 text-sm font-medium text-swSlate hover:text-swNavy">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+<div class="wd-detail">
+    <a href="{% url 'digital_wardrobe:index' %}" class="wd-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
         Kembali ke lemari
     </a>
 
     <div>
-        <div class="flex flex-wrap items-center gap-3">
-            <h1 class="text-2xl sm:text-3xl font-bold text-swNavy">{{ item.name }}</h1>
+        <div class="wd-detail__title-row">
+            <h1 class="wd-detail__title">{{ item.name }}</h1>
             {% if item.is_listed_for_swap %}
-            <span class="px-3 py-1 rounded-full bg-swBerry text-white text-xs font-semibold">Listed for Swap</span>
+            <span class="wd-status-pill">Listed for Swap</span>
             {% elif swap_request_locked %}
-            <span class="px-3 py-1 rounded-full bg-swBerry text-white text-xs font-semibold">Pakaian sedang ditawarkan</span>
+            <span class="wd-status-pill">Pakaian sedang ditawarkan</span>
             {% endif %}
         </div>
-        <p class="text-sm italic text-swSlate mt-1">Ditambahkan pada: {{ added_label }}</p>
+        <p class="wd-detail__date">Ditambahkan pada: {{ added_label }}</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        <div class="rounded-2xl overflow-hidden bg-white aspect-[4/3]">
+    <div class="wd-detail__grid">
+        <div class="wd-detail__photo">
             {% if item.image %}
-            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">
+            <img src="{{ item.image.url }}" alt="{{ item.name }}">
             {% endif %}
         </div>
 
-        <div class="flex flex-col gap-4">
-            <dl class="grid grid-cols-3 gap-3">
-                <div class="bg-white rounded-xl px-3 py-2.5">
-                    <dt class="text-[11px] text-swSlate">Kategori</dt>
-                    <dd class="text-sm font-bold text-swNavy">{{ item.get_category_display }}</dd>
+        <div class="wd-detail__info">
+            <dl class="wd-specs wd-specs--3">
+                <div class="wd-spec">
+                    <dt>Kategori</dt>
+                    <dd>{{ item.get_category_display }}</dd>
                 </div>
-                <div class="bg-white rounded-xl px-3 py-2.5">
-                    <dt class="text-[11px] text-swSlate">Ukuran</dt>
-                    <dd class="text-sm font-bold text-swNavy">{{ item.size_label }}</dd>
+                <div class="wd-spec">
+                    <dt>Ukuran</dt>
+                    <dd>{{ item.size_label }}</dd>
                 </div>
-                <div class="bg-white rounded-xl px-3 py-2.5">
-                    <dt class="text-[11px] text-swSlate">Gender</dt>
-                    <dd class="text-sm font-bold text-swNavy">{{ item.get_gender_display }}</dd>
+                <div class="wd-spec">
+                    <dt>Gender</dt>
+                    <dd>{{ item.get_gender_display }}</dd>
                 </div>
             </dl>
-            <dl class="grid grid-cols-2 gap-3">
-                <div class="bg-white rounded-xl px-3 py-2.5">
-                    <dt class="text-[11px] text-swSlate">Warna</dt>
-                    <dd class="text-sm font-bold text-swNavy">{{ item.get_color_display }}</dd>
+            <dl class="wd-specs wd-specs--2">
+                <div class="wd-spec">
+                    <dt>Warna</dt>
+                    <dd>{{ item.get_color_display }}</dd>
                 </div>
-                <div class="bg-white rounded-xl px-3 py-2.5">
-                    <dt class="text-[11px] text-swSlate">Kondisi</dt>
-                    <dd class="text-sm font-bold text-swNavy">{{ item.get_condition_display }}</dd>
+                <div class="wd-spec">
+                    <dt>Kondisi</dt>
+                    <dd>{{ item.get_condition_display }}</dd>
                 </div>
             </dl>
 
-            <div class="bg-white rounded-2xl p-4 min-h-[7rem] shadow-[inset_0_0_0_1px_rgba(23,31,99,0.06)]">
+            <div class="wd-note">
                 {% if item.description %}
-                <p class="text-sm text-swNavy whitespace-pre-line">{{ item.description }}</p>
+                <p class="wd-note__text">{{ item.description }}</p>
                 {% else %}
-                <p class="text-sm text-swSlate italic">Belum ada catatan untuk pakaian ini.</p>
+                <p class="wd-note__empty">Belum ada catatan untuk pakaian ini.</p>
                 {% endif %}
             </div>
 
-            <div class="flex gap-3 rounded-2xl bg-gradient-to-r from-[#FBE7F0] via-[#EFE3FA] to-[#E3EAFB] ring-1 ring-swLilac/70 px-4 py-3.5">
-                <svg class="w-5 h-5 shrink-0 mt-0.5 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+            <div class="wd-worn">
+                <svg class="wd-worn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
                 <div>
                     {% if last_worn_label %}
-                    <p class="text-sm font-semibold text-swNavy">Terakhir kali dipakai · {{ last_worn_label }}</p>
+                    <p class="wd-worn__title">Terakhir kali dipakai · {{ last_worn_label }}</p>
                     {% else %}
-                    <p class="text-sm font-semibold text-swNavy">Belum pernah dipakai</p>
+                    <p class="wd-worn__title">Belum pernah dipakai</p>
                     {% endif %}
-                    <p class="text-xs text-swSlate mt-1">Tambahkan outfit yang terdiri dari pakaian ini ke dalam Kalender Outfit untuk memperbarui tanggal terakhir kali dipakai.</p>
+                    <p class="wd-worn__text">Tambahkan outfit yang terdiri dari pakaian ini ke dalam Kalender Outfit untuk memperbarui tanggal terakhir kali dipakai.</p>
                     {% if item_outfits %}
-                    <p class="text-xs text-swSlate mt-1">
+                    <p class="wd-worn__text">
                         Ada di {{ outfit_count }} outfit:
-                        {% for outfit in item_outfits %}<a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="font-semibold text-swPlum hover:underline">{{ outfit.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if outfit_count > item_outfits|length %}, …{% endif %}
+                        {% for outfit in item_outfits %}<a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}">{{ outfit.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if outfit_count > item_outfits|length %}, …{% endif %}
                     </p>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="flex items-center justify-between gap-3 pt-2">
+            <div class="wd-detail__actions">
+                {# Kalau pakaian dipakai swap request aktif, tombol Hapus & Edit dikunci (class is-locked + atribut disabled) #}
                 <button type="button" {% if not swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ outfit_count }}"{% endif %}
                         {% if swap_request_locked %}disabled title="Batalkan swap request aktif terlebih dahulu" aria-describedby="swap-request-lock-note"{% endif %}
-                        class="h-10 px-6 rounded-lg text-sm font-semibold {% if swap_request_locked %}bg-swCream text-swSlate cursor-not-allowed{% else %}bg-swBerry text-white hover:bg-swBerry/90{% endif %}">
+                        class="wd-btn wd-btn--wide {% if swap_request_locked %}is-locked{% else %}wd-btn--danger{% endif %}">
                     Hapus
                 </button>
-                <div class="flex flex-wrap justify-end gap-2">
+                <div class="wd-detail__actions-right">
                     <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}?item={{ item.pk }}"
-                            class="h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
+                            class="wd-btn wd-btn--holo sw-btn-holo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4c-.6 1.4-2.2 2.4-4 2.4S8.6 5.4 8 4z"/></svg>
                         Pakai untuk Outfit
                     </button>
                     <button type="button" {% if not swap_request_locked %}data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"{% else %}disabled title="Batalkan swap request aktif terlebih dahulu"{% endif %}
-                            class="h-10 px-6 inline-flex items-center gap-2 rounded-lg text-sm font-semibold {% if swap_request_locked %}bg-swCream text-swSlate cursor-not-allowed{% else %}sw-btn-holo text-white{% endif %}">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
+                            class="wd-btn wd-btn--wide {% if swap_request_locked %}is-locked{% else %}wd-btn--holo sw-btn-holo{% endif %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
                         Edit
                     </button>
                 </div>
             </div>
             {% if swap_request_locked %}
-            <p id="swap-request-lock-note" class="text-xs text-swBerry">Pakaian ini sedang dipakai dalam swap request. Batalkan request aktif terlebih dahulu sebelum mengedit, menghapus, atau menawarkannya di Items for Swap.</p>
+            <p id="swap-request-lock-note" class="wd-lock-note">Pakaian ini sedang dipakai dalam swap request. Batalkan request aktif terlebih dahulu sebelum mengedit, menghapus, atau menawarkannya di Items for Swap.</p>
             {% endif %}
         </div>
     </div>
