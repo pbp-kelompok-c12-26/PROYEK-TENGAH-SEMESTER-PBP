@@ -1,0 +1,276 @@
+/* =========================================================
+   Swapdrobe: CSS dasar untuk semua halaman
+   - Token warna & font (pengganti tailwind.config di base.html)
+   - Reset dasar browser (setara "preflight" Tailwind), supaya
+     tampilan tetap sama setelah Tailwind dilepas.
+   File ini dimuat di base.html sebelum CSS lain.
+   ========================================================= */
+
+:root {
+    /* Palet Swapdrobe (dari desain Figma) */
+    --sw-navy: #171F63;      /* teks utama, judul, logo */
+    --sw-berry: #AF3F5F;     /* tombol utama, hero */
+    --sw-plum: #6063B4;      /* aksen biru-ungu */
+    --sw-forest: #40794C;    /* aksen hijau */
+    --sw-pink: #D788B2;      /* highlight & dekorasi */
+    --sw-mint: #AAD0AE;      /* latar banner hijau */
+    --sw-lavender: #C1C7D6;  /* latar banner ungu */
+    --sw-lilac: #E6C4F9;     /* tab navigasi aktif */
+    --sw-blush: #EDDFEE;     /* latar pink muda, hover */
+    --sw-cream: #F7F5F0;     /* latar halaman */
+    --sw-slate: #56546A;     /* teks pendukung */
+    --sw-white: #FFFFFF;
+
+    /* Warna efek hologram */
+    --sw-holo-lilac: #C9A6E8;
+    --sw-holo-blue: #9FB4F0;
+
+    /* Tombol navy -> hologram biru */
+    --sw-btn-navy: #26307F;
+
+    --sw-font-sans: "Poppins", sans-serif;
+}
+
+/* ---------- Reset dasar ---------- */
+
+*,
+::before,
+::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+html,
+:host {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -moz-tab-size: 4;
+    tab-size: 4;
+    font-family: var(--sw-font-sans);
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    line-height: inherit;
+}
+
+hr {
+    height: 0;
+    color: inherit;
+    border-top-width: 1px;
+}
+
+abbr:where([title]) {
+    -webkit-text-decoration: underline dotted;
+            text-decoration: underline dotted;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+b,
+strong {
+    font-weight: bolder;
+}
+
+code,
+kbd,
+samp,
+pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-feature-settings: normal;
+    font-variation-settings: normal;
+    font-size: 1em;
+}
+
+small {
+    font-size: 80%;
+}
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+sup {
+    top: -0.5em;
+}
+
+table {
+    text-indent: 0;
+    border-color: inherit;
+    border-collapse: collapse;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    margin: 0;
+    padding: 0;
+}
+
+button,
+select {
+    text-transform: none;
+}
+
+button,
+input:where([type='button']),
+input:where([type='reset']),
+input:where([type='submit']) {
+    -webkit-appearance: button;
+    background-color: transparent;
+    background-image: none;
+}
+
+:-moz-focusring {
+    outline: auto;
+}
+
+:-moz-ui-invalid {
+    box-shadow: none;
+}
+
+progress {
+    vertical-align: baseline;
+}
+
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+    height: auto;
+}
+
+[type='search'] {
+    -webkit-appearance: textfield;
+    outline-offset: -2px;
+}
+
+::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+::-webkit-file-upload-button {
+    -webkit-appearance: button;
+    font: inherit;
+}
+
+summary {
+    display: list-item;
+}
+
+blockquote,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+figure,
+p,
+pre {
+    margin: 0;
+}
+
+fieldset {
+    margin: 0;
+    padding: 0;
+}
+
+legend {
+    padding: 0;
+}
+
+ol,
+ul,
+menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+dialog {
+    padding: 0;
+}
+
+textarea {
+    resize: vertical;
+}
+
+input::-moz-placeholder, textarea::-moz-placeholder {
+    opacity: 1;
+    color: #9ca3af;
+}
+
+input::placeholder,
+textarea::placeholder {
+    opacity: 1;
+    color: #9ca3af;
+}
+
+button,
+[role="button"] {
+    cursor: pointer;
+}
+
+:disabled {
+    cursor: default;
+}
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+    display: block;
+    vertical-align: middle;
+}
+
+img,
+video {
+    max-width: 100%;
+    height: auto;
+}
+
+[hidden]:where(:not([hidden="until-found"])) {
+    display: none;
+}

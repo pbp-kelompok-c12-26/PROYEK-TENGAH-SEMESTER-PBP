@@ -1,0 +1,17 @@
+/* =========================================================
+   Swapdrobe: CSS modul Home (Jelajahi, Liked, Onboarding)
+   ---------------------------------------------------------
+   Cara pakai di template modul ini:
+
+     {% load static %}
+     {% block extra_css %}
+     <link rel="stylesheet" href="{% static 'home/css/home.css' %}">
+     {% endblock %}
+
+   Aturan:
+   - Pakai warna dari token di static/css/base.css, mis. var(--sw-navy).
+   - Kasih awalan nama class khusus modul ini (mis. .home-...)
+     supaya tidak bentrok dengan modul lain atau dengan Tailwind
+     (jangan pakai nama seperti .hidden, .flex, .grid, .container).
+   - Komponen yang dipakai banyak modul taruh di static/css/components.css.
+   ========================================================= */

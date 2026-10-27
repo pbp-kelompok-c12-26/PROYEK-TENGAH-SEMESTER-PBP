@@ -1,4 +1,4 @@
-{% load wardrobe_tags %}<!DOCTYPE html>
+{% load static wardrobe_tags %}<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS CDN -->
+    <!-- CSS dasar: token warna & font, reset (static/css/base.css) -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+    <!-- Tailwind CSS CDN: masih dipakai header/footer & modul yang belum pindah ke CSS.
+         Hapus bagian ini kalau semua template sudah memakai file CSS. -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -49,29 +53,10 @@
             }
         }
     </script>
-    <style>
-        /* Tombol & badge yang memakai warna lama (swRed / swGreen / swBlue), dan class sw-btn-holo:
-           navy muda, berubah jadi hologram biru saat kursor di atasnya.
-           Warna teks text-swRed / text-swBlue tidak ikut berubah. */
-        :root .bg-swRed, :root .bg-swGreen, :root .bg-swBlue, :root .sw-btn-holo {
-            background-color: #26307F;
-            background-image:
-                linear-gradient(110deg, transparent 42%, rgba(255,255,255,.4) 50%, transparent 58%),
-                linear-gradient(110deg, #26307F 0%, #26307F 40%, #2B3A92 54%, #4A66CC 66%, #8FA9F2 76%, #5C7BDA 86%, #2B3A92 100%);
-            background-size: 250% 100%, 250% 100%;
-            background-position: 130% 0, 0% 0;
-        }
-        :root :is(a, button).bg-swRed, :root :is(a, button).bg-swGreen, :root :is(a, button).bg-swBlue, :root .sw-btn-holo {
-            transition: background-position .7s ease, box-shadow .3s ease;
-        }
-        :root :is(a, button).bg-swRed:hover, :root :is(a, button).bg-swGreen:hover, :root :is(a, button).bg-swBlue:hover, :root .sw-btn-holo:hover:not(:disabled) {
-            background-position: -30% 0, 100% 0;
-            box-shadow: 0 8px 22px -8px rgba(43, 58, 146, .55), 0 0 0 3px rgba(159, 180, 240, .45);
-        }
-        @media (prefers-reduced-motion: reduce) {
-            :root :is(a, button).bg-swRed, :root :is(a, button).bg-swGreen, :root :is(a, button).bg-swBlue, :root .sw-btn-holo { transition: none; }
-        }
-    </style>
+    <!-- Komponen bersama: tombol hologram, holo banner, badge status (static/css/components.css) -->
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <!-- CSS khusus modul: diisi oleh template tiap modul -->
+    {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-swCream text-swNavy font-sans min-h-screen flex flex-col antialiased">
