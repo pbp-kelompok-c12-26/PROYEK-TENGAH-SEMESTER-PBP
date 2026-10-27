@@ -42,3 +42,174 @@
         transition: none;
     }
 }
+
+/* ---------- Holo Banner (digital_wardrobe/partials/holo_banner.html) ---------- */
+.sw-holo-banner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background-image: linear-gradient(to bottom right, var(--sw-berry), #C65A86, #8F86D6);
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 1.75rem;
+    padding-bottom: 1.75rem;
+    box-shadow: 0 10px 30px -12px rgba(23,31,99,0.35);
+}
+
+@media (min-width: 640px) {
+    .sw-holo-banner {
+        padding-left: 2rem;
+        padding-right: 2rem;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+}
+
+.sw-holo-banner__inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .sw-holo-banner__inner {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.sw-holo-banner__text {
+    min-width: 0px;
+}
+
+.sw-holo-banner__eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    color: rgb(255 255 255 / 0.8);
+}
+
+@media (min-width: 640px) {
+    .sw-holo-banner__eyebrow {
+        font-size: 0.75rem;
+        line-height: 1rem;
+    }
+}
+
+.sw-holo-banner__title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--sw-white);
+}
+
+@media (min-width: 640px) {
+    .sw-holo-banner__title {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+    }
+}
+
+.sw-holo-banner__eyebrow + .sw-holo-banner__title {
+    margin-top: 0.25rem;
+}
+
+.sw-holo-banner__subtitle {
+    margin-top: 0.5rem;
+    max-width: 36rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(255 255 255 / 0.9);
+}
+
+@media (min-width: 640px) {
+    .sw-holo-banner__subtitle {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+}
+
+.sw-holo-banner__button {
+    display: inline-flex;
+    height: 2.75rem;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-start;
+    border-radius: 9999px;
+    background-color: var(--sw-white);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+    box-shadow: 0 6px 16px -6px rgba(23,31,99,0.45);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.sw-holo-banner__button:hover {
+    background-color: var(--sw-blush);
+}
+
+@media (min-width: 640px) {
+    .sw-holo-banner__button {
+        align-self: auto;
+    }
+}
+
+
+/* ---------- Cahaya latar hologram (digital_wardrobe/partials/holo_bg.html) ----------
+   Taruh di dalam elemen yang position: relative; overflow: hidden. */
+.sw-holo-glow {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(64px);
+}
+
+.sw-holo-glow--top {
+    left: -4rem;
+    top: -6rem;
+    height: 18rem;
+    width: 18rem;
+    background-color: rgb(255 255 255 / 0.25);
+}
+
+.sw-holo-glow--bottom {
+    bottom: -7rem;
+    right: 2.5rem;
+    height: 20rem;
+    width: 20rem;
+    background-color: rgb(159 180 240 / 0.5);
+}
+
+.sw-holo-sheen {
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    background-image: linear-gradient(to top right, transparent, rgb(255 255 255 / 0.1), transparent);
+}
+
+
+/* ---------- Badge status pakaian (digital_wardrobe/partials/item_status_badge.html) ---------- */
+.sw-status-badge {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: 9999px;
+    background-image: linear-gradient(to right, var(--sw-berry), #C46AA6, var(--sw-plum));
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sw-white);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}

@@ -1,4 +1,7 @@
-{# Lapisan cahaya untuk latar hologram. Dipakai di dalam elemen dengan class "relative overflow-hidden". #}
-<div class="absolute -top-24 -left-16 w-72 h-72 rounded-full bg-white/25 blur-3xl pointer-events-none" aria-hidden="true"></div>
-<div class="absolute -bottom-28 right-10 w-80 h-80 rounded-full bg-[#9FB4F0]/50 blur-3xl pointer-events-none" aria-hidden="true"></div>
-<div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" aria-hidden="true"></div>
+{% comment %}
+Lapisan cahaya untuk latar hologram. Taruh di dalam elemen yang position: relative; overflow: hidden.
+Style: static/css/components.css (.sw-holo-glow, .sw-holo-sheen)
+{% endcomment %}
+<div class="sw-holo-glow sw-holo-glow--top" aria-hidden="true"></div>
+<div class="sw-holo-glow sw-holo-glow--bottom" aria-hidden="true"></div>
+<div class="sw-holo-sheen" aria-hidden="true"></div>

@@ -1,6 +1,7 @@
 {% comment %}
 ==========================================================================
  KOMPONEN: Holo Banner (banner judul bernuansa hologram Swapdrobe)
+ Style: static/css/components.css (bagian .sw-holo-banner)
 ==========================================================================
  Cara pakai di template modul mana pun:
 
@@ -19,21 +20,20 @@
    {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='ITEM SWAP SAYA' title='Item untuk Swap' subtitle='Kelola pakaian kamu untuk ditukar dengan orang lain.' button_url=add_url button_label='+ Tambahkan pakaian dari lemari' %}
 ==========================================================================
 {% endcomment %}
-<section class="relative overflow-hidden rounded-3xl px-6 py-7 sm:px-8 sm:py-8 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] shadow-[0_10px_30px_-12px_rgba(23,31,99,0.35)]">
+<section class="sw-holo-banner">
     {% include 'digital_wardrobe/partials/holo_bg.html' %}
-    <div class="relative flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-        <div class="min-w-0">
+    <div class="sw-holo-banner__inner">
+        <div class="sw-holo-banner__text">
             {% if eyebrow %}
-            <p class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-white/80">{{ eyebrow }}</p>
+            <p class="sw-holo-banner__eyebrow">{{ eyebrow }}</p>
             {% endif %}
-            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white {% if eyebrow %}mt-1{% endif %}">{{ title }}</h1>
+            <h1 class="sw-holo-banner__title">{{ title }}</h1>
             {% if subtitle %}
-            <p class="text-sm sm:text-base text-white/90 mt-2 max-w-xl">{{ subtitle }}</p>
+            <p class="sw-holo-banner__subtitle">{{ subtitle }}</p>
             {% endif %}
         </div>
         {% if button_url and button_label %}
-        <a href="{{ button_url }}"
-           class="self-start sm:self-auto shrink-0 h-11 px-5 inline-flex items-center gap-2 rounded-full bg-white text-swNavy text-sm font-bold shadow-[0_6px_16px_-6px_rgba(23,31,99,0.45)] hover:bg-swBlush transition-colors">
+        <a href="{{ button_url }}" class="sw-holo-banner__button">
             {{ button_label }}
         </a>
         {% endif %}
