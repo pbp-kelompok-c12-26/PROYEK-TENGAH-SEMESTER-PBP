@@ -274,3 +274,9 @@ video {
 [hidden]:where(:not([hidden="until-found"])) {
     display: none;
 }
+
+/* Elemen dengan atribut hidden selalu disembunyikan, walaupun class-nya mengatur display
+   (dipakai JS untuk buka/tutup modal & bagian form). */
+[hidden]:not([hidden="until-found"]) {
+    display: none !important;
+}

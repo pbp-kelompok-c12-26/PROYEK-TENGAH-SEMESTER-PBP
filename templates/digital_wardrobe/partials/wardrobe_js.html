@@ -14,7 +14,7 @@
     function toast(text, isError = false) {
         const el = document.createElement('div');
         el.dataset.toast = '';
-        el.className = 'w-full px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ' + (isError ? 'bg-swBerry' : 'bg-swNavy');
+        el.className = 'wd-toast' + (isError ? ' wd-toast--error' : '');
         el.textContent = text;
         toastBox.appendChild(el);
         setTimeout(() => el.remove(), 4000);
@@ -24,13 +24,13 @@
     // ---------- Modal tambah / edit ----------
     function closeModal() {
         modalRoot.innerHTML = '';
-        document.body.classList.remove('overflow-hidden');
+        document.body.classList.remove('wd-no-scroll');
         if (lastTrigger) lastTrigger.focus();
     }
 
     function showModal(html) {
         modalRoot.innerHTML = html;
-        document.body.classList.add('overflow-hidden');
+        document.body.classList.add('wd-no-scroll');  // kunci scroll halaman di belakang modal
         bindForm(modalRoot.querySelector('[data-item-form]'));
         const first = modalRoot.querySelector('input:not([type=hidden]):not(.sr-only), select, textarea');
         if (first) first.focus();
@@ -131,7 +131,7 @@
                     const grid = document.getElementById(kind + '-grid');
                     if (grid) {
                         grid.insertAdjacentHTML('afterbegin', data.card_html);
-                        grid.classList.remove('hidden');
+                        grid.hidden = false;
                         document.getElementById(kind + '-empty-state')?.remove();
                         if (kind === 'outfit') {
                             document.querySelectorAll('[data-total-outfits]').forEach((el) => el.textContent = data.total_outfits);
@@ -158,11 +158,11 @@
         deleteModal.querySelector('[data-delete-title]').textContent =
             kind === 'outfit' ? 'Yakin hapus outfit ini?' : 'Yakin hapus pakaian ini?';
         deleteModal.querySelectorAll('[data-delete-desc]').forEach((el) => {
-            el.classList.toggle('hidden', el.dataset.deleteDesc !== kind);
+            el.hidden = el.dataset.deleteDesc !== kind;
         });
         const count = parseInt(outfitCount, 10) || 0;
         deleteModal.querySelector('[data-delete-outfits]').textContent = count;
-        deleteModal.querySelector('[data-delete-outfit-note]').classList.toggle('hidden', !(kind === 'item' && count > 0));
+        deleteModal.querySelector('[data-delete-outfit-note]').hidden = !(kind === 'item' && count > 0);
         // Peringatan jadwal Kalender Outfit saat menghapus outfit
         const upcomingCount = parseInt(upcoming, 10) || 0;
         const historyCount = parseInt(history, 10) || 0;
@@ -170,18 +170,16 @@
         if (scheduleNote) {
             scheduleNote.querySelector('[data-delete-upcoming]').textContent = upcomingCount;
             scheduleNote.querySelector('[data-delete-history]').textContent = historyCount;
-            scheduleNote.querySelector('[data-delete-upcoming-text]').classList.toggle('hidden', upcomingCount === 0);
-            scheduleNote.querySelector('[data-delete-history-text]').classList.toggle('hidden', historyCount === 0);
-            scheduleNote.classList.toggle('hidden', !(kind === 'outfit' && (upcomingCount > 0 || historyCount > 0)));
+            scheduleNote.querySelector('[data-delete-upcoming-text]').hidden = upcomingCount === 0;
+            scheduleNote.querySelector('[data-delete-history-text]').hidden = historyCount === 0;
+            scheduleNote.hidden = !(kind === 'outfit' && (upcomingCount > 0 || historyCount > 0));
         }
-        deleteModal.classList.remove('hidden');
-        deleteModal.classList.add('flex');
+        deleteModal.hidden = false;
         deleteModal.querySelector('[data-close-delete]').focus();
     }
 
     function closeDelete() {
-        deleteModal.classList.add('hidden');
-        deleteModal.classList.remove('flex');
+        deleteModal.hidden = true;
         if (lastTrigger) lastTrigger.focus();
     }
 
@@ -206,7 +204,7 @@
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
         if (modalRoot.innerHTML) closeModal();
-        if (!deleteModal.classList.contains('hidden')) closeDelete();
+        if (!deleteModal.hidden) closeDelete();
     });
 
     // Buka modal otomatis dari ?add=1, ?edit=<id>, ?add_outfit=1, ?edit_outfit=<id>

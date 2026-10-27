@@ -1,26 +1,27 @@
-<div id="delete-modal" class="hidden fixed inset-0 z-[60] items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
-    <div class="absolute inset-0 bg-swNavy/40" data-close-delete></div>
-    <form method="post" data-delete-form class="relative overflow-hidden w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 flex flex-col gap-4">
-        <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]" aria-hidden="true"></div>
+{# Pop-up konfirmasi hapus. Tersembunyi lewat atribut hidden, dibuka/ditutup oleh wardrobe_js.html #}
+<div id="delete-modal" class="wd-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" hidden>
+    <div class="wd-dialog__backdrop" data-close-delete></div>
+    <form method="post" data-delete-form class="wd-dialog__panel">
+        <div class="wd-dialog__stripe" aria-hidden="true"></div>
         {% csrf_token %}
-        <h2 id="delete-modal-title" class="text-lg font-bold text-swNavy" data-delete-title>Yakin hapus pakaian ini?</h2>
-        <div class="text-sm text-swSlate space-y-2">
+        <h2 id="delete-modal-title" class="wd-dialog__title" data-delete-title>Yakin hapus pakaian ini?</h2>
+        <div class="wd-dialog__body">
             <p>
-                <span data-delete-name class="font-semibold text-swNavy"></span>
+                <span data-delete-name class="wd-dialog__name"></span>
                 <span data-delete-desc="item">akan dihapus dari lemarimu.</span>
-                <span data-delete-desc="outfit" class="hidden">akan dihapus permanen. Pakaian di dalamnya tetap ada di lemarimu.</span>
+                <span data-delete-desc="outfit" hidden>akan dihapus permanen. Pakaian di dalamnya tetap ada di lemarimu.</span>
             </p>
-            <p data-delete-schedule-note class="hidden rounded-xl bg-swBlush px-3 py-2 text-swNavy">
+            <p data-delete-schedule-note class="wd-dialog__note" hidden>
                 <span data-delete-upcoming-text>Outfit ini terjadwal di <b data-delete-upcoming></b> jadwal mendatang di Kalender Outfit. Jadwal tersebut <b>ikut terhapus</b>.</span>
-                <span data-delete-history-text class="block">Ada <b data-delete-history></b> riwayat pemakaian yang tetap tersimpan di Kalender Outfit dengan status <b>"Outfit sudah dihapus"</b>.</span>
+                <span data-delete-history-text class="wd-dialog__note-line">Ada <b data-delete-history></b> riwayat pemakaian yang tetap tersimpan di Kalender Outfit dengan status <b>"Outfit sudah dihapus"</b>.</span>
             </p>
-            <p data-delete-outfit-note class="hidden rounded-xl bg-swBlush px-3 py-2 text-swNavy">
-                Pakaian ini dipakai di <span data-delete-outfits class="font-semibold"></span> outfit. Setelah dihapus, pakaian tetap tampil di outfit &amp; Kalender Outfit dengan status <b>"Sudah dihapus dari lemari"</b>.
+            <p data-delete-outfit-note class="wd-dialog__note" hidden>
+                Pakaian ini dipakai di <span data-delete-outfits class="wd-dialog__count"></span> outfit. Setelah dihapus, pakaian tetap tampil di outfit &amp; Kalender Outfit dengan status <b>"Sudah dihapus dari lemari"</b>.
             </p>
         </div>
-        <div class="flex justify-end gap-2">
-            <button type="button" data-close-delete class="h-10 px-5 rounded-lg border border-swNavy/20 text-swNavy text-sm font-semibold hover:bg-swCream">Batal</button>
-            <button type="submit" class="h-10 px-5 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">Ya, hapus</button>
+        <div class="wd-dialog__actions">
+            <button type="button" data-close-delete class="wd-dialog__btn wd-dialog__btn--cancel">Batal</button>
+            <button type="submit" class="wd-dialog__btn wd-dialog__btn--danger">Ya, hapus</button>
         </div>
     </form>
 </div>

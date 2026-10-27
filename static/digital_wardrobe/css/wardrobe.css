@@ -8,10 +8,884 @@
      <link rel="stylesheet" href="{% static 'digital_wardrobe/css/wardrobe.css' %}">
      {% endblock %}
 
-   Aturan:
-   - Pakai warna dari token di static/css/base.css, mis. var(--sw-navy).
-   - Kasih awalan nama class khusus modul ini (mis. .wd-...)
-     supaya tidak bentrok dengan modul lain atau dengan Tailwind
-     (jangan pakai nama seperti .hidden, .flex, .grid, .container).
-   - Komponen yang dipakai banyak modul taruh di static/css/components.css.
+   Isi file ini dikelompokkan per bagian halaman. Warna memakai token
+   dari static/css/base.css (mis. var(--sw-navy)).
    ========================================================= */
+
+/* =========================================================
+   Halaman Lemari Saya (digital_wardrobe/index.html)
+   ========================================================= */
+.wd-page > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 2rem;
+    margin-bottom: 0px;
+}
+
+body.wd-no-scroll {
+    overflow: hidden;
+}
+
+
+/* ---------- Tombol umum modul wardrobe ---------- */
+.wd-btn {
+    display: inline-flex;
+    height: 2.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+}
+
+.wd-btn--holo {
+    color: var(--sw-white);
+}
+
+.wd-btn--round {
+    border-radius: 9999px;
+}
+
+.wd-btn--outline {
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.2);
+    color: var(--sw-navy);
+}
+
+.wd-btn--outline:hover {
+    background-color: var(--sw-cream);
+}
+
+.wd-btn svg {
+    height: 1rem;
+    width: 1rem;
+}
+
+
+/* ---------- Hero: judul + 3 kartu ringkasan ---------- */
+.wd-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background-image: linear-gradient(to bottom right, var(--sw-berry), #C65A86, #8F86D6);
+    padding: 1.25rem;
+    box-shadow: 0 10px 30px -12px rgba(23,31,99,0.35);
+}
+
+@media (min-width: 640px) {
+    .wd-hero {
+        padding: 1.75rem;
+    }
+}
+
+.wd-hero__head {
+    position: relative;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .wd-hero__head {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+}
+
+.wd-hero__eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    color: rgb(255 255 255 / 0.8);
+}
+
+@media (min-width: 640px) {
+    .wd-hero__eyebrow {
+        font-size: 0.75rem;
+        line-height: 1rem;
+    }
+}
+
+.wd-hero__title {
+    margin-top: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--sw-white);
+}
+
+@media (min-width: 640px) {
+    .wd-hero__title {
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+    }
+}
+
+.wd-hero__tagline {
+    max-width: 20rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: rgb(255 255 255 / 0.85);
+}
+
+@media (min-width: 640px) {
+    .wd-hero__tagline {
+        text-align: right;
+    }
+}
+
+.wd-hero__stats {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .wd-hero__stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.wd-stat {
+    display: flex;
+    min-height: 9rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-radius: 1rem;
+    background-color: rgb(255 255 255 / 0.9);
+    padding: 1.25rem;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.7), 0 8px 24px -12px rgba(23,31,99,0.35);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.wd-stat__label {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.wd-stat__value {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.wd-stat__action {
+    margin-top: auto;
+    align-self: flex-end;
+}
+
+
+/* ---------- Kotak info ---------- */
+.wd-info {
+    display: flex;
+    gap: 0.75rem;
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: var(--sw-lilac);
+    background-image: linear-gradient(to right, #FBEFF5, var(--sw-white), #EEF1FB);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.wd-info__icon {
+    margin-top: 0.125rem;
+    height: 1.25rem;
+    width: 1.25rem;
+    flex-shrink: 0;
+    color: var(--sw-plum);
+}
+
+.wd-info__title {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-info__text {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+@media (min-width: 640px) {
+    .wd-info__text {
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+    }
+}
+
+
+/* ---------- Tab Koleksi Pakaian / Koleksi Outfit ---------- */
+.wd-tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+}
+
+@media (min-width: 640px) {
+    .wd-tabs {
+        gap: 2.5rem;
+    }
+}
+
+.wd-tab {
+    position: relative;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--sw-slate);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.wd-tab:hover {
+    color: var(--sw-navy);
+}
+
+@media (min-width: 640px) {
+    .wd-tab {
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+    }
+}
+
+.wd-tab.is-active {
+    color: var(--sw-navy);
+}
+
+.wd-tab__underline {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 9999px;
+    background-image: linear-gradient(to right, var(--sw-berry), var(--sw-holo-lilac), var(--sw-holo-blue));
+}
+
+
+/* ---------- Toolbar tab outfit ---------- */
+.wd-toolbar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .wd-toolbar {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.wd-toolbar__hint {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.wd-toolbar__action {
+    align-self: flex-start;
+}
+
+@media (min-width: 640px) {
+    .wd-toolbar__action {
+        align-self: auto;
+    }
+}
+
+
+/* ---------- Filter: chip, pencarian, dropdown ---------- */
+.wd-filter > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem;
+    margin-bottom: 0px;
+}
+
+.wd-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.wd-chip {
+    display: inline-flex;
+    height: 2.25rem;
+    align-items: center;
+    border-radius: 9999px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.wd-chip:not(.is-active) {
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+    color: var(--sw-navy);
+}
+
+.wd-chip:not(.is-active):hover {
+    background-color: var(--sw-blush);
+}
+
+.wd-chip.is-active {
+    background-image: linear-gradient(to right, var(--sw-berry), #B66CB0, var(--sw-plum));
+    color: var(--sw-white);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.wd-filter__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .wd-filter__row {
+        flex-direction: row;
+    }
+}
+
+.wd-search {
+    position: relative;
+    flex-grow: 1;
+}
+
+.wd-search__icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    height: 1rem;
+    width: 1rem;
+    transform: translate(0, -50%);
+    color: var(--sw-navy);
+}
+
+.wd-search__input {
+    height: 2.75rem;
+    width: 100%;
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+    padding-left: 2.75rem;
+    padding-right: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+}
+
+.wd-search__input::-moz-placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.wd-search__input::placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.wd-search__input:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(96 99 180 / 0.4);
+}
+
+.wd-filter__selects {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.wd-filter__select-wrap {
+    flex: 1 1 0%;
+}
+
+@media (min-width: 640px) {
+    .wd-filter__select-wrap {
+        flex: none;
+    }
+}
+
+.wd-select {
+    height: 2.75rem;
+    width: 100%;
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-select:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(96 99 180 / 0.4);
+}
+
+.wd-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+
+/* ---------- Grid kartu (pakaian & outfit) ---------- */
+.wd-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 480px) {
+    .wd-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .wd-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+
+/* ---------- Tampilan kosong ---------- */
+.wd-empty {
+    border-radius: 1.5rem;
+    background-color: var(--sw-white);
+    padding: 2.5rem;
+    text-align: center;
+}
+
+@media (min-width: 640px) {
+    .wd-empty {
+        padding: 3rem;
+    }
+}
+
+.wd-empty__icon {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1.25rem;
+    display: flex;
+    height: 5rem;
+    width: 5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.5rem;
+    background-image: linear-gradient(to bottom right, var(--sw-berry), var(--sw-pink), var(--sw-holo-blue));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.wd-empty__icon svg {
+    height: 2.75rem;
+    width: 2.75rem;
+    color: var(--sw-white);
+}
+
+.wd-empty__title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.wd-empty__text {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.5rem;
+    max-width: 28rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.wd-empty__action {
+    margin-top: 1.25rem;
+}
+
+
+/* ---------- Bawah daftar: jumlah + muat lebih banyak ---------- */
+.wd-list-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .wd-list-footer {
+        flex-direction: row;
+    }
+}
+
+.wd-list-footer__count {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.wd-btn-more {
+    display: inline-flex;
+    height: 2.5rem;
+    align-items: center;
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-btn-more:hover {
+    background-color: var(--sw-blush);
+}
+
+
+/* =========================================================
+   Kartu pakaian (partials/item_card.html)
+   ========================================================= */
+.wd-item-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    background-color: var(--sw-white);
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px rgba(23,31,99,0.06);
+    transition-property: box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.wd-item-card:hover {
+    box-shadow: 0 0 0 2px var(--sw-lilac), 0 14px 30px -14px rgba(175,63,95,0.45);
+}
+
+.wd-item-card__photo {
+    position: relative;
+    display: block;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background-color: var(--sw-cream);
+}
+
+.wd-item-card__photo img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+.wd-item-card__photo img:hover {
+    transform: scale(1.05);
+}
+
+.wd-item-card__flag {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+    border-radius: 9999px;
+    background-image: linear-gradient(to right, var(--sw-berry), #C46AA6, var(--sw-plum));
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--sw-white);
+}
+
+.wd-item-card__body {
+    flex-grow: 1;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    padding-top: 0.75rem;
+}
+
+.wd-item-card__name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1.375;
+    color: var(--sw-navy);
+}
+
+.wd-item-card__name a:hover {
+    color: var(--sw-plum);
+}
+
+.wd-item-card__meta {
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.wd-item-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-top: 0.75rem;
+}
+
+.wd-item-card__lock-note {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    font-size: 11px;
+    color: var(--sw-slate);
+}
+
+
+/* Tombol kecil Edit / Hapus di kartu. Saat terkunci (swap request aktif) tombol diberi atribut disabled. */
+.wd-card-btn {
+    display: inline-flex;
+    height: 2rem;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.wd-card-btn svg {
+    height: 0.875rem;
+    width: 0.875rem;
+}
+
+.wd-card-btn--edit {
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.25);
+    color: var(--sw-navy);
+}
+
+.wd-card-btn--edit:not(:disabled):hover {
+    background-color: var(--sw-cream);
+}
+
+.wd-card-btn--edit:disabled {
+    cursor: not-allowed;
+    border-color: rgb(23 31 99 / 0.1);
+    color: var(--sw-slate);
+}
+
+.wd-card-btn--delete {
+    background-color: var(--sw-berry);
+    color: var(--sw-white);
+}
+
+.wd-card-btn--delete:not(:disabled):hover {
+    background-color: rgb(175 63 95 / 0.9);
+}
+
+.wd-card-btn--delete:disabled {
+    cursor: not-allowed;
+    background-color: var(--sw-cream);
+    color: var(--sw-slate);
+}
+
+
+/* =========================================================
+   Notifikasi kecil / toast (partials/messages.html + JS)
+   ========================================================= */
+.wd-toast-stack {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    z-index: 70;
+    display: flex;
+    width: calc(100% - 2rem);
+    max-width: 28rem;
+    transform: translate(-50%, 0);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wd-toast {
+    width: 100%;
+    border-radius: 0.75rem;
+    background-color: var(--sw-navy);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: var(--sw-white);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.wd-toast--error {
+    background-color: var(--sw-berry);
+}
+
+
+/* =========================================================
+   Pop-up konfirmasi hapus (partials/delete_modal.html)
+   Disembunyikan dengan atribut hidden, dibuka lewat JS.
+   ========================================================= */
+.wd-dialog {
+    position: fixed;
+    inset: 0px;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.wd-dialog__backdrop {
+    position: absolute;
+    inset: 0px;
+    background-color: rgb(23 31 99 / 0.4);
+}
+
+.wd-dialog__panel {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 24rem;
+    flex-direction: column;
+    gap: 1rem;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background-color: var(--sw-white);
+    padding: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+.wd-dialog__stripe {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    height: 0.375rem;
+    background-image: linear-gradient(to right, var(--sw-berry), var(--sw-holo-lilac), var(--sw-holo-blue));
+}
+
+.wd-dialog__title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.wd-dialog__body {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.wd-dialog__body > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.5rem;
+    margin-bottom: 0px;
+}
+
+.wd-dialog__name {
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.wd-dialog__note {
+    border-radius: 0.75rem;
+    background-color: var(--sw-blush);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    color: var(--sw-navy);
+}
+
+.wd-dialog__note-line {
+    display: block;
+}
+
+.wd-dialog__count {
+    font-weight: 600;
+}
+
+.wd-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.wd-dialog__btn {
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+}
+
+.wd-dialog__btn--cancel {
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.2);
+    color: var(--sw-navy);
+}
+
+.wd-dialog__btn--cancel:hover {
+    background-color: var(--sw-cream);
+}
+
+.wd-dialog__btn--danger {
+    background-color: var(--sw-berry);
+    color: var(--sw-white);
+}
+
+.wd-dialog__btn--danger:hover {
+    background-color: rgb(175 63 95 / 0.9);
+}

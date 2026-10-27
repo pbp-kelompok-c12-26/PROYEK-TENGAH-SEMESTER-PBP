@@ -1,43 +1,48 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Lemari Digital Saya · Swapdrobe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'digital_wardrobe/css/wardrobe.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="space-y-8" data-auto-open="{{ auto_open_url }}">
+<div class="wd-page" data-auto-open="{{ auto_open_url }}">
 
     <!-- HERO: LEMARI DIGITAL SAYA -->
-    <section class="relative overflow-hidden rounded-3xl p-5 sm:p-7 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] shadow-[0_10px_30px_-12px_rgba(23,31,99,0.35)]">
+    <section class="wd-hero">
         {% include 'digital_wardrobe/partials/holo_bg.html' %}
-        <div class="relative flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-5">
+        <div class="wd-hero__head">
             <div>
-                <p class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-white/80">LEMARI PRIBADIMU</p>
-                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mt-1">Lemari Digital Saya</h1>
+                <p class="wd-hero__eyebrow">LEMARI PRIBADIMU</p>
+                <h1 class="wd-hero__title">Lemari Digital Saya</h1>
             </div>
-            <p class="text-sm text-white/85 sm:text-right max-w-xs">Simpan, padu-padankan, dan pilih mana yang siap ditukar.</p>
+            <p class="wd-hero__tagline">Simpan, padu-padankan, dan pilih mana yang siap ditukar.</p>
         </div>
-        <div class="relative grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white/90 backdrop-blur rounded-2xl p-5 flex flex-col gap-3 min-h-[9rem] ring-1 ring-white/70 shadow-[0_8px_24px_-12px_rgba(23,31,99,0.35)]">
-                <p class="text-sm text-swSlate">Koleksi pakaian kamu</p>
-                <p class="text-4xl font-extrabold text-swNavy" data-total-items>{{ total_items }}</p>
+        <div class="wd-hero__stats">
+            <div class="wd-stat">
+                <p class="wd-stat__label">Koleksi pakaian kamu</p>
+                <p class="wd-stat__value" data-total-items>{{ total_items }}</p>
                 <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
-                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                        class="wd-btn wd-btn--holo sw-btn-holo wd-stat__action">
                     <span aria-hidden="true">+</span> Tambah pakaian
                 </button>
             </div>
-            <div class="bg-white/90 backdrop-blur rounded-2xl p-5 flex flex-col gap-3 min-h-[9rem] ring-1 ring-white/70 shadow-[0_8px_24px_-12px_rgba(23,31,99,0.35)]">
-                <p class="text-sm text-swSlate">Koleksi outfit kamu</p>
-                <p class="text-4xl font-extrabold text-swNavy" data-total-outfits>{{ total_outfits }}</p>
+            <div class="wd-stat">
+                <p class="wd-stat__label">Koleksi outfit kamu</p>
+                <p class="wd-stat__value" data-total-outfits>{{ total_outfits }}</p>
                 <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
-                        class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                        class="wd-btn wd-btn--holo sw-btn-holo wd-stat__action">
                     <span aria-hidden="true">+</span> Tambah Outfit
                 </button>
             </div>
-            <div class="bg-white/90 backdrop-blur rounded-2xl p-5 flex flex-col gap-3 min-h-[9rem] ring-1 ring-white/70 shadow-[0_8px_24px_-12px_rgba(23,31,99,0.35)]">
-                <p class="text-sm text-swSlate">Tersedia untuk swap</p>
-                <p class="text-4xl font-extrabold text-swNavy">{{ total_for_swap }}</p>
+            <div class="wd-stat">
+                <p class="wd-stat__label">Tersedia untuk swap</p>
+                <p class="wd-stat__value">{{ total_for_swap }}</p>
                 <a href="{% url 'items_for_swap:index' %}"
-                   class="mt-auto self-end h-10 px-5 inline-flex items-center gap-2 rounded-full sw-btn-holo text-white text-sm font-semibold">
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                   class="wd-btn wd-btn--holo wd-btn--round sw-btn-holo wd-stat__action">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     Kelola Items for Swap
                 </a>
             </div>
@@ -45,52 +50,52 @@
     </section>
 
     <!-- INFO -->
-    <div class="flex gap-3 rounded-2xl bg-gradient-to-r from-[#FBEFF5] via-white to-[#EEF1FB] border border-swLilac px-5 py-4">
-        <svg class="w-5 h-5 shrink-0 mt-0.5 text-swPlum" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+    <div class="wd-info">
+        <svg class="wd-info__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
         <div>
-            <p class="text-sm font-semibold text-swNavy">Lemari digital ≠ items untuk swap</p>
-            <p class="text-xs sm:text-sm text-swSlate mt-1">Wardrobe adalah area privat untuk kamu mengelola pakaianmu sendiri. Menambah pakaian pada wardrobe tidak otomatis menawarkannya untuk bertukar. Kamu bisa menambahkan items untuk swap dari pakaian pada wardrobemu di segmen lain.</p>
+            <p class="wd-info__title">Lemari digital ≠ items untuk swap</p>
+            <p class="wd-info__text">Wardrobe adalah area privat untuk kamu mengelola pakaianmu sendiri. Menambah pakaian pada wardrobe tidak otomatis menawarkannya untuk bertukar. Kamu bisa menambahkan items untuk swap dari pakaian pada wardrobemu di segmen lain.</p>
         </div>
     </div>
 
     <!-- TABS -->
-    <div class="flex gap-6 sm:gap-10 border-b border-swNavy/10">
-        <a href="?tab=pakaian" class="relative pb-2 px-2 text-lg sm:text-xl font-bold transition-colors {% if tab != 'outfit' %}text-swNavy{% else %}text-swSlate hover:text-swNavy{% endif %}"
-           {% if tab != 'outfit' %}aria-current="page"{% endif %}>Koleksi Pakaian{% if tab != 'outfit' %}<span class="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]" aria-hidden="true"></span>{% endif %}</a>
-        <a href="?tab=outfit" class="relative pb-2 px-2 text-lg sm:text-xl font-bold transition-colors {% if tab == 'outfit' %}text-swNavy{% else %}text-swSlate hover:text-swNavy{% endif %}"
-           {% if tab == 'outfit' %}aria-current="page"{% endif %}>Koleksi Outfit{% if tab == 'outfit' %}<span class="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-gradient-to-r from-swBerry via-[#C9A6E8] to-[#9FB4F0]" aria-hidden="true"></span>{% endif %}</a>
+    <div class="wd-tabs">
+        <a href="?tab=pakaian" class="wd-tab{% if tab != 'outfit' %} is-active{% endif %}"
+           {% if tab != 'outfit' %}aria-current="page"{% endif %}>Koleksi Pakaian{% if tab != 'outfit' %}<span class="wd-tab__underline" aria-hidden="true"></span>{% endif %}</a>
+        <a href="?tab=outfit" class="wd-tab{% if tab == 'outfit' %} is-active{% endif %}"
+           {% if tab == 'outfit' %}aria-current="page"{% endif %}>Koleksi Outfit{% if tab == 'outfit' %}<span class="wd-tab__underline" aria-hidden="true"></span>{% endif %}</a>
     </div>
 
     {% if tab == 'outfit' %}
     <!-- KOLEKSI OUTFIT -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <p class="text-sm text-swSlate">Padukan sampai 5 pakaian dari lemarimu menjadi satu outfit.</p>
+    <div class="wd-toolbar">
+        <p class="wd-toolbar__hint">Padukan sampai 5 pakaian dari lemarimu menjadi satu outfit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
-                class="self-start sm:self-auto h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                class="wd-btn wd-btn--holo sw-btn-holo wd-toolbar__action">
             <span aria-hidden="true">+</span> Buat outfit
         </button>
     </div>
 
-    <div id="outfit-grid" class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 {% if not outfits %}hidden{% endif %}">
+    <div id="outfit-grid" class="wd-grid"{% if not outfits %} hidden{% endif %}>
         {% for outfit in outfits %}
             {% include 'digital_wardrobe/partials/outfit_card.html' %}
         {% endfor %}
     </div>
 
     {% if not outfits %}
-    <div id="outfit-empty-state" class="bg-white rounded-3xl p-10 sm:p-12 text-center">
-        <div class="mx-auto mb-5 w-20 h-20 rounded-3xl bg-gradient-to-br from-swBerry via-swPink to-[#9FB4F0] flex items-center justify-center shadow-lg" aria-hidden="true"><svg class="w-11 h-11 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
-        <h2 class="text-xl font-bold text-swNavy">Belum ada outfit</h2>
+    <div id="outfit-empty-state" class="wd-empty">
+        <div class="wd-empty__icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
+        <h2 class="wd-empty__title">Belum ada outfit</h2>
         {% if total_items %}
-        <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Pilih beberapa pakaian dari lemarimu dan simpan sebagai outfit favorit.</p>
+        <p class="wd-empty__text">Pilih beberapa pakaian dari lemarimu dan simpan sebagai outfit favorit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
-                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                class="wd-btn wd-btn--holo sw-btn-holo wd-empty__action">
             <span aria-hidden="true">+</span> Buat outfit pertama
         </button>
         {% else %}
-        <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Tambahkan pakaian ke lemarimu dulu, baru padu-padankan jadi outfit.</p>
+        <p class="wd-empty__text">Tambahkan pakaian ke lemarimu dulu, baru padu-padankan jadi outfit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
-                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                class="wd-btn wd-btn--holo sw-btn-holo wd-empty__action">
             <span aria-hidden="true">+</span> Tambah pakaian
         </button>
         {% endif %}
@@ -99,39 +104,36 @@
     {% else %}
 
     <!-- FILTER -->
-    <form method="get" class="space-y-4">
+    <form method="get" class="wd-filter">
         <input type="hidden" name="tab" value="pakaian">
         <input type="hidden" name="show" value="{{ show }}">
 
-        <div class="flex flex-wrap gap-2">
+        <div class="wd-chips">
             <a href="?tab=pakaian&show=all&category={{ category }}&q={{ query|urlencode }}&sort={{ sort }}"
-               class="h-9 px-4 inline-flex items-center rounded-full text-xs font-semibold transition-colors {% if show != 'idle' %}bg-gradient-to-r from-swBerry via-[#B66CB0] to-swPlum text-white shadow-sm{% else %}bg-white text-swNavy border border-swNavy/10 hover:bg-swBlush{% endif %}">Semua pakaian</a>
+               class="wd-chip{% if show != 'idle' %} is-active{% endif %}">Semua pakaian</a>
             <a href="?tab=pakaian&show=idle&category={{ category }}&q={{ query|urlencode }}&sort={{ sort }}"
-               class="h-9 px-4 inline-flex items-center rounded-full text-xs font-semibold transition-colors {% if show == 'idle' %}bg-gradient-to-r from-swBerry via-[#B66CB0] to-swPlum text-white shadow-sm{% else %}bg-white text-swNavy border border-swNavy/10 hover:bg-swBlush{% endif %}">Jarang dipakai</a>
+               class="wd-chip{% if show == 'idle' %} is-active{% endif %}">Jarang dipakai</a>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-            <label class="relative flex-grow">
-                <span class="sr-only">Cari di lemari saya</span>
-                <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-                <input type="search" name="q" value="{{ query }}" placeholder="Cari di lemari saya..."
-                       class="w-full h-11 pl-11 pr-4 rounded-xl bg-white border border-swNavy/10 text-sm text-swNavy placeholder:text-swSlate/70 focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+        <div class="wd-filter__row">
+            <label class="wd-search">
+                <span class="wd-sr-only">Cari di lemari saya</span>
+                <svg class="wd-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" name="q" value="{{ query }}" placeholder="Cari di lemari saya..." class="wd-search__input">
             </label>
-            <div class="flex gap-3">
-                <label class="flex-1 sm:flex-none">
-                    <span class="sr-only">Kategori</span>
-                    <select name="category" onchange="this.form.submit()"
-                            class="w-full h-11 px-3 rounded-xl bg-white border border-swNavy/10 text-sm font-semibold text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+            <div class="wd-filter__selects">
+                <label class="wd-filter__select-wrap">
+                    <span class="wd-sr-only">Kategori</span>
+                    <select name="category" onchange="this.form.submit()" class="wd-select">
                         <option value="">Semua kategori</option>
                         {% for value, label in category_choices %}
                         <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
                     </select>
                 </label>
-                <label class="flex-1 sm:flex-none">
-                    <span class="sr-only">Urutkan</span>
-                    <select name="sort" onchange="this.form.submit()"
-                            class="w-full h-11 px-3 rounded-xl bg-white border border-swNavy/10 text-sm font-semibold text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40">
+                <label class="wd-filter__select-wrap">
+                    <span class="wd-sr-only">Urutkan</span>
+                    <select name="sort" onchange="this.form.submit()" class="wd-select">
                         {% for value, label in sort_choices %}
                         <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -142,25 +144,24 @@
     </form>
 
     <!-- GRID PAKAIAN -->
-    <div id="item-grid" class="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-4 {% if not items %}hidden{% endif %}">
+    <div id="item-grid" class="wd-grid"{% if not items %} hidden{% endif %}>
         {% for item in items %}
             {% include 'digital_wardrobe/partials/item_card.html' %}
         {% endfor %}
     </div>
 
     {% if not items %}
-    <div id="item-empty-state" class="bg-white rounded-3xl p-10 sm:p-12 text-center">
+    <div id="item-empty-state" class="wd-empty">
+        <div class="wd-empty__icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
         {% if is_filtered %}
-        <div class="mx-auto mb-5 w-20 h-20 rounded-3xl bg-gradient-to-br from-swBerry via-swPink to-[#9FB4F0] flex items-center justify-center shadow-lg" aria-hidden="true"><svg class="w-11 h-11 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
-        <h2 class="text-xl font-bold text-swNavy">Tidak ada pakaian yang cocok</h2>
-        <p class="text-sm text-swSlate mt-2">Coba kata kunci atau filter lain.</p>
-        <a href="?tab=pakaian" class="inline-flex mt-5 h-10 px-5 items-center rounded-lg border border-swNavy/20 text-sm font-semibold text-swNavy hover:bg-swCream">Hapus filter</a>
+        <h2 class="wd-empty__title">Tidak ada pakaian yang cocok</h2>
+        <p class="wd-empty__text">Coba kata kunci atau filter lain.</p>
+        <a href="?tab=pakaian" class="wd-btn wd-btn--outline wd-empty__action">Hapus filter</a>
         {% else %}
-        <div class="mx-auto mb-5 w-20 h-20 rounded-3xl bg-gradient-to-br from-swBerry via-swPink to-[#9FB4F0] flex items-center justify-center shadow-lg" aria-hidden="true"><svg class="w-11 h-11 text-white" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
-        <h2 class="text-xl font-bold text-swNavy">Lemarimu masih kosong</h2>
-        <p class="text-sm text-swSlate mt-2 max-w-md mx-auto">Tambahkan pakaian pertamamu supaya gampang dipadu-padankan jadi outfit.</p>
+        <h2 class="wd-empty__title">Lemarimu masih kosong</h2>
+        <p class="wd-empty__text">Tambahkan pakaian pertamamu supaya gampang dipadu-padankan jadi outfit.</p>
         <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
-                class="mt-5 h-10 px-5 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
+                class="wd-btn wd-btn--holo sw-btn-holo wd-empty__action">
             <span aria-hidden="true">+</span> Tambah pakaian pertama
         </button>
         {% endif %}
@@ -168,10 +169,10 @@
     {% endif %}
 
     {% if items %}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p class="text-xs text-swSlate">Menampilkan {{ shown_count }} dari {{ filtered_total }} pakaian</p>
+    <div class="wd-list-footer">
+        <p class="wd-list-footer__count">Menampilkan {{ shown_count }} dari {{ filtered_total }} pakaian</p>
         {% if has_more %}
-        <a href="{{ more_url }}" class="h-10 px-5 inline-flex items-center rounded-xl bg-white border border-swNavy/10 text-sm font-semibold text-swNavy hover:bg-swBlush">Muat lebih banyak</a>
+        <a href="{{ more_url }}" class="wd-btn-more">Muat lebih banyak</a>
         {% endif %}
     </div>
     {% endif %}

@@ -1,29 +1,30 @@
-<article id="item-{{ item.pk }}" class="bg-white rounded-2xl border border-swNavy/5 shadow-[0_1px_2px_rgba(23,31,99,0.06)] p-3 flex flex-col transition-shadow hover:ring-2 hover:ring-swLilac hover:shadow-[0_14px_30px_-14px_rgba(175,63,95,0.45)]">
-    <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="block relative rounded-xl overflow-hidden bg-swCream aspect-[4/3]">
+<article id="item-{{ item.pk }}" class="wd-item-card">
+    <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="wd-item-card__photo">
         {% if item.image %}
-        <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+        <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
         {% endif %}
         {% if item.is_listed_for_swap or item.swap_request_locked %}
-        <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-swBerry via-[#C46AA6] to-swPlum text-white text-[11px] font-semibold">{% if item.swap_request_locked %}Pakaian sedang ditawarkan{% else %}Listed for Swap{% endif %}</span>
+        <span class="wd-item-card__flag">{% if item.swap_request_locked %}Pakaian sedang ditawarkan{% else %}Listed for Swap{% endif %}</span>
         {% endif %}
     </a>
-    <div class="pt-3 px-1 flex-grow">
-        <h3 class="font-bold text-sm text-swNavy leading-snug">
-            <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="hover:text-swPlum">{{ item.name }}</a>
+    <div class="wd-item-card__body">
+        <h3 class="wd-item-card__name">
+            <a href="{% url 'digital_wardrobe:item_detail' item.pk %}">{{ item.name }}</a>
         </h3>
-        <p class="text-xs text-swSlate mt-0.5">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
+        <p class="wd-item-card__meta">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
     </div>
-    <div class="flex gap-2 pt-3 px-1 pb-1">
+    <div class="wd-item-card__actions">
+        {# Pakaian yang dipakai swap request aktif dikunci: tombol diberi atribut disabled (tampilan abu-abu dari CSS :disabled) #}
         <button type="button" {% if not item.swap_request_locked %}data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"{% else %}disabled title="Batalkan swap request aktif terlebih dahulu"{% endif %}
-                class="h-8 px-4 inline-flex items-center gap-1.5 rounded-full border text-xs font-semibold transition-colors {% if item.swap_request_locked %}border-swNavy/10 text-swSlate cursor-not-allowed{% else %}border-swNavy/25 text-swNavy hover:bg-swCream{% endif %}">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
+                class="wd-card-btn wd-card-btn--edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
             Edit
         </button>
         <button type="button" {% if not item.swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ item.outfit_total|default:0 }}"{% endif %}
                 {% if item.swap_request_locked %}disabled title="Batalkan swap request aktif terlebih dahulu" aria-describedby="swap-lock-{{ item.pk }}"{% endif %}
-                class="h-8 px-4 inline-flex items-center rounded-full text-xs font-semibold transition-colors {% if item.swap_request_locked %}bg-swCream text-swSlate cursor-not-allowed{% else %}bg-swBerry text-white hover:bg-swBerry/90{% endif %}">
+                class="wd-card-btn wd-card-btn--delete">
             Hapus
         </button>
     </div>
-    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="px-1 text-[11px] text-swSlate">Batalkan request aktif sebelum mengedit, menghapus, atau menawarkan pakaian ini.</p>{% endif %}
+    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="wd-item-card__lock-note">Batalkan request aktif sebelum mengedit, menghapus, atau menawarkan pakaian ini.</p>{% endif %}
 </article>
