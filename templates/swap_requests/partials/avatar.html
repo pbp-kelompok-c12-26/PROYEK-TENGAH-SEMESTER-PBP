@@ -1,8 +1,10 @@
 {% comment %}Avatar foto profil bila tersedia, dengan fallback inisial.{% endcomment %}
-<span class="{{ size|default:'w-9 h-9 text-sm' }} shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-2 ring-white text-white font-bold inline-flex items-center justify-center" title="@{{ person.username }}">
-    {% if profile and profile.profile_picture %}
-    <img src="{{ profile.profile_picture.url }}" alt="Foto profil {{ profile.name }}" class="w-full h-full object-cover">
+{% with p=profile|default:person.profile %}
+<a href="{% url 'accounts:public_profile' person.username %}" title="Lihat profil @{{ person.username }}" class="{{ size|default:'w-9 h-9 text-sm' }} shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-swPink to-swPlum ring-2 ring-white text-white font-bold inline-flex items-center justify-center hover:ring-swPink transition-all">
+    {% if p and p.profile_picture %}
+    <img src="{{ p.profile_picture.url }}" alt="Foto profil {{ p.name|default:person.username }}" class="w-full h-full object-cover">
     {% else %}
     {{ person.username|first|upper }}
     {% endif %}
-</span>
+</a>
+{% endwith %}

@@ -12,8 +12,8 @@ from .models import (
     SHOE_SIZE_CHOICES,
 )
 
-INPUT_CLASS = ('w-full rounded-xl bg-[#F3F1F6] border border-swNavy/10 px-4 text-sm text-swNavy '
-               'placeholder:text-swSlate/60 focus:outline-none focus:bg-white focus:border-swPlum focus:ring-2 focus:ring-swPlum/30')
+INPUT_CLASS = ('w-full rounded-xl bg-[#F8F3FA] border border-swPink/30 px-4 text-sm text-swNavy '
+               'placeholder:text-swSlate/60 focus:outline-none focus:bg-white focus:border-swBerry focus:ring-2 focus:ring-swPink/35')
 CHIP_INPUT = {'class': 'peer sr-only'}
 MAX_PICTURE_MB = 5
 

@@ -22,10 +22,20 @@ Kartu katalog. Butuh `item` (ClothingItem). Opsional dari Items for Swap: `listi
         <p class="text-xs text-swSlate">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
     </div>
     <div class="flex items-center justify-between gap-2 pt-3 px-1 pb-1 text-xs">
-        <span class="flex items-center gap-2 min-w-0 text-swNavy">
-            <span class="w-6 h-6 shrink-0 rounded-full bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white text-[10px] font-bold flex items-center justify-center">{{ item.user.username|first|upper }}</span>
-            <span class="truncate">{% if listing %}{{ listing.user.username }}{% else %}{{ item.user.username }}{% endif %}</span>
-        </span>
+        {% with owner=listing.user|default:item.user %}
+        <a href="{% url 'accounts:public_profile' owner.username %}"
+           title="Lihat profil @{{ owner.username }}"
+           class="flex items-center gap-2 min-w-0 text-swNavy hover:text-swPlum transition-colors">
+            <span class="w-6 h-6 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white text-[10px] font-bold flex items-center justify-center ring-1 ring-swPink/30">
+                {% if owner.profile.profile_picture %}
+                <img src="{{ owner.profile.profile_picture.url }}" alt="{{ owner.username }}" class="w-full h-full object-cover">
+                {% else %}
+                {{ owner.username|first|upper }}
+                {% endif %}
+            </span>
+            <span class="truncate font-semibold hover:underline">{{ owner.username }}</span>
+        </a>
+        {% endwith %}
         {% if listing.meeting_location %}
         <span class="flex items-center gap-1 text-swSlate shrink-0">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>

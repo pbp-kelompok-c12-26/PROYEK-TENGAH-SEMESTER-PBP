@@ -10,6 +10,7 @@ from PIL import Image
 
 from digital_wardrobe.models import ClothingItem
 from items_for_swap.models import ItemForSwap
+from swap_requests.models import SwapRequest
 
 from .forms import (
     RegisterForm,
@@ -150,7 +151,9 @@ class Phase2MyProfileAndNavbarTests(TestCase):
         self.assertIn("Streetwear", content)
         self.assertIn("Minimalist", content)
         self.assertIn("EU 42", content)
-        self.assertIn("081298765432", content)
+        self.assertNotIn("081298765432", content)
+        self.assertNotIn("Available untuk swap", content)
+        self.assertIn(reverse("accounts:public_profile", kwargs={"username": "iqbal"}), content)
 
     def test_navbar_has_active_profile_link_and_no_segera_hadir_badge(self):
         self.client.login(username="iqbal", password="Password123!")
@@ -406,3 +409,104 @@ class Phase5PublicProfileTests(TestCase):
         self.assertNotContains(response, "Celana Jeans Lama")
         self.assertNotContains(response, "Jaket Dihapus")
         self.assertNotContains(response, "Dress Pribadi")
+
+    def test_other_users_profile_picture_and_shortcut_link_appear_across_pages(self):
+        avatar_file = SimpleUploadedFile("fanny_pic.png", make_image_bytes("PNG"), content_type="image/png")
+        self.owner_profile.profile_picture = avatar_file
+        self.owner_profile.save()
+
+        item_active = self._create_item(self.owner, "Blazer Pink", listed=True)
+        listing = ItemForSwap.objects.create(
+            clothing_item=item_active,
+            user=self.owner,
+            meeting_location="Bandung",
+            status=ItemForSwap.AVAILABLE,
+        )
+
+        self.client.login(username="iqbal", password="Password123!")
+        fanny_public_url = reverse("accounts:public_profile", kwargs={"username": "fanny"})
+        fanny_pic_url = self.owner_profile.profile_picture.url
+
+        # 1) Halaman profil publik Fanny menampilkan foto profilnya
+        res_pub = self.client.get(fanny_public_url)
+        self.assertEqual(res_pub.status_code, 200)
+        self.assertContains(res_pub, fanny_pic_url)
+
+        # 2) Halaman katalog (home) menampilkan foto profil Fanny & shortcut link ke profil publik Fanny
+        res_home = self.client.get(reverse("home:index"))
+        self.assertEqual(res_home.status_code, 200)
+        self.assertContains(res_home, fanny_pic_url)
+        self.assertContains(res_home, fanny_public_url)
+
+        # 3) Halaman detail item swap menampilkan foto profil Fanny & shortcut link ke profil publik Fanny
+        res_detail = self.client.get(reverse("items_for_swap:detail", kwargs={"pk": listing.pk}))
+        self.assertEqual(res_detail.status_code, 200)
+        self.assertContains(res_detail, fanny_pic_url)
+        self.assertContains(res_detail, fanny_public_url)
+
+
+@override_settings(MEDIA_ROOT=tempfile.gettempdir())
+class Phase6DeleteAccountTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="hapus_aku", password="Password123!")
+        UserProfile.for_user(self.user)
+        self.other = User.objects.create_user(username="teman_swap", password="Password123!")
+        UserProfile.for_user(self.other)
+
+    def _create_item(self, user, name, listed=False):
+        img = SimpleUploadedFile(f"{name}.png", make_image_bytes("PNG"), content_type="image/png")
+        return ClothingItem.objects.create(
+            user=user,
+            name=name,
+            category="top",
+            size="M",
+            gender="unisex",
+            condition="good",
+            color="neutral",
+            image=img,
+            is_listed_for_swap=listed,
+        )
+
+    def test_delete_account_requires_login_and_post_and_renders_modal_in_security_tab(self):
+        res_anon = self.client.post(reverse("accounts:delete_account"))
+        self.assertEqual(res_anon.status_code, 302)
+        self.assertIn(reverse("accounts:login"), res_anon["Location"])
+
+        self.client.login(username="hapus_aku", password="Password123!")
+        res_get = self.client.get(reverse("accounts:delete_account"))
+        self.assertEqual(res_get.status_code, 405)
+
+        res_security = self.client.get(reverse("accounts:change_password"))
+        self.assertEqual(res_security.status_code, 200)
+        self.assertContains(res_security, "Yakin ingin hapus akun?")
+        self.assertContains(res_security, "Semua akan dihapus dan kamu akan langsung keluar")
+        self.assertContains(res_security, reverse("accounts:delete_account"))
+
+    def test_delete_account_deletes_user_logs_out_and_unlocks_other_users_items(self):
+        my_item = self._create_item(self.user, "Jaket Hapus", listed=True)
+        ItemForSwap.objects.create(
+            clothing_item=my_item,
+            user=self.user,
+            meeting_location="Depok",
+            status=ItemForSwap.AVAILABLE,
+        )
+        other_item = self._create_item(self.other, "Kemeja Teman", listed=False)
+        swap = SwapRequest.objects.create(
+            requester=self.other,
+            owner=self.user,
+            requested_item=my_item,
+            offered_item=other_item,
+            requested_item_name=my_item.name,
+            offered_item_name=other_item.name,
+            status=SwapRequest.AWAITING,
+        )
+        self.assertTrue(SwapRequest.objects.is_locked(other_item))
+
+        self.client.login(username="hapus_aku", password="Password123!")
+        res = self.client.post(reverse("accounts:delete_account"), follow=True)
+        self.assertRedirects(res, reverse("accounts:login"))
+        self.assertContains(res, "Akunmu telah berhasil dihapus.")
+        self.assertFalse(User.objects.filter(username="hapus_aku").exists())
+        self.assertFalse(SwapRequest.objects.filter(pk=swap.pk).exists())
+        self.assertFalse(SwapRequest.objects.is_locked(other_item))
+        self.assertTrue(ClothingItem.objects.filter(pk=other_item.pk, user=self.other).exists())
