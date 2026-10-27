@@ -276,16 +276,6 @@ def item_delete(request, pk):
 # KOLEKSI OUTFIT
 # ======================================================================
 
-# Susunan kolase foto pada kartu outfit, berdasarkan jumlah pakaian (1–5)
-COLLAGE_SPANS = {
-    1: ['col-span-6 row-span-2'],
-    2: ['col-span-3 row-span-2', 'col-span-3 row-span-2'],
-    3: ['col-span-4 row-span-2', 'col-span-2', 'col-span-2'],
-    4: ['col-span-3', 'col-span-3', 'col-span-3', 'col-span-3'],
-    5: ['col-span-3', 'col-span-3', 'col-span-2', 'col-span-2', 'col-span-2'],
-}
-
-
 def outfit_items_for(outfit):
     """Pakaian di outfit, ditandai pemilik outfit-nya supaya status swap terbaca benar."""
     return [item.seen_by(outfit.user_id) for item in outfit.items.all()]
@@ -301,10 +291,10 @@ def schedule_counts(outfit):
 
 
 def with_tiles(outfit):
-    """Tambahkan atribut `tiles` (pakaian + kelas grid) untuk kolase kartu outfit."""
+    """Tambahkan atribut `tiles` (maks. 5 pakaian) untuk kolase kartu outfit.
+    Susunan kolase diatur CSS lewat class .wd-collage--<jumlah pakaian>."""
     items = outfit_items_for(outfit)[:Outfit.MAX_ITEMS]
-    spans = COLLAGE_SPANS.get(len(items), [])
-    outfit.tiles = [{'item': item, 'span': span} for item, span in zip(items, spans)]
+    outfit.tiles = [{'item': item} for item in items]
     outfit.item_total = len(items)
     outfit.unavailable_total = sum(1 for item in items if item.is_swapped_away)
     outfit.listed_total = sum(1 for item in items

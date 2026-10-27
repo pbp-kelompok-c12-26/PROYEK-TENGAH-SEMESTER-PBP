@@ -8,77 +8,77 @@
 {% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <a href="{% url 'digital_wardrobe:index' %}?tab=outfit" class="inline-flex items-center gap-1.5 text-sm font-medium text-swSlate hover:text-swNavy">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+<div class="wd-detail">
+    <a href="{% url 'digital_wardrobe:index' %}?tab=outfit" class="wd-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
         Kembali ke koleksi outfit
     </a>
 
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div class="wd-outfit-head">
         <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-swNavy">{{ outfit.name }}</h1>
-            <p class="text-sm italic text-swSlate mt-1">Dibuat pada: {{ added_label }} · {{ outfit_items|length }} pakaian</p>
+            <h1 class="wd-detail__title">{{ outfit.name }}</h1>
+            <p class="wd-detail__date">Dibuat pada: {{ added_label }} · {{ outfit_items|length }} pakaian</p>
         </div>
-        <div class="flex gap-3">
+        <div class="wd-outfit-head__actions">
             <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit" data-delete-upcoming="{{ upcoming_total }}" data-delete-history="{{ history_total }}"
-                    class="h-10 px-6 rounded-lg bg-swBerry text-white text-sm font-semibold hover:bg-swBerry/90">
+                    class="wd-btn wd-btn--wide wd-btn--danger">
                 Hapus
             </button>
             <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_update' outfit.pk %}"
-                    class="h-10 px-6 inline-flex items-center gap-2 rounded-lg sw-btn-holo text-white text-sm font-semibold">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
+                    class="wd-btn wd-btn--wide wd-btn--holo sw-btn-holo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
                 Edit
             </button>
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl p-4 shadow-[inset_0_0_0_1px_rgba(23,31,99,0.06)]">
+    <div class="wd-note wd-note--compact">
         {% if outfit.description %}
-        <p class="text-sm text-swNavy whitespace-pre-line">{{ outfit.description }}</p>
+        <p class="wd-note__text">{{ outfit.description }}</p>
         {% else %}
-        <p class="text-sm text-swSlate italic">Belum ada catatan untuk outfit ini.</p>
+        <p class="wd-note__empty">Belum ada catatan untuk outfit ini.</p>
         {% endif %}
     </div>
 
-    <section class="relative overflow-hidden rounded-3xl p-4 sm:p-6 bg-gradient-to-br from-swBerry via-[#C65A86] to-[#8F86D6] shadow-[0_10px_30px_-12px_rgba(23,31,99,0.35)]">
+    <section class="wd-outfit-items">
         {% include 'digital_wardrobe/partials/holo_bg.html' %}
-        <h2 class="relative text-lg font-bold text-white mb-1">Isi outfit</h2>
+        <h2 class="wd-outfit-items__title">Isi outfit</h2>
         {% if has_listed or has_deleted or has_unavailable %}
-        <p class="relative text-xs text-white/90 mb-4">
+        <p class="wd-outfit-items__note">
             {% if has_listed %}Pakaian berlabel "Sedang ditawarkan" sedang ada di Items for Swap. Kembalikan ke lemari untuk memakainya lagi.{% endif %}
             {% if has_deleted %}Pakaian berlabel "Sudah dihapus dari lemari" tetap disimpan di outfit ini sebagai kenangan. Edit outfit kalau mau melepasnya.{% endif %}
             {% if has_unavailable %}Pakaian berlabel "Pakaian tidak tersedia" tetap tercatat di outfit, tetapi sudah berpindah melalui swap.{% endif %}
         </p>
         {% else %}
-        <div class="mb-3"></div>
+        <div class="wd-outfit-items__spacer"></div>
         {% endif %}
         {% if outfit_items %}
-        <div class="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="wd-outfit-items__grid">
             {% for item in outfit_items %}
             {% if item.status_label %}
-            <div class="bg-white rounded-2xl p-2.5 flex flex-col">
-                <span class="relative block rounded-xl overflow-hidden bg-swCream aspect-square">
-                    {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover opacity-60">{% endif %}
-                    <span class="absolute left-2 top-2">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>
+            <div class="wd-tile has-status">
+                <span class="wd-tile__photo">
+                    {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% endif %}
+                    <span class="wd-tile__badge">{% include 'digital_wardrobe/partials/item_status_badge.html' %}</span>
                 </span>
-                <span class="pt-2 px-1 text-sm font-bold {% if item.status_label %}text-swSlate{% else %}text-swNavy{% endif %}">{{ item.name }}</span>
-                <span class="px-1 pb-1 text-xs text-swSlate">{{ item.get_category_display }} · {{ item.size_label }}</span>
+                <span class="wd-tile__name">{{ item.name }}</span>
+                <span class="wd-tile__meta">{{ item.get_category_display }} · {{ item.size_label }}</span>
             </div>
             {% else %}
-            <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="group bg-white rounded-2xl p-2.5 flex flex-col">
-                <span class="block rounded-xl overflow-hidden bg-swCream aspect-square">
-                    {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">{% endif %}
+            <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="wd-tile wd-tile--link">
+                <span class="wd-tile__photo">
+                    {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% endif %}
                 </span>
-                <span class="pt-2 px-1 text-sm font-bold text-swNavy group-hover:text-swPlum">{{ item.name }}</span>
-                <span class="px-1 pb-1 text-xs text-swSlate">{{ item.get_category_display }} · {{ item.size_label }}</span>
+                <span class="wd-tile__name">{{ item.name }}</span>
+                <span class="wd-tile__meta">{{ item.get_category_display }} · {{ item.size_label }}</span>
             </a>
             {% endif %}
             {% endfor %}
         </div>
         {% else %}
-        <div class="relative bg-white rounded-2xl p-8 text-center">
-            <p class="text-sm font-semibold text-swNavy">Pakaian di outfit ini sudah dihapus dari lemari</p>
-            <p class="text-xs text-swSlate mt-1">Edit outfit untuk memilih pakaian baru.</p>
+        <div class="wd-outfit-items__empty">
+            <p class="wd-empty-note__title">Pakaian di outfit ini sudah dihapus dari lemari</p>
+            <p class="wd-empty-note__text">Edit outfit untuk memilih pakaian baru.</p>
         </div>
         {% endif %}
     </section>

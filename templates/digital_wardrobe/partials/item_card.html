@@ -1,19 +1,19 @@
-<article id="item-{{ item.pk }}" class="wd-item-card">
-    <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="wd-item-card__photo">
+<article id="item-{{ item.pk }}" class="wd-card">
+    <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="wd-card__photo">
         {% if item.image %}
         <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
         {% endif %}
         {% if item.is_listed_for_swap or item.swap_request_locked %}
-        <span class="wd-item-card__flag">{% if item.swap_request_locked %}Pakaian sedang ditawarkan{% else %}Listed for Swap{% endif %}</span>
+        <span class="wd-card__flag">{% if item.swap_request_locked %}Pakaian sedang ditawarkan{% else %}Listed for Swap{% endif %}</span>
         {% endif %}
     </a>
-    <div class="wd-item-card__body">
-        <h3 class="wd-item-card__name">
+    <div class="wd-card__body">
+        <h3 class="wd-card__name">
             <a href="{% url 'digital_wardrobe:item_detail' item.pk %}">{{ item.name }}</a>
         </h3>
-        <p class="wd-item-card__meta">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
+        <p class="wd-card__meta">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
     </div>
-    <div class="wd-item-card__actions">
+    <div class="wd-card__actions">
         {# Pakaian yang dipakai swap request aktif dikunci: tombol diberi atribut disabled (tampilan abu-abu dari CSS :disabled) #}
         <button type="button" {% if not item.swap_request_locked %}data-open-modal="{% url 'digital_wardrobe:item_update' item.pk %}"{% else %}disabled title="Batalkan swap request aktif terlebih dahulu"{% endif %}
                 class="wd-card-btn wd-card-btn--edit">
@@ -26,5 +26,5 @@
             Hapus
         </button>
     </div>
-    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="wd-item-card__lock-note">Batalkan request aktif sebelum mengedit, menghapus, atau menawarkan pakaian ini.</p>{% endif %}
+    {% if item.swap_request_locked %}<p id="swap-lock-{{ item.pk }}" class="wd-card__lock-note">Batalkan request aktif sebelum mengedit, menghapus, atau menawarkan pakaian ini.</p>{% endif %}
 </article>
