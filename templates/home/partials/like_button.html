@@ -2,6 +2,7 @@
 {% if listing.status == 'available' and listing.user_id != request.user.id or listing.is_liked %}
 <form method="post" action="{% url 'home:toggle_like' listing.pk %}"
       data-like-toggle data-liked="{{ listing.is_liked|yesno:'true,false' }}"
+      {% if not request.user.is_authenticated %}data-auth-required{% endif %}
       data-item-name="{{ item.name }}"
       data-remove-on-unlike="{% if request.resolver_match.view_name == 'home:liked_items' %}true{% else %}false{% endif %}"
       class="absolute {% if compact %}top-1 right-1{% else %}top-2 right-2{% endif %} z-20">
