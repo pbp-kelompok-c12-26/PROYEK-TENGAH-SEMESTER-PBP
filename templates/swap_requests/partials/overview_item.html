@@ -1,7 +1,7 @@
 <div class="min-w-0">
     <div class="flex items-center gap-2 mb-2">
         {% include 'swap_requests/partials/avatar.html' with person=person size='w-7 h-7 text-xs' %}
-        <p class="text-[11px] text-swSlate leading-tight line-clamp-2">{% if person == request.user %}Pakaian yang{% else %}@{{ person.username }}{% endif %} {{ caption }}</p>
+        <p class="text-[11px] text-swSlate leading-tight line-clamp-2">{% if person == request.user %}Pakaian yang{% else %}<a href="{% url 'accounts:public_profile' person.username %}" class="font-semibold text-swPlum hover:underline">@{{ person.username }}</a>{% endif %} {{ caption }}</p>
     </div>
     <div class="aspect-square rounded-xl overflow-hidden bg-swBlush ring-1 ring-swNavy/10">
         {% if item and item.image %}

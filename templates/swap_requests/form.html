@@ -34,7 +34,7 @@
                     <div class="min-w-0">
                         <p class="text-sm font-bold text-swNavy truncate">{{ requested_item.name }}</p>
                         <p class="text-xs text-swSlate">{{ requested_item.get_category_display }}{% if requested_item.size_label %} · {{ requested_item.size_label }}{% endif %} · {{ requested_item.get_condition_display }}</p>
-                        <p class="text-xs text-swPlum font-semibold mt-0.5">milik @{{ requested_item.user.username }}</p>
+                        <p class="text-xs text-swPlum font-semibold mt-0.5">milik <a href="{% url 'accounts:public_profile' requested_item.user.username %}" class="hover:underline">@{{ requested_item.user.username }}</a></p>
                     </div>
                 </div>
             </div>
