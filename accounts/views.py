@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
@@ -65,7 +66,7 @@ def profile(request):
     ).count()
     likes_received_count = LikedSwapItem.objects.filter(listing__user=request.user).count()
 
-    all_listings = list(
+    swap_listings = list(
         ItemForSwap.objects.available()
         .filter(
             user=request.user,
@@ -74,17 +75,8 @@ def profile(request):
         )
         .select_related('clothing_item', 'user')
     )
-    for listing in all_listings:
+    for listing in swap_listings:
         listing.is_reserved = listing.has_locking_request()
-
-    tab = request.GET.get("tab", "all")
-    if tab == "available":
-        swap_listings = [l for l in all_listings if not l.is_reserved]
-    elif tab == "reserved":
-        swap_listings = [l for l in all_listings if l.is_reserved]
-    else:
-        tab = "all"
-        swap_listings = all_listings
 
     return render(request, "accounts/profile.html", {
         "profile": user_profile,
@@ -93,7 +85,6 @@ def profile(request):
         "completed_swap_count": completed_swap_count,
         "likes_received_count": likes_received_count,
         "swap_listings": swap_listings,
-        "tab": tab,
     })
 
 
@@ -123,11 +114,28 @@ def change_password(request):
 
 
 @login_required(login_url='accounts:login')
+@require_POST
+def delete_account(request):
+    user = request.user
+    with transaction.atomic():
+        active_requests = SwapRequest.objects.filter(
+            Q(requester=user) | Q(owner=user),
+            status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+        )
+        for swap in active_requests:
+            swap.reject(actor=user)
+        logout(request)
+        user.delete()
+    messages.success(request, "Akunmu telah berhasil dihapus.")
+    return redirect("accounts:login")
+
+
+@login_required(login_url='accounts:login')
 def public_profile(request, username):
     target_user = get_object_or_404(User, username=username, is_active=True)
     target_profile = UserProfile.for_user(target_user)
 
-    available_listings = list(
+    swap_listings = list(
         ItemForSwap.objects.available()
         .filter(
             user=target_user,
@@ -141,7 +149,7 @@ def public_profile(request, username):
             )
         )
     )
-    for listing in available_listings:
+    for listing in swap_listings:
         listing.is_reserved = listing.has_locking_request()
 
     completed_swap_count = SwapRequest.objects.filter(
@@ -150,23 +158,13 @@ def public_profile(request, username):
     ).count()
     likes_received_count = LikedSwapItem.objects.filter(listing__user=target_user).count()
 
-    tab = request.GET.get("tab", "all")
-    if tab == "available":
-        swap_listings = [l for l in available_listings if not l.is_reserved]
-    elif tab == "reserved":
-        swap_listings = [l for l in available_listings if l.is_reserved]
-    else:
-        tab = "all"
-        swap_listings = available_listings
-
     # Catatan privasi: jangan pernah mengirimkan phone_number ke template profil publik.
     return render(request, "accounts/public_profile.html", {
         "target_user": target_user,
         "target_profile": target_profile,
         "is_own_profile": request.user.pk == target_user.pk,
-        "swap_count": len(available_listings),
+        "swap_count": len(swap_listings),
         "completed_swap_count": completed_swap_count,
         "likes_received_count": likes_received_count,
         "swap_listings": swap_listings,
-        "tab": tab,
     })

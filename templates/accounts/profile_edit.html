@@ -3,29 +3,35 @@
 
 {% block extra_head %}
 <style>
-    .sw-edit-hero {
-        background: linear-gradient(125deg, #DB8796 0%, #F4C4C8 24%, #FBF0DF 52%, #C9D2E6 78%, #6378AC 100%);
+    .sw-chip { transition: all .2s ease; background-color: #F6EEF8; }
+    .sw-chip:hover { background-color: #EDDFEE; }
+    .peer:checked + .sw-chip {
+        background: linear-gradient(135deg, #AF3F5F 0%, #C65A86 52%, #8F86D6 100%);
+        color: #FFFFFF;
+        box-shadow: 0 6px 14px -6px rgba(175, 63, 95, 0.55);
     }
-    .sw-chip { transition: background-color .2s ease, box-shadow .2s ease, color .2s ease; }
-    .peer:checked + .sw-chip { background: #E6C4F9; color: #171F63; box-shadow: inset 0 0 0 1.5px #B98DE0; }
-    .peer:focus-visible + .sw-chip { outline: 2px solid #6063B4; outline-offset: 2px; }
+    .peer:focus-visible + .sw-chip { outline: 2px solid #AF3F5F; outline-offset: 2px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-5">
-    <!-- HEADER & TAB NAVIGASI -->
+    <!-- HEADER & TAB NAVIGASI (PALET UNGU-PINK HOLO BERRY) -->
     <div class="space-y-4">
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-swNavy tracking-tight">Edit Profil Kamu</h1>
+        <div>
+            <p class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-swBerry">PENGATURAN AKUN</p>
+            <h1 class="mt-0.5 text-3xl sm:text-4xl font-extrabold text-swNavy tracking-tight">Edit Profil Kamu</h1>
+        </div>
 
-        <nav class="flex items-center gap-7 border-b border-swNavy/10" aria-label="Navigasi pengaturan akun">
+        <nav class="flex items-center gap-7 border-b border-swPink/30" aria-label="Navigasi pengaturan akun">
             <a href="{% url 'accounts:edit_profile' %}"
                aria-current="page"
-               class="pb-2.5 text-base sm:text-lg font-bold text-[#2B59A2] border-b-2 border-[#2B59A2]">
+               class="relative pb-3 text-base sm:text-lg font-bold text-swBerry">
                 Informasi Profil
+                <span class="absolute inset-x-0 -bottom-px h-[3px] rounded-full bg-gradient-to-r from-swBerry via-swPink to-swPlum"></span>
             </a>
             <a href="{% url 'accounts:change_password' %}"
-               class="pb-2.5 text-base sm:text-lg font-bold text-swSlate/80 hover:text-swNavy transition-colors">
+               class="relative pb-3 text-base sm:text-lg font-bold text-swSlate/80 hover:text-swBerry transition-colors">
                 Keamanan Akun
             </a>
         </nav>
@@ -34,22 +40,26 @@
     {% include 'accounts/partials/messages.html' %}
 
     {% if form.non_field_errors %}
-    <div class="rounded-2xl bg-swBlush/90 border border-swBerry/30 px-4 py-3 text-xs font-semibold text-swBerry space-y-1" role="alert">
+    <div class="rounded-2xl bg-swBlush border border-swBerry/30 px-4 py-3 text-xs font-semibold text-swBerry space-y-1" role="alert">
         {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
     </div>
     {% endif %}
 
-    <!-- CONTAINER GRADIEN UTAMA -->
-    <section class="sw-edit-hero rounded-[2rem] p-5 sm:p-7 lg:p-8 shadow-[0_24px_48px_-28px_rgba(23,31,99,0.45)]">
-        <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
+    <!-- CONTAINER GRADIEN UTAMA (PALET UNGU-PINK HOLO BERRY SAMA DENGAN PROFIL & MODUL LAIN) -->
+    <section class="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#AF3F5F_0%,#BE4E74_28%,#C96490_55%,#A978BE_80%,#8F86D6_100%)] p-5 sm:p-7 lg:p-8 shadow-[0_20px_48px_-20px_rgba(23,31,99,0.45)]">
+        {% include 'digital_wardrobe/partials/holo_bg.html' %}
+
+        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
             <!-- KOLOM KIRI: INFO BOX -->
             <aside class="space-y-4">
-                <div class="rounded-2xl bg-[#CBEBF5] p-4 sm:p-5 flex items-start gap-3 shadow-sm">
-                    <svg class="w-5 h-5 text-swNavy shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-                    </svg>
+                <div class="rounded-2xl bg-white/95 backdrop-blur border border-white/40 p-4 sm:p-5 flex items-start gap-3 shadow-sm">
+                    <span class="w-8 h-8 rounded-xl bg-swBlush text-swBerry shrink-0 flex items-center justify-center mt-0.5" aria-hidden="true">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                        </svg>
+                    </span>
                     <div class="space-y-1">
-                        <p class="text-xs font-extrabold text-swNavy">Informasi Profil</p>
+                        <p class="text-xs font-extrabold text-swBerry">Informasi Profil</p>
                         <p class="text-xs text-swSlate leading-relaxed">
                             Foto, nama tampilan, domisili, bio, serta preferensi gaya &amp; ukuran membantu pengguna lain mengenalmu. Nomor HP tetap tersimpan pribadi.
                         </p>
@@ -68,7 +78,7 @@
                     </div>
 
                     <!-- Foto profil -->
-                    <div class="p-4 rounded-2xl bg-swCream/60 border border-swNavy/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="p-4 rounded-2xl bg-gradient-to-r from-swBlush/80 via-[#F5E8FA] to-[#EAE6FA] border border-swPink/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-4">
                             <span class="relative w-16 h-16 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] ring-4 ring-white shadow flex items-center justify-center text-xl font-bold text-white">
                                 <span data-avatar-initial {% if profile.profile_picture %}class="hidden"{% endif %}>{{ request.user.username|first|upper }}</span>
@@ -80,9 +90,9 @@
                             </div>
                         </div>
 
-                        <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer self-start sm:self-auto rounded-xl bg-[#DCEBFF] px-4 py-2.5 inline-flex items-center gap-2.5 hover:bg-[#CFE2FF] transition-colors">
-                            <svg class="w-4 h-4 text-swNavy shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-                            <span class="text-xs font-bold text-swNavy" data-avatar-name>{% if profile.profile_picture %}Ganti foto{% else %}Upload fotomu{% endif %}</span>
+                        <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer self-start sm:self-auto rounded-xl bg-gradient-to-r from-swBerry via-[#C65A86] to-swPlum px-4 py-2.5 inline-flex items-center gap-2.5 text-white shadow-sm hover:opacity-95 transition-opacity">
+                            <svg class="w-4 h-4 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+                            <span class="text-xs font-bold text-white" data-avatar-name>{% if profile.profile_picture %}Ganti foto{% else %}Upload fotomu{% endif %}</span>
                         </label>
                         {{ form.profile_picture }}
                     </div>
@@ -98,14 +108,14 @@
                         </div>
 
                         <div>
-                            <label for="{{ form.phone_number.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Nomor HP*</label>
+                            <label for="{{ form.phone_number.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Nomor HP <span class="text-swBerry">*</span></label>
                             {{ form.phone_number }}
                             <p class="mt-1 text-[11px] text-swSlate">Hanya terlihat olehmu (tidak tampil di profil publik).</p>
                             {% for e in form.phone_number.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
                         </div>
 
                         <div>
-                            <label for="{{ form.domicile.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Domisili*</label>
+                            <label for="{{ form.domicile.id_for_label }}" class="block text-xs font-bold text-swNavy mb-1.5">Domisili <span class="text-swBerry">*</span></label>
                             {{ form.domicile }}
                             <p class="mt-1 text-[11px] text-swSlate">Kota/daerah tempat tinggal untuk lokasi ketemuan swap.</p>
                             {% for e in form.domicile.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
@@ -116,14 +126,14 @@
                     <div>
                         <div class="flex items-center justify-between gap-2 mb-1.5">
                             <label for="{{ form.bio.id_for_label }}" class="block text-xs font-bold text-swNavy">Biografi</label>
-                            <span class="text-[11px] font-semibold text-swSlate tabular-nums"><span data-bio-count>{{ form.bio.value|default:''|length }}</span>/300</span>
+                            <span class="text-[11px] font-semibold text-swBerry tabular-nums"><span data-bio-count>{{ form.bio.value|default:''|length }}</span>/300</span>
                         </div>
                         {{ form.bio }}
                         <p class="mt-1 text-[11px] text-swSlate">Opsional, maksimal 300 karakter.</p>
                         {% for e in form.bio.errors %}<p class="mt-1 text-xs font-semibold text-swBerry">{{ e }}</p>{% endfor %}
                     </div>
 
-                    <hr class="border-swNavy/10">
+                    <hr class="border-swPink/25">
 
                     <!-- Preferensi Gaya & Ukuran -->
                     <div class="space-y-6">
@@ -170,11 +180,11 @@
                 <!-- BARIS TOMBOL BATAL & SIMPAN PERUBAHAN -->
                 <div class="mt-5 flex flex-wrap items-center justify-end gap-3">
                     <a href="{% url 'accounts:profile' %}"
-                       class="h-11 px-6 inline-flex items-center justify-center rounded-2xl bg-white text-sm font-bold text-swNavy shadow-sm hover:bg-swCream transition-colors">
+                       class="h-11 px-6 inline-flex items-center justify-center rounded-full bg-white/20 backdrop-blur border border-white/40 text-sm font-bold text-white hover:bg-white/30 transition-colors">
                         Batal
                     </a>
                     <button type="submit"
-                            class="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#169C46] hover:bg-[#12833A] text-sm font-bold text-white shadow-sm transition-colors active:scale-[0.98]">
+                            class="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-swBerry shadow-[0_6px_16px_-6px_rgba(23,31,99,0.45)] hover:bg-swBlush transition-colors active:scale-[0.98]">
                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
                         Simpan perubahan
                     </button>

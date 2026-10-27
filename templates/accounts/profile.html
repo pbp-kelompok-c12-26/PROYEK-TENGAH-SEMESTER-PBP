@@ -1,34 +1,41 @@
 {% extends 'base.html' %}
 {% block title %}Profil Saya · Swapdrobe{% endblock %}
 
-{% block extra_head %}
-<style>
-    .sw-profile-hero {
-        background: linear-gradient(115deg, #F5BFC1 0%, #FBF0DF 24%, #C2CCE2 58%, #475E97 100%);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6">
     {% include 'accounts/partials/messages.html' %}
 
-    <!-- HERO CONTAINER PROFIL SAYA -->
-    <section class="sw-profile-hero rounded-[2rem] p-5 sm:p-7 lg:p-8 shadow-[0_24px_48px_-28px_rgba(23,31,99,0.45)] space-y-5">
-        <!-- BARIS JUDUL & TOMBOL EDIT -->
+    <!-- HERO CONTAINER PROFIL SAYA (PALET UNGU-PINK HOLO BERRY) -->
+    <section class="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#AF3F5F_0%,#BE4E74_28%,#C96490_55%,#A978BE_80%,#8F86D6_100%)] p-5 sm:p-7 lg:p-8 shadow-[0_20px_48px_-20px_rgba(23,31,99,0.45)]">
+        {% include 'digital_wardrobe/partials/holo_bg.html' %}
+
+        <div class="relative z-10 space-y-5">
+        <!-- BARIS JUDUL & TOMBOL AKSI -->
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-swNavy tracking-tight">Profil Saya</h1>
-            <a href="{% url 'accounts:edit_profile' %}"
-               class="h-10 px-5 inline-flex items-center gap-2 rounded-full bg-white text-xs sm:text-sm font-bold text-swNavy shadow-sm hover:bg-swCream transition-colors">
-                <svg class="w-4 h-4 text-swNavy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6 1.3 0 2.5.4 3.5 1.1"/><path d="m14 20 1-3.5 4.5-4.5 2.5 2.5-4.5 4.5z"/>
-                </svg>
-                Edit dan Atur Profil
-            </a>
+            <div>
+                <p class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-white/80">AKUN &amp; KOLEKSI</p>
+                <h1 class="mt-0.5 text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Profil Saya</h1>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+                <a href="{% url 'accounts:public_profile' request.user.username %}"
+                   class="h-10 px-4 inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur border border-white/35 text-xs sm:text-sm font-bold text-white hover:bg-white/30 transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Lihat Profil Publik
+                </a>
+                <a href="{% url 'accounts:edit_profile' %}"
+                   class="h-10 px-5 inline-flex items-center gap-2 rounded-full bg-white text-xs sm:text-sm font-bold text-swNavy shadow-[0_6px_16px_-6px_rgba(23,31,99,0.45)] hover:bg-swBlush transition-colors">
+                    <svg class="w-4 h-4 text-swBerry" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6 1.3 0 2.5.4 3.5 1.1"/><path d="m14 20 1-3.5 4.5-4.5 2.5 2.5-4.5 4.5z"/>
+                    </svg>
+                    Edit dan Atur Profil
+                </a>
+            </div>
         </div>
 
-        <!-- KARTU PUTIH IDENTITAS & PREFERENSI -->
-        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
+        <!-- KARTU PUTIH IDENTITAS & PREFERENSI (TANPA NOMOR TELEPON) -->
+        <div class="relative bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <!-- Kiri: Avatar + Info -->
                 <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 min-w-0 flex-1">
@@ -36,11 +43,11 @@
 
                     <div class="min-w-0 flex-1 space-y-1.5">
                         <h2 class="text-2xl sm:text-3xl font-extrabold text-swNavy truncate">{{ profile.name }}</h2>
-                        <p class="text-xs sm:text-sm font-semibold text-[#3C78D8]">@{{ request.user.username }}</p>
+                        <p class="text-xs sm:text-sm font-bold text-swBerry">@{{ request.user.username }}</p>
 
                         <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-swSlate pt-0.5">
                             <span class="inline-flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 text-swNavy shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <svg class="w-3.5 h-3.5 text-swPlum shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
                                 </svg>
                                 {% if profile.domicile %}
@@ -51,13 +58,6 @@
                             </span>
                             <span aria-hidden="true">·</span>
                             <span>Bergabung {{ request.user.date_joined|date:"F Y" }}</span>
-                            {% if profile.phone_number %}
-                            <span aria-hidden="true">·</span>
-                            <span class="inline-flex items-center gap-1 text-swNavy/80 font-medium" title="Hanya terlihat olehmu">
-                                <svg class="w-3.5 h-3.5 text-swPlum shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
-                                {{ profile.phone_number }}
-                            </span>
-                            {% endif %}
                         </div>
 
                         {% if profile.bio %}
@@ -68,12 +68,12 @@
                     </div>
                 </div>
 
-                <!-- Kanan: 3 Badge Preferensi -->
+                <!-- Kanan: 3 Badge Preferensi (Palet Ungu-Pink) -->
                 <div class="flex flex-col sm:items-start lg:items-end gap-2.5 shrink-0">
-                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#D4F5B2] text-xs text-swNavy">
-                        <strong class="font-bold">Ukuran pakaian favorit</strong>
-                        <span>·</span>
-                        <span class="font-semibold">
+                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-swBlush text-xs text-swNavy">
+                        <strong class="font-bold text-swBerry">Ukuran pakaian favorit</strong>
+                        <span class="text-swBerry/60">·</span>
+                        <span class="font-semibold text-swNavy">
                             {% if profile.preferred_clothing_sizes %}
                                 {{ profile.preferred_clothing_sizes|join:", " }}
                             {% else %}
@@ -82,10 +82,10 @@
                         </span>
                     </span>
 
-                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#FCE7CF] text-xs text-swNavy">
-                        <strong class="font-bold">Ukuran alas kaki favorit</strong>
-                        <span>·</span>
-                        <span class="font-semibold">
+                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-swLilac/75 text-xs text-swNavy">
+                        <strong class="font-bold text-swNavy">Ukuran alas kaki favorit</strong>
+                        <span class="text-swNavy/50">·</span>
+                        <span class="font-semibold text-swNavy">
                             {% if profile.preferred_shoe_sizes %}
                                 {% for shoe in profile.preferred_shoe_sizes %}EU {{ shoe }}{% if not forloop.last %}, {% endif %}{% endfor %}
                             {% else %}
@@ -94,10 +94,10 @@
                         </span>
                     </span>
 
-                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#EFE2FA] text-xs text-swNavy">
-                        <strong class="font-bold">Gaya</strong>
-                        <span>·</span>
-                        <span class="font-semibold text-[#3C2A78]">
+                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#E8E6F8] text-xs text-swNavy">
+                        <strong class="font-bold text-swPlum">Gaya</strong>
+                        <span class="text-swPlum/60">·</span>
+                        <span class="font-semibold text-swNavy">
                             {% if profile.style_labels %}
                                 {{ profile.style_labels|join:", " }}
                             {% else %}
@@ -110,7 +110,7 @@
         </div>
 
         <!-- 3 KARTU STATISTIK -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Ringkasan statistik akun">
+        <div class="relative grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Ringkasan statistik akun">
             <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
                 <p class="text-xs font-medium text-swSlate">Pakaian tersedia untuk swap</p>
                 <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ swap_count }}</p>
@@ -124,30 +124,15 @@
                 <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ likes_received_count }}</p>
             </div>
         </div>
+        </div>
     </section>
-
-    <!-- FILTER TAB -->
-    <nav class="flex flex-wrap items-center gap-2.5" aria-label="Filter pakaian swap">
-        <a href="?tab=all"
-           class="h-9 px-5 inline-flex items-center rounded-full text-xs font-bold transition-colors {% if tab == 'all' %}bg-[#3B66AC] text-white shadow-sm{% else %}bg-white text-[#3B66AC] border border-swNavy/10 hover:bg-swBlush/40{% endif %}">
-            Semua
-        </a>
-        <a href="?tab=available"
-           class="h-9 px-5 inline-flex items-center rounded-full text-xs font-bold transition-colors {% if tab == 'available' %}bg-[#3B66AC] text-white shadow-sm{% else %}bg-white text-[#3B66AC] border border-swNavy/10 hover:bg-swBlush/40{% endif %}">
-            Available untuk swap
-        </a>
-        <a href="?tab=reserved"
-           class="h-9 px-5 inline-flex items-center rounded-full text-xs font-bold transition-colors {% if tab == 'reserved' %}bg-[#3B66AC] text-white shadow-sm{% else %}bg-white text-[#3B66AC] border border-swNavy/10 hover:bg-swBlush/40{% endif %}">
-            Reserved
-        </a>
-    </nav>
 
     <!-- GRID KARTU: KARTU PRIVASI LEMARI + DAFTAR ITEM SWAP -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Kartu Info Privasi Lemari -->
-        <article class="rounded-3xl bg-[#CBEBF5] p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[320px]">
-            <span class="w-11 h-11 rounded-2xl flex items-center justify-center text-swNavy mb-3" aria-hidden="true">
-                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Kartu Info Privasi Lemari (Nuansa Blush-Lilac-Plum) -->
+        <article class="rounded-3xl bg-gradient-to-br from-swBlush via-[#F3E4F8] to-[#E6E4FA] border border-swPlum/15 p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[320px] shadow-sm">
+            <span class="w-12 h-12 rounded-2xl bg-white/80 text-swBerry flex items-center justify-center mb-3 shadow-sm" aria-hidden="true">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16.5" r="1"/>
                 </svg>
             </span>
@@ -158,7 +143,7 @@
                 Hanya pakaian yang kamu tawarkan untuk swap yang muncul di sini. Pakaian di lemari ({{ wardrobe_count }} item), outfit, dan kalender outfit-mu tersimpan selalu pribadi.
             </p>
             <a href="{% url 'items_for_swap:index' %}"
-               class="mt-6 h-10 px-6 inline-flex items-center justify-center rounded-full bg-white text-xs font-bold text-swNavy shadow-sm hover:bg-swCream transition-colors">
+               class="mt-6 h-10 px-6 inline-flex items-center justify-center rounded-full sw-btn-holo text-xs font-bold text-white shadow-sm">
                 Atur pakaian swap kamu
             </a>
         </article>
