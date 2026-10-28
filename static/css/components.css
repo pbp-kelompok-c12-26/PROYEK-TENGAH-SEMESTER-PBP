@@ -4,12 +4,7 @@
    ========================================================= */
 
 /* ---------- Tombol navy -> hologram biru saat hover ----------
-   Dipakai lewat class .sw-btn-holo.
-   Selector .bg-swRed / .bg-swGreen / .bg-swBlue masih ada untuk template
-   yang belum pindah dari Tailwind; hapus kalau semua modul sudah pakai CSS. */
-:root .bg-swRed,
-:root .bg-swGreen,
-:root .bg-swBlue,
+   Dipakai lewat class .sw-btn-holo. */
 :root .sw-btn-holo {
     background-color: var(--sw-btn-navy);
     background-image:
@@ -17,27 +12,15 @@
         linear-gradient(110deg, #26307F 0%, #26307F 40%, #2B3A92 54%, #4A66CC 66%, #8FA9F2 76%, #5C7BDA 86%, #2B3A92 100%);
     background-size: 250% 100%, 250% 100%;
     background-position: 130% 0, 0% 0;
-}
-
-:root :is(a, button).bg-swRed,
-:root :is(a, button).bg-swGreen,
-:root :is(a, button).bg-swBlue,
-:root .sw-btn-holo {
     transition: background-position .7s ease, box-shadow .3s ease;
 }
 
-:root :is(a, button).bg-swRed:hover,
-:root :is(a, button).bg-swGreen:hover,
-:root :is(a, button).bg-swBlue:hover,
 :root .sw-btn-holo:hover:not(:disabled) {
     background-position: -30% 0, 100% 0;
     box-shadow: 0 8px 22px -8px rgba(43, 58, 146, .55), 0 0 0 3px rgba(159, 180, 240, .45);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    :root :is(a, button).bg-swRed,
-    :root :is(a, button).bg-swGreen,
-    :root :is(a, button).bg-swBlue,
     :root .sw-btn-holo {
         transition: none;
     }
