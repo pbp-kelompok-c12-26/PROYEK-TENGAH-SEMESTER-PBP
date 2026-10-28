@@ -60,6 +60,35 @@ def _party_summary(user):
 def index(request):
     SwapRequest.objects.sync_availability()
     SwapRequest.objects.mark_seen_by(request.user)
+    active_statuses = (SwapRequest.PENDING, SwapRequest.AWAITING)
+    incoming_active_counts = Counter(
+        SwapRequest.objects.filter(
+            owner=request.user,
+            owner_hidden=False,
+            status__in=active_statuses,
+        ).values_list('status', flat=True)
+    )
+    outgoing_active_counts = Counter(
+        SwapRequest.objects.filter(
+            requester=request.user,
+            requester_hidden=False,
+            status__in=active_statuses,
+        ).values_list('status', flat=True)
+    )
+    request_summary_rows = [
+        {
+            'label': 'Masuk aktif',
+            'pending': incoming_active_counts.get(SwapRequest.PENDING, 0),
+            'awaiting': incoming_active_counts.get(SwapRequest.AWAITING, 0),
+            'total': sum(incoming_active_counts.values()),
+        },
+        {
+            'label': 'Keluar aktif',
+            'pending': outgoing_active_counts.get(SwapRequest.PENDING, 0),
+            'awaiting': outgoing_active_counts.get(SwapRequest.AWAITING, 0),
+            'total': sum(outgoing_active_counts.values()),
+        },
+    ]
     tab = 'kamu' if request.GET.get('tab') == 'kamu' else 'masuk'
     filters = OUTGOING_FILTERS if tab == 'kamu' else INCOMING_FILTERS
     status = request.GET.get('status', '')
@@ -106,6 +135,7 @@ def index(request):
     return render(request, 'swap_requests/index.html', {
         'tab': tab, 'status': status, 'filters': filters,
         'groups': groups, 'outgoing': outgoing,
+        'request_summary_rows': request_summary_rows,
     })
 
 

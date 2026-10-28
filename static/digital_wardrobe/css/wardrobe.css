@@ -84,15 +84,9 @@ body.wd-no-scroll {
     margin-bottom: 1.25rem;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 0.5rem;
-}
-
-@media (min-width: 640px) {
-    .wd-hero__head {
-        flex-direction: row;
-        align-items: flex-end;
-    }
 }
 
 .wd-hero__eyebrow {
@@ -126,16 +120,11 @@ body.wd-no-scroll {
 }
 
 .wd-hero__tagline {
-    max-width: 20rem;
+    max-width: 100%;
+    text-align: left;
     font-size: 0.875rem;
     line-height: 1.25rem;
     color: rgb(255 255 255 / 0.85);
-}
-
-@media (min-width: 640px) {
-    .wd-hero__tagline {
-        text-align: right;
-    }
 }
 
 .wd-hero__stats {
