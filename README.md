@@ -102,3 +102,19 @@ Orang-orang yang sering mengelola *fashion* mereka dan ingin memaksimalkan pakai
 
 * **Deployment PWS**: [https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id/](https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id/)
 * **Desain Figma**: [Figma Low-Fi Design SwapMatch](https://www.figma.com/design/EC91kdm0tnJODFQhxwIQul/Prototype-Web-PBP?node-id=0-1&p=f&t=eQtZICktQfXXkBwX-0)
+
+---
+
+## 🤖 AI Disclosure
+
+Dalam pengembangan SwapDrobe, kami menggunakan **ChatGPT, Claude, dan OpenAI Codex di IDE** sebagai alat bantu untuk memahami struktur kode, mendiskusikan pendekatan implementasi, dan menyusun perubahan awal. AI membantu mempercepat eksplorasi dan memberi penjelasan saat kami mengerjakan integrasi antarmodul, tampilan, serta autocomplete lokasi. Keputusan desain dan kode akhir tetap kami tinjau sebagai tim.
+
+Contoh prompt yang kami gunakan:
+
+* “Telusuri model, form, view, URL, dan template yang sudah ada sebelum mengubah fitur ini. Gunakan struktur yang tersedia dan batasi perubahan pada kebutuhan terkait.”
+* “Buat autocomplete kabupaten/kota menggunakan API Wilayah Indonesia EmSifa, termasuk validasi pilihan di server, penanganan data yang gagal dimuat, dan tampilan yang konsisten dengan website.”
+* “Jelaskan alur dan potensi masalah pada kode ini tanpa mengubahnya, supaya kami memahami hubungan antarbagian sebelum menentukan perbaikan.”
+
+Strategi kami adalah menggunakan AI untuk membantu memetakan masalah dan membuat usulan yang bisa ditinjau, bukan menerima hasilnya begitu saja. Kami mencocokkan usulan tersebut dengan model, form, view, URL, template, serta aturan bisnis yang sudah ada. Untuk informasi API, kami memeriksa dokumentasi EmSifa; untuk perubahan kode, kami meninjau alur input sampai data tersimpan dan tampilan digunakan.
+
+Setelah menggunakan AI, kami melakukan pemeriksaan dan penyesuaian manual. Pada autocomplete lokasi, misalnya, kami memastikan pengguna harus memilih rekomendasi yang valid, pilihan diverifikasi kembali oleh server, dan kegagalan sebagian endpoint tidak dianggap sebagai data lengkap. Kami juga menyesuaikan field dan styling agar mengikuti pola proyek, meninjau migrasi terhadap kondisi database yang sudah berjalan, serta menjalankan pemeriksaan Django dan tes yang relevan. Proses ini membantu kami memahami alasan di balik implementasi sekaligus menemukan dan memperbaiki ketidaksesuaian sebelum perubahan digunakan.
