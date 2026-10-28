@@ -1,19 +1,28 @@
+import io
 import json
 import shutil
 import tempfile
+from datetime import timedelta
 from unittest import mock
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test import TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone
+from PIL import Image
 
+from items_for_swap.models import ItemForSwap
+from outfit_calendar.models import OutfitSchedule, ScheduledItem
 from swap_requests.models import SwapRequest
 
+from .forms import ClothingItemForm, OutfitForm
 from .models import ClothingItem, Outfit
+from .templatetags.wardrobe_tags import swap_item_count
 from .views import BULK_DELETE_LIMIT, BULK_LIMIT, WRITE_LIMIT
 
 AJAX = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
@@ -444,3 +453,463 @@ class SecurityTests(WardrobeTestCase):
             response = self.client.post(url, {'items': ['1']})
         self.assertEqual(response.status_code, 429)
         self.assertContains(response, 'Terlalu banyak permintaan', status_code=429)
+
+
+# ======================================================================
+# Test unit Model, Form, View (CRUD dasar) — target coverage > 90%
+# ======================================================================
+
+def png_upload(name='baju.png', size=(8, 8)):
+    """Foto PNG asli (dibuat Pillow) untuk diunggah lewat form."""
+    buffer = io.BytesIO()
+    Image.new('RGB', size, (215, 136, 178)).save(buffer, format='PNG')
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type='image/png')
+
+
+def item_data(**extra):
+    """Data POST form pakaian yang valid."""
+    return {'name': 'Kemeja Linen', 'category': 'top', 'size': 'M', 'shoe_size': '', 'gender': 'unisex',
+            'condition': 'good', 'color': 'neutral', 'description': 'Bahan adem', **extra}
+
+
+class WardrobeDataMixin:
+    def setUp(self):
+        super().setUp()
+        self.user = User.objects.create_user('fanny', password='Password123!')
+        self.other = User.objects.create_user('rico', password='Password123!')
+        self.client.login(username='fanny', password='Password123!')
+        self.index = reverse('digital_wardrobe:index')
+
+    def make_item(self, name='Kaos', user=None, **extra):
+        fields = {'category': 'top', 'size': 'M', 'color': 'neutral', 'condition': 'good', 'gender': 'unisex', **extra}
+        return ClothingItem.objects.create(user=user or self.user, name=name, **fields)
+
+    def make_outfit(self, name='Kampus', items=(), user=None):
+        outfit = Outfit.objects.create(user=user or self.user, name=name)
+        outfit.items.add(*items)
+        return outfit
+
+    def lock_with_swap(self, item):
+        wanted = self.make_item('Barang Rico', user=self.other)
+        return SwapRequest.objects.create(
+            requester=self.user, owner=self.other, requested_item=wanted, offered_item=item,
+            requested_item_name=wanted.name, offered_item_name=item.name, status=SwapRequest.PENDING)
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class ClothingItemModelTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_str_and_size_label(self):
+        item = self.make_item('Kemeja')
+        self.assertEqual(str(item), 'Kemeja (Atasan)')
+        self.assertEqual(item.size_label, 'M')
+        shoe = self.make_item('Sneakers', category='footwear', size='', shoe_size=39)
+        self.assertTrue(shoe.is_footwear)
+        self.assertEqual(shoe.size_label, 'EU 39')
+        self.assertEqual(self.make_item('Sepatu', category='footwear', size='').size_label, '-')
+        self.assertEqual(self.make_item('Topi', size='').size_label, '-')
+
+    def test_querysets(self):
+        mine = self.make_item('Kemeja')
+        listed = self.make_item('Hoodie', is_listed_for_swap=True)
+        archived = self.make_item('Sweater')
+        self.make_outfit(items=[archived])
+        archived.remove_from_wardrobe()
+        self.make_item('Punya Rico', user=self.other)
+        self.assertEqual(list(ClothingItem.objects.in_wardrobe(self.user)), [mine])
+        self.assertEqual(list(ClothingItem.objects.available_for_swap(self.user)), [mine])
+        self.assertEqual(list(ClothingItem.objects.listed_for_swap(self.user)), [listed])
+        self.assertNotIn(archived, ClothingItem.objects.active())
+
+    def test_status_label(self):
+        item = self.make_item('Kemeja')
+        self.assertEqual(item.status_label, '')
+        item.is_listed_for_swap = True
+        self.assertEqual(item.status_label, 'Sedang ditawarkan')
+        item.deleted_at = timezone.now()
+        self.assertEqual(item.status_label, 'Sudah dihapus dari lemari')
+        self.assertEqual(item.seen_by(self.other.pk).status_label, 'Pakaian tidak tersedia')
+        self.assertTrue(item.is_swapped_away)
+        self.assertFalse(item.seen_by(self.user.pk).is_swapped_away)
+
+    def test_refresh_idle(self):
+        old = self.make_item('Lama')
+        worn = self.make_item('Baru dipakai')
+        long_ago = timezone.now() - timedelta(days=ClothingItem.IDLE_AFTER_DAYS + 5)
+        ClothingItem.objects.filter(pk__in=[old.pk, worn.pk]).update(created_at=long_ago)
+        ClothingItem.objects.filter(pk=worn.pk).update(last_worn_date=timezone.localdate(), is_idle=True)
+        ClothingItem.objects.refresh_idle(self.user)
+        old.refresh_from_db()
+        worn.refresh_from_db()
+        self.assertTrue(old.is_idle)
+        self.assertFalse(worn.is_idle)
+
+    def test_remove_from_wardrobe(self):
+        unused = self.make_item('Belum dipakai', image=png_upload())
+        path = unused.image.name
+        self.assertEqual(unused.remove_from_wardrobe(), 'deleted')
+        self.assertFalse(ClothingItem.objects.filter(pk=unused.pk).exists())
+        self.assertFalse(unused.image.storage.exists(path))
+
+        used = self.make_item('Dipakai', is_listed_for_swap=True)
+        self.make_outfit(items=[used])
+        self.assertTrue(used.is_in_use())
+        self.assertEqual(used.remove_from_wardrobe(), 'archived')
+        used.refresh_from_db()
+        self.assertTrue(used.is_deleted)
+        self.assertFalse(used.is_listed_for_swap)
+
+        locked = self.make_item('Dikunci')
+        self.lock_with_swap(locked)
+        with self.assertRaises(ValidationError):
+            locked.remove_from_wardrobe()
+
+    def test_item_used_in_calendar_or_swap_listing_is_in_use(self):
+        scheduled = self.make_item('Dijadwalkan')
+        schedule = OutfitSchedule.objects.create(user=self.user, date=timezone.localdate(), outfit_name='Kampus')
+        ScheduledItem.objects.create(schedule=schedule, clothing_item=scheduled, name=scheduled.name)
+        self.assertTrue(scheduled.is_in_use())
+        listed = self.make_item('Pernah ditawarkan')
+        ItemForSwap.objects.create(clothing_item=listed, user=self.user, meeting_location='Depok')
+        self.assertTrue(listed.is_in_use())
+        self.assertFalse(self.make_item('Baru').is_in_use())
+
+
+class OutfitModelTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_str(self):
+        self.assertEqual(str(self.make_outfit('Kondangan')), 'Kondangan')
+
+    def test_validate_items(self):
+        mine = [self.make_item(f'Kaos {i}') for i in range(6)]
+        Outfit.validate_items(self.user, mine[:5])
+        with self.assertRaisesMessage(ValidationError, 'minimal 1'):
+            Outfit.validate_items(self.user, [])
+        with self.assertRaisesMessage(ValidationError, 'maksimal 5'):
+            Outfit.validate_items(self.user, mine)
+        with self.assertRaisesMessage(ValidationError, 'lemarimu sendiri'):
+            Outfit.validate_items(self.user, [mine[0], self.make_item('Punya Rico', user=self.other)])
+
+
+class TemplateTagTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_swap_item_count(self):
+        self.make_item('Hoodie', is_listed_for_swap=True)
+        self.assertEqual(swap_item_count(self.user), 1)
+        self.assertEqual(swap_item_count(AnonymousUser()), 0)
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class ClothingItemFormTests(WardrobeDataMixin, WardrobeTestCase):
+    def form(self, image=True, **extra):
+        files = {'image': png_upload()} if image else {}
+        return ClothingItemForm(item_data(**extra), files)
+
+    def test_valid_form(self):
+        form = self.form()
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.is_footwear)
+
+    def test_required_fields_use_indonesian_messages(self):
+        form = ClothingItemForm({}, {})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['name'], ['Wajib diisi.'])
+        self.assertEqual(form.errors['image'], ['Foto pakaian wajib diunggah.'])
+        self.assertEqual(form.fields['category'].choices[0], ('', 'Pilih kategori'))
+
+    def test_clothes_need_letter_size_and_shoes_need_number(self):
+        form = self.form(size='')
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['size'], ['Wajib diisi.'])
+
+        form = self.form(category='footwear', size='M', shoe_size='')
+        self.assertTrue(form.is_footwear)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['shoe_size'], ['Wajib diisi untuk sepatu.'])
+
+        form = self.form(category='footwear', size='M', shoe_size='39')
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data['size'], '')          # ukuran huruf dikosongkan untuk sepatu
+
+        form = self.form(size='L', shoe_size='39')
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertIsNone(form.cleaned_data['shoe_size'])        # ukuran sepatu dikosongkan untuk baju
+
+    def test_shoe_size_range(self):
+        for value, message in (('10', 'minimal 20'), ('60', 'maksimal 50'), ('abc', 'harus berupa angka')):
+            with self.subTest(value=value):
+                form = self.form(category='footwear', shoe_size=value)
+                self.assertFalse(form.is_valid())
+                self.assertIn(message, form.errors['shoe_size'][0])
+
+    def test_photo_validation(self):
+        big = png_upload()
+        big.size = 6 * 1024 * 1024
+        form = ClothingItemForm(item_data(), {'image': big})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['image'], ['Ukuran foto maksimal 5 MB.'])
+
+        gif = io.BytesIO()
+        Image.new('RGB', (4, 4)).save(gif, format='GIF')
+        form = ClothingItemForm(item_data(), {'image': SimpleUploadedFile('a.gif', gif.getvalue(), content_type='image/gif')})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['image'], ['Format foto harus JPG atau PNG.'])
+
+        fake = SimpleUploadedFile('virus.png', b'bukan gambar', content_type='image/png')
+        form = ClothingItemForm(item_data(), {'image': fake})
+        self.assertFalse(form.is_valid())
+        self.assertIn('image', form.errors)
+
+    def test_edit_without_new_photo_keeps_old_photo(self):
+        item = self.make_item('Kemeja', image=png_upload())
+        form = ClothingItemForm(item_data(name='Kemeja Baru'), {}, instance=item)
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.save().image.name, item.image.name)
+
+
+class OutfitFormTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_choices_only_show_own_wardrobe(self):
+        mine = self.make_item('Kemeja')
+        listed = self.make_item('Hoodie', is_listed_for_swap=True)
+        theirs = self.make_item('Punya Rico', user=self.other)
+        choices = set(OutfitForm(user=self.user).fields['items'].queryset)
+        self.assertEqual(choices, {mine})
+        self.assertNotIn(listed, choices)
+        self.assertNotIn(theirs, choices)
+
+    def test_validation(self):
+        items = [self.make_item(f'Kaos {i}') for i in range(6)]
+        form = OutfitForm({'name': '', 'items': []}, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['name'], ['Wajib diisi.'])
+        self.assertEqual(form.errors['items'], ['Pilih minimal 1 pakaian.'])
+        form = OutfitForm({'name': 'Banyak', 'items': [i.pk for i in items]}, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['items'], ['Satu outfit maksimal 5 pakaian.'])
+        form = OutfitForm({'name': 'Pas', 'items': [i.pk for i in items[:5]]}, user=self.user)
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_other_users_item_is_rejected(self):
+        theirs = self.make_item('Punya Rico', user=self.other)
+        form = OutfitForm({'name': 'Curang', 'items': [theirs.pk]}, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn('items', form.errors)
+
+    def test_edit_keeps_items_that_moved_away_or_were_listed(self):
+        kept = self.make_item('Hoodie')
+        outfit = self.make_outfit(items=[kept])
+        kept.is_listed_for_swap = True
+        kept.save()
+        swapped = self.make_item('Sudah ditukar', user=self.other)
+        outfit.items.add(swapped)   # pakaian yang sudah berpindah pemilik lewat swap
+        form = OutfitForm({'name': 'Kampus', 'items': [kept.pk, swapped.pk]}, instance=outfit, user=self.user)
+        self.assertEqual(set(form.fields['items'].queryset), {kept, swapped})
+        self.assertTrue(form.is_valid(), form.errors)
+        new_theirs = self.make_item('Baru punya Rico', user=self.other)
+        form = OutfitForm({'name': 'Kampus', 'items': [kept.pk]}, instance=outfit, user=self.user)
+        form.fields['items'].queryset = ClothingItem.objects.all()   # paksa lolos pilihan, cek clean_items
+        form.data = {'name': 'Kampus', 'items': [kept.pk, new_theirs.pk]}
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['items'], ['Pakaian baru harus berasal dari lemarimu sendiri.'])
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class IndexViewTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_lists_only_own_wardrobe(self):
+        self.make_item('Kemeja Saya')
+        self.make_item('Hoodie Ditawarkan', is_listed_for_swap=True)
+        self.make_item('Punya Rico', user=self.other)
+        response = self.client.get(self.index)
+        self.assertEqual([i.name for i in response.context['items']], ['Kemeja Saya'])
+        self.assertEqual(response.context['total_for_swap'], 1)
+
+    def test_search_category_sort_and_pagination(self):
+        for name in ['Celana', 'Atasan B', 'Atasan A']:
+            self.make_item(name, category='bottom' if name == 'Celana' else 'top', description='katun')
+        response = self.client.get(self.index, {'q': 'katun', 'category': 'top', 'sort': 'name'})
+        self.assertEqual([i.name for i in response.context['items']], ['Atasan A', 'Atasan B'])
+        self.assertTrue(response.context['is_filtered'])
+        response = self.client.get(self.index, {'sort': 'oldest', 'category': 'tidak-ada', 'limit': 'abc'})
+        self.assertEqual(response.context['items'][0].name, 'Celana')
+        self.assertEqual(response.context['sort'], 'oldest')
+        response = self.client.get(self.index, {'sort': 'aneh'})
+        self.assertEqual(response.context['sort'], 'newest')
+
+    def test_load_more_limit(self):
+        for i in range(15):
+            self.make_item(f'Kaos {i}')
+        response = self.client.get(self.index)
+        self.assertEqual(len(response.context['items']), 12)
+        self.assertTrue(response.context['has_more'])
+        response = self.client.get(self.index, {'limit': 24})
+        self.assertEqual(len(response.context['items']), 15)
+        self.assertFalse(response.context['has_more'])
+
+    def test_outfit_tab(self):
+        item = self.make_item('Kemeja')
+        self.make_outfit('Kampus', items=[item])
+        response = self.client.get(self.index, {'tab': 'outfit'})
+        outfit = response.context['outfits'][0]
+        self.assertEqual((outfit.name, outfit.item_total), ('Kampus', 1))
+        self.assertContains(response, 'Kampus')
+
+    def test_auto_open_urls(self):
+        item = self.make_item('Kemeja')
+        outfit = self.make_outfit()
+        cases = {
+            'add=1': reverse('digital_wardrobe:item_create'),
+            f'edit={item.pk}': reverse('digital_wardrobe:item_update', args=[item.pk]),
+            'add_outfit=1': reverse('digital_wardrobe:outfit_create'),
+            f'add_outfit=1&item={item.pk}': f"{reverse('digital_wardrobe:outfit_create')}?item={item.pk}",
+            f'edit_outfit={outfit.pk}': reverse('digital_wardrobe:outfit_update', args=[outfit.pk]),
+            'edit=99999': '',
+        }
+        for query, expected in cases.items():
+            with self.subTest(query=query):
+                self.assertEqual(self.client.get(f'{self.index}?{query}').context['auto_open_url'], expected)
+
+    def test_old_item_list_url_redirects(self):
+        self.assertRedirects(self.client.get(reverse('digital_wardrobe:item_list')), self.index)
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
+class ItemViewTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_detail(self):
+        item = self.make_item('Kemeja')
+        self.make_outfit(items=[item])
+        response = self.client.get(reverse('digital_wardrobe:item_detail', args=[item.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['outfit_count'], 1)
+
+    def test_detail_of_archived_or_listed_item_redirects(self):
+        archived = self.make_item('Dihapus', deleted_at=timezone.now())
+        response = self.client.get(reverse('digital_wardrobe:item_detail', args=[archived.pk]))
+        self.assertRedirects(response, self.index)
+        listed = self.make_item('Ditawarkan', is_listed_for_swap=True)
+        response = self.client.get(reverse('digital_wardrobe:item_detail', args=[listed.pk]))
+        self.assertRedirects(response, self.index)
+        response = self.client.get(reverse('digital_wardrobe:item_detail', args=[listed.pk]), **AJAX)
+        self.assertEqual(response.status_code, 409)
+
+    def test_create_with_ajax(self):
+        url = reverse('digital_wardrobe:item_create')
+        self.assertIn('modal_html', self.client.get(url, **AJAX).json())
+        data = self.client.post(url, {**item_data(), 'image': png_upload()}, **AJAX).json()
+        self.assertTrue(data['ok'])
+        self.assertEqual(data['total_items'], 1)
+        self.assertIn('Kemeja Linen', data['card_html'])
+        item = ClothingItem.objects.get()
+        self.assertEqual(item.user, self.user)
+
+    def test_create_invalid_with_ajax_returns_form_with_errors(self):
+        response = self.client.post(reverse('digital_wardrobe:item_create'), item_data(name=''), **AJAX)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Wajib diisi.', response.json()['modal_html'])
+        self.assertFalse(ClothingItem.objects.exists())
+
+    def test_create_without_ajax(self):
+        url = reverse('digital_wardrobe:item_create')
+        self.assertRedirects(self.client.get(url), f'{self.index}?add=1')
+        self.assertRedirects(self.client.post(url, item_data(name='')), f'{self.index}?add=1')
+        response = self.client.post(url, {**item_data(), 'image': png_upload()})
+        self.assertRedirects(response, self.index)
+        self.assertEqual(ClothingItem.objects.count(), 1)
+
+    def test_update_with_ajax(self):
+        item = self.make_item('Kemeja', image=png_upload())
+        url = reverse('digital_wardrobe:item_update', args=[item.pk])
+        self.assertIn('Kemeja', self.client.get(url, **AJAX).json()['modal_html'])
+        data = self.client.post(url, item_data(name='Kemeja Baru'), **AJAX).json()
+        self.assertEqual((data['ok'], data['pk']), (True, item.pk))
+        item.refresh_from_db()
+        self.assertEqual(item.name, 'Kemeja Baru')
+        response = self.client.post(url, item_data(name=''), **AJAX)
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_without_ajax(self):
+        item = self.make_item('Kemeja', image=png_upload())
+        url = reverse('digital_wardrobe:item_update', args=[item.pk])
+        self.assertRedirects(self.client.get(url), f'{self.index}?edit={item.pk}')
+        self.assertRedirects(self.client.post(url, item_data(name='')), f'{self.index}?edit={item.pk}')
+        response = self.client.post(url, item_data(name='Kemeja Baru'))
+        self.assertRedirects(response, reverse('digital_wardrobe:item_detail', args=[item.pk]))
+
+    def test_update_blocked_when_listed_or_in_swap_request(self):
+        listed = self.make_item('Hoodie', is_listed_for_swap=True)
+        self.assertEqual(self.client.get(reverse('digital_wardrobe:item_update', args=[listed.pk]), **AJAX).status_code, 409)
+        locked = self.make_item('Dress')
+        self.lock_with_swap(locked)
+        url = reverse('digital_wardrobe:item_update', args=[locked.pk])
+        self.assertEqual(self.client.post(url, item_data(), **AJAX).status_code, 409)
+        self.assertRedirects(self.client.post(url, item_data()), reverse('digital_wardrobe:item_detail', args=[locked.pk]))
+
+    def test_delete_without_htmx(self):
+        used = self.make_item('Kemeja')
+        self.make_outfit(items=[used])
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[used.pk]), follow=True)
+        self.assertContains(response, 'tetap tampil dengan status')
+        listed = self.make_item('Hoodie', is_listed_for_swap=True)
+        self.assertRedirects(self.client.post(reverse('digital_wardrobe:item_delete', args=[listed.pk])), self.index)
+        locked = self.make_item('Dress')
+        self.lock_with_swap(locked)
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[locked.pk]))
+        self.assertRedirects(response, reverse('digital_wardrobe:item_detail', args=[locked.pk]))
+
+    def test_delete_validation_error_from_model(self):
+        item = self.make_item('Kemeja')
+        url = reverse('digital_wardrobe:item_delete', args=[item.pk])
+        with mock.patch.object(ClothingItem, 'remove_from_wardrobe', side_effect=ValidationError('Sedang diproses.')):
+            response = self.client.post(url, HTTP_HX_REQUEST='true')
+            self.assertEqual(json.loads(response['HX-Trigger'])['wardrobe:delete-failed']['message'], 'Sedang diproses.')
+            response = self.client.post(url)
+            self.assertRedirects(response, reverse('digital_wardrobe:item_detail', args=[item.pk]))
+
+
+class OutfitViewTests(WardrobeDataMixin, WardrobeTestCase):
+    def test_create_with_ajax(self):
+        item = self.make_item('Kemeja')
+        url = reverse('digital_wardrobe:outfit_create')
+        modal = self.client.get(f'{url}?item={item.pk}', **AJAX).json()['modal_html']
+        self.assertIn('Kemeja', modal)
+        data = self.client.post(url, {'name': 'Kampus', 'items': [item.pk]}, **AJAX).json()
+        self.assertTrue(data['ok'])
+        self.assertEqual((data['kind'], data['total_outfits']), ('outfit', 1))
+        self.assertEqual(list(Outfit.objects.get().items.all()), [item])
+        response = self.client.post(url, {'name': '', 'items': []}, **AJAX)
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_without_ajax(self):
+        item = self.make_item('Kemeja')
+        url = reverse('digital_wardrobe:outfit_create')
+        self.assertRedirects(self.client.get(f'{url}?item={item.pk}'), f'{self.index}?tab=outfit&add_outfit=1&item={item.pk}')
+        self.assertRedirects(self.client.post(url, {'name': ''}), f'{self.index}?tab=outfit&add_outfit=1')
+        self.assertRedirects(self.client.post(url, {'name': 'Kampus', 'items': [item.pk]}), f'{self.index}?tab=outfit')
+
+    def test_detail(self):
+        item = self.make_item('Kemeja')
+        outfit = self.make_outfit(items=[item])
+        OutfitSchedule.objects.create(user=self.user, outfit=outfit, date=timezone.localdate() + timedelta(days=3))
+        response = self.client.get(reverse('digital_wardrobe:outfit_detail', args=[outfit.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((response.context['upcoming_total'], response.context['history_total']), (1, 0))
+
+    def test_update(self):
+        first, second = self.make_item('Kemeja'), self.make_item('Celana')
+        outfit = self.make_outfit(items=[first])
+        url = reverse('digital_wardrobe:outfit_update', args=[outfit.pk])
+        self.assertIn('modal_html', self.client.get(url, **AJAX).json())
+        self.assertRedirects(self.client.get(url), f'{self.index}?tab=outfit&edit_outfit={outfit.pk}')
+        data = self.client.post(url, {'name': 'Kampus 2', 'items': [first.pk, second.pk]}, **AJAX).json()
+        self.assertEqual((data['ok'], data['pk']), (True, outfit.pk))
+        self.assertEqual(outfit.items.count(), 2)
+        self.assertEqual(self.client.post(url, {'name': '', 'items': []}, **AJAX).status_code, 400)
+        self.assertRedirects(self.client.post(url, {'name': ''}), f'{self.index}?tab=outfit&edit_outfit={outfit.pk}')
+        response = self.client.post(url, {'name': 'Kampus 3', 'items': [first.pk]})
+        self.assertRedirects(response, reverse('digital_wardrobe:outfit_detail', args=[outfit.pk]))
+
+    def test_delete_removes_upcoming_schedules_but_keeps_history(self):
+        outfit = self.make_outfit(items=[self.make_item('Kemeja')])
+        today = timezone.localdate()
+        OutfitSchedule.objects.create(user=self.user, outfit=outfit, date=today + timedelta(days=2))
+        past = OutfitSchedule.objects.create(user=self.user, outfit=outfit, date=today - timedelta(days=2))
+        response = self.client.post(reverse('digital_wardrobe:outfit_delete', args=[outfit.pk]), follow=True)
+        self.assertContains(response, '1 jadwal mendatang di Kalender Outfit ikut dihapus')
+        self.assertFalse(Outfit.objects.filter(pk=outfit.pk).exists())
+        self.assertTrue(OutfitSchedule.objects.filter(pk=past.pk).exists())
