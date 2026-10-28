@@ -3,6 +3,7 @@ from collections import Counter, OrderedDict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -118,6 +119,7 @@ def index(request):
                 'item': swaps[0].requested_item,
                 'name': swaps[0].requested_item_name,
                 'total': len(swaps),
+                'requests': swaps,
                 'summary': ' · '.join(f'{counts[s]} {dict(SwapRequest.STATUS_CHOICES)[s].lower()}'
                                       for s in STATUS_PRIORITY if counts[s]),
                 'top_status': top,
@@ -342,15 +344,27 @@ def delete(request, pk):
     if not swap.can_delete:
         messages.error(request, 'Request yang sedang menunggu pertukaran tidak bisa dihapus.')
         return redirect('swap_requests:detail', pk=pk)
-    role = swap.role_of(request.user)
+    role = _delete_swap_for_party(swap, request.user)
     tab = 'kamu' if role == 'requester' else 'masuk'
+    messages.success(request, 'Swap request dihapus dari daftar kamu.')
+    return redirect(f"{reverse('swap_requests:index')}?tab={tab}")
+
+
+def _delete_swap_for_party(swap, user):
+    """Terapkan aturan hapus yang sama untuk hapus satuan dan bulk."""
+    if not swap.can_delete:
+        return None
+    role = swap.role_of(user)
+    if role is None:
+        return None
+
     if swap.status == SwapRequest.PENDING and role == 'requester':
         swap.delete()  # Pengirim membatalkan ajuan: hilang dari kedua pihak.
     elif swap.status == SwapRequest.PENDING and role == 'owner':
         swap.status = SwapRequest.REJECTED
         swap.owner_hidden = True
         swap.responded_at = timezone.now()
-        swap.record_status_change(actor=request.user)
+        swap.record_status_change(actor=user)
         swap.save(update_fields=['status', 'owner_hidden', 'responded_at', 'updated_at'])
     elif role == 'requester':
         swap.requester_hidden = True
@@ -358,5 +372,44 @@ def delete(request, pk):
     else:
         swap.owner_hidden = True
         swap.save(update_fields=['owner_hidden', 'updated_at'])
-    messages.success(request, 'Swap request dihapus dari daftar kamu.')
-    return redirect(f"{reverse('swap_requests:index')}?tab={tab}")
+    return role
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def bulk_delete(request):
+    """Hapus request terpilih yang terlihat oleh pengguna; Awaiting selalu dilewati."""
+    selected_ids = list(dict.fromkeys(
+        value for value in request.POST.getlist('swap_ids') if value.isdigit()
+    ))
+    tab = 'masuk' if request.POST.get('tab') == 'masuk' else 'kamu'
+    if not selected_ids:
+        messages.info(request, 'Pilih request yang ingin dihapus terlebih dahulu.')
+        return _bulk_delete_redirect(request, tab)
+
+    processed = 0
+    with transaction.atomic():
+        swaps = list(_base_qs().visible_to(request.user).filter(pk__in=selected_ids)
+                     .exclude(status=SwapRequest.AWAITING).select_for_update())
+        for swap in swaps:
+            if _delete_swap_for_party(swap, request.user):
+                processed += 1
+
+    if processed:
+        messages.success(request, f'{processed} swap request diproses sesuai statusnya.')
+    else:
+        messages.info(request, 'Tidak ada request terpilih yang bisa dihapus. Awaiting exchange tidak dapat dihapus.')
+    return _bulk_delete_redirect(request, tab)
+
+
+def _bulk_delete_redirect(request, tab):
+    if tab == 'masuk':
+        item_id = request.POST.get('item_id', '')
+        if item_id.isdigit():
+            return redirect('swap_requests:item_requests', item_id=int(item_id))
+    status = request.POST.get('status', '')
+    filters = OUTGOING_FILTERS if tab == 'kamu' else INCOMING_FILTERS
+    query = f'?tab={tab}'
+    if status in dict(filters) and status:
+        query += f'&status={status}'
+    return redirect(f'{reverse("swap_requests:index")}{query}')

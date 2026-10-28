@@ -1,0 +1,41 @@
+<div class="sr-bulk-toolbar">
+    <div class="sr-bulk-toolbar__intro">
+        <span class="sr-bulk-toolbar__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg>
+        </span>
+        <span class="sr-bulk-toolbar__copy">
+            <strong>Kelola request</strong>
+            <span>Pilih beberapa request untuk menghapusnya sekaligus.</span>
+        </span>
+    </div>
+    <div class="sr-bulk-toolbar__actions">
+        <label class="sr-bulk-toolbar__select-all" data-sr-select-all-wrap hidden>
+            <input type="checkbox" data-sr-select-all>
+            <span>Pilih semua</span>
+        </label>
+        <span class="sr-bulk-toolbar__count" data-sr-selected-count hidden>0 dipilih</span>
+        <button type="submit" class="sr-bulk-toolbar__submit" data-sr-bulk-submit hidden disabled>
+            Hapus pilihan
+        </button>
+        <button type="button" class="sr-bulk-toolbar__toggle" data-sr-selection-toggle aria-pressed="false">
+            <svg data-sr-toggle-icon viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg>
+            <span data-sr-toggle-label>Pilih request</span>
+        </button>
+    </div>
+    <p class="sr-bulk-toolbar__hint" data-sr-selection-hint hidden>Awaiting exchange tidak bisa dipilih.</p>
+</div>
+
+<dialog class="sr-bulk-confirm" data-sr-bulk-dialog aria-labelledby="sr-bulk-confirm-title" aria-describedby="sr-bulk-confirm-description sr-bulk-confirm-effect">
+    <div class="sr-bulk-confirm__panel">
+        <span class="sr-bulk-confirm__eyebrow">KONFIRMASI</span>
+        <h2 id="sr-bulk-confirm-title">Yakin?</h2>
+        <p id="sr-bulk-confirm-description" class="sr-bulk-confirm__message">
+            Kamu akan menghapus <strong data-sr-confirm-count></strong> yang dipilih.
+        </p>
+        <p id="sr-bulk-confirm-effect" class="sr-bulk-confirm__effect" data-sr-confirm-effect></p>
+        <div class="sr-bulk-confirm__actions">
+            <button type="button" class="sr-bulk-confirm__cancel" data-sr-confirm-cancel>Batal</button>
+            <button type="button" class="sr-bulk-confirm__accept" data-sr-confirm-accept>Ya, lanjutkan</button>
+        </div>
+    </div>
+</dialog>
