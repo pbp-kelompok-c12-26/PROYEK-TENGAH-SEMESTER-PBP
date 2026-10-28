@@ -53,7 +53,13 @@ class UserProfile(models.Model):
         null=True,
         blank=True,
     )
+    # Label domisili yang ditampilkan, mis. "Kota Bogor, Jawa Barat".
     domicile = models.CharField(max_length=100, blank=True)
+    # Pilihan terstruktur dari API Wilayah Indonesia (lihat home/wilayah.py).
+    # Kosong untuk data lama yang dulu diisi sebagai teks bebas.
+    domicile_code = models.CharField("Kode kab/kota domisili", max_length=20, blank=True)
+    domicile_city = models.CharField("Kab/kota domisili", max_length=100, blank=True)
+    domicile_province = models.CharField("Provinsi domisili", max_length=100, blank=True)
 
     # Opsional
     profile_picture = models.FileField(
@@ -73,6 +79,13 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.display_name
+
+    def set_domicile(self, location):
+        """Isi domisili dari dict lokasi hasil home.wilayah.LocationField."""
+        self.domicile = location['label']
+        self.domicile_code = location['code']
+        self.domicile_city = location['city']
+        self.domicile_province = location['province']
 
     @property
     def name(self):

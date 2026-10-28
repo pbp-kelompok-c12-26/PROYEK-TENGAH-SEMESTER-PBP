@@ -9,6 +9,7 @@ from django.utils import timezone
 from PIL import Image
 
 from digital_wardrobe.models import ClothingItem
+from home.tests import WilayahAPIMixin
 from items_for_swap.models import ItemForSwap
 from swap_requests.models import SwapRequest
 
@@ -29,7 +30,7 @@ def make_image_bytes(fmt="PNG", size=(32, 32), color=(175, 63, 95)):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-class Phase1FormFoundationTests(TestCase):
+class Phase1FormFoundationTests(WilayahAPIMixin, TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(username="alice", password="Password123!")
         self.profile1 = UserProfile.for_user(self.user1)
@@ -58,7 +59,7 @@ class Phase1FormFoundationTests(TestCase):
         dup_form = RegisterForm(data={
             "username": "bob",
             "phone_number": "+6281234567890",
-            "domicile": "Jakarta",
+            "domicile_code": "3174",
             "password1": "StrongPass123!",
             "password2": "StrongPass123!",
         })
@@ -68,7 +69,7 @@ class Phase1FormFoundationTests(TestCase):
         ok_form = RegisterForm(data={
             "username": "bob",
             "phone_number": "+62 813-9999-8888",
-            "domicile": "Bandung",
+            "domicile_code": "3273",
             "password1": "StrongPass123!",
             "password2": "StrongPass123!",
         })
@@ -76,7 +77,20 @@ class Phase1FormFoundationTests(TestCase):
         user = ok_form.save()
         profile = UserProfile.for_user(user)
         self.assertEqual(profile.phone_number, "081399998888")
-        self.assertEqual(profile.domicile, "Bandung")
+        self.assertEqual(profile.domicile, "Kota Bandung, Jawa Barat")
+        self.assertEqual(profile.domicile_code, "3273")
+        self.assertEqual(profile.domicile_province, "Jawa Barat")
+
+    def test_register_form_rejects_free_text_domicile(self):
+        form = RegisterForm(data={
+            "username": "bob",
+            "phone_number": "081399998888",
+            "domicile_code": "Bandung",
+            "password1": "StrongPass123!",
+            "password2": "StrongPass123!",
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn("domicile_code", form.errors)
 
     def test_validate_profile_picture_accepts_valid_png_and_jpeg(self):
         png_file = SimpleUploadedFile("avatar.png", make_image_bytes("PNG"), content_type="image/png")
@@ -164,7 +178,7 @@ class Phase2MyProfileAndNavbarTests(TestCase):
 
 
 @override_settings(MEDIA_ROOT=tempfile.gettempdir())
-class Phase3EditProfileTests(TestCase):
+class Phase3EditProfileTests(WilayahAPIMixin, TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(username="iqbal", password="Password123!")
         self.profile1 = UserProfile.for_user(self.user1)
@@ -192,7 +206,7 @@ class Phase3EditProfileTests(TestCase):
             data={
                 "display_name": "Iqbal Baru",
                 "phone_number": "+62 812-1111-2222",
-                "domicile": "Bandung",
+                "domicile_code": "3273",
                 "bio": "Kolektor jaket vintage.",
                 "preferred_styles": ["vintage", "streetwear"],
                 "preferred_clothing_sizes": ["L", "XL"],
@@ -207,7 +221,8 @@ class Phase3EditProfileTests(TestCase):
         self.profile1.refresh_from_db()
         self.assertEqual(self.profile1.display_name, "Iqbal Baru")
         self.assertEqual(self.profile1.phone_number, "081211112222")
-        self.assertEqual(self.profile1.domicile, "Bandung")
+        self.assertEqual(self.profile1.domicile, "Kota Bandung, Jawa Barat")
+        self.assertEqual(self.profile1.domicile_city, "Kota Bandung")
         self.assertEqual(self.profile1.bio, "Kolektor jaket vintage.")
         self.assertEqual(self.profile1.preferred_styles, ["vintage", "streetwear"])
         self.assertEqual(self.profile1.preferred_clothing_sizes, ["L", "XL"])
@@ -221,7 +236,7 @@ class Phase3EditProfileTests(TestCase):
             data={
                 "display_name": "Iqbal",
                 "phone_number": "+6281233334444",
-                "domicile": "Depok",
+                "domicile_code": "3276",
                 "bio": "Halo",
             },
         )
@@ -238,7 +253,7 @@ class Phase3EditProfileTests(TestCase):
             data={
                 "display_name": "Iqbal",
                 "phone_number": "081211112222",
-                "domicile": "Depok",
+                "domicile_code": "3276",
                 "bio": "a" * 305,
                 "profile_picture": fake_img,
             },

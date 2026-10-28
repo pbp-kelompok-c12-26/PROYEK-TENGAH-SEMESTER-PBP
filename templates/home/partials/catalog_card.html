@@ -39,7 +39,7 @@ Kartu katalog. Butuh `item` (ClothingItem). Opsional dari Items for Swap: `listi
         {% if listing.meeting_location %}
         <span class="home-card__place">
             <svg class="home-card__place-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
-            {{ listing.meeting_location }}
+            {{ listing.meeting_area }}
         </span>
         {% endif %}
     </div>
@@ -49,7 +49,7 @@ Kartu katalog. Butuh `item` (ClothingItem). Opsional dari Items for Swap: `listi
            class="home-card__btn">
             Lihat detail
         </a>
-        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}"{% if not request.user.is_authenticated %} data-auth-required{% endif %}
+        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}" data-form-modal{% if not request.user.is_authenticated %} data-auth-required{% endif %}
            class="home-card__swap sw-btn-holo">
             Ajukan swap
         </a>

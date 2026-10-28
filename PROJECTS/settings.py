@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import tempfile
 from dotenv import load_dotenv
 from pathlib import Path
 # Load environment variables from .env file
@@ -106,6 +107,17 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+# Cache server: dipakai untuk menyimpan data API Wilayah Indonesia (home/wilayah.py)
+# supaya tidak memanggil API setiap request. Berbasis file supaya semua proses server
+# (mis. beberapa worker gunicorn) memakai cache yang sama.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.getenv('CACHE_DIR', os.path.join(tempfile.gettempdir(), 'swapdrobe_cache')),
+        'TIMEOUT': 24 * 60 * 60,
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

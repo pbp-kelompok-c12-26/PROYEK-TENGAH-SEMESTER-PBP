@@ -51,7 +51,8 @@ def add(request, pk=None):
             ItemForSwap.list_item(
                 clothing_item=form.cleaned_data['clothing_item'],
                 user=request.user,
-                meeting_location=form.cleaned_data['meeting_location'],
+                location=form.cleaned_data['meeting_city_code'],
+                meeting_place=form.cleaned_data['meeting_place'],
                 reason=form.cleaned_data['reason'],
             )
         except ValidationError as e:
