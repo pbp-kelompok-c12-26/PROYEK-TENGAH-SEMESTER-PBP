@@ -202,6 +202,13 @@ def create(request):
             messages.info(request, 'Kamu sudah memiliki request aktif untuk pakaian ini. Lanjutkan dari detail request tersebut.')
             return redirect('swap_requests:detail', pk=existing.pk)
         swap = form.save()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Form Ajukan Swap dibuka di modal dari Jelajahi. Kembalikan isi
+            # konfirmasi langsung agar modal sukses tampil di atas halaman asal.
+            return render(request, 'swap_requests/sent.html', {
+                'swap': swap,
+                'tanggal': format_tanggal(swap.created_at),
+            })
         return redirect('swap_requests:sent', pk=swap.pk)
     return render(request, 'swap_requests/form.html', {
         'form': form, 'requested_item': requested_item, 'title': 'Tambahkan pakaian untuk ditukar',
