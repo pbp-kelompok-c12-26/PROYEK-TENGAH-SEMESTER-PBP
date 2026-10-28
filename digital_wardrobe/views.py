@@ -1,12 +1,15 @@
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Exists, OuterRef, Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_POST
 
 from .forms import ClothingItemForm, OutfitForm
@@ -36,6 +39,26 @@ def format_tanggal(value):
 
 def is_ajax(request):
     return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+
+# ---------- HTMX (filter, tab, & hapus tanpa reload; lihat static/digital_wardrobe/js/htmx-events.js) ----------
+# id elemen target (header HX-Target) -> potongan template yang dikirim balik
+HX_PARTIALS = {
+    'wardrobe-content': 'digital_wardrobe/partials/wardrobe_content.html',   # tab + isi tab
+    'wardrobe-results': 'digital_wardrobe/partials/item_results.html',       # grid pakaian + footer
+}
+
+
+def is_htmx(request):
+    return request.headers.get('HX-Request') == 'true'
+
+
+def hx_response(content='', event=None, **detail):
+    """Respons untuk HTMX + event di header HX-Trigger (ditangkap JavaScript untuk toast & angka total)."""
+    response = HttpResponse(content)
+    if event:
+        response['HX-Trigger'] = json.dumps({event: detail})
+    return response
 
 
 def _auto_open_url(request):
@@ -124,7 +147,14 @@ def index(request):
         'total_for_swap': ClothingItem.objects.listed_for_swap(request.user).count(),
         'auto_open_url': _auto_open_url(request),
     }
-    return render(request, 'digital_wardrobe/index.html', context)
+    template = 'digital_wardrobe/index.html'
+    # Request HTMX (filter / cari / urutkan / muat lebih banyak / pindah tab): kirim potongannya saja.
+    # Saat tombol Back memulihkan riwayat (HX-History-Restore-Request), kirim halaman penuh.
+    if is_htmx(request) and not request.headers.get('HX-History-Restore-Request'):
+        template = HX_PARTIALS.get(request.headers.get('HX-Target'), template)
+    response = render(request, template, context)
+    patch_vary_headers(response, ['HX-Request', 'HX-Target'])   # cache browser membedakan halaman penuh & potongan
+    return response
 
 
 LISTED_MESSAGE = '"{name}" sedang ditawarkan di Items for Swap. Kelola dari Item Swap Saya, atau kembalikan dulu ke lemari.'
@@ -252,24 +282,37 @@ def item_delete(request, pk):
 
     # Cegah data yatim di modul Items for Swap / Swap Request (panduan §2.3)
     if item.is_listed_for_swap:
-        messages.error(request, LISTED_MESSAGE.format(name=item.name))
+        message = LISTED_MESSAGE.format(name=item.name)
+        if is_htmx(request):   # kartu dihapus dari grid (memang tidak lagi ada di lemari)
+            return hx_response('', 'wardrobe:delete-failed', message=message)
+        messages.error(request, message)
         return redirect('digital_wardrobe:index')
     from swap_requests.models import SwapRequest
     if SwapRequest.objects.has_active_request(item):
-        messages.error(request, f'"{item.name}" sedang dipakai dalam swap request. Batalkan request terlebih dahulu sebelum menghapusnya.')
+        message = f'"{item.name}" sedang dipakai dalam swap request. Batalkan request terlebih dahulu sebelum menghapusnya.'
+        if is_htmx(request):   # kartu dikembalikan (dengan status terkunci terbaru)
+            return hx_response(_card(request, item), 'wardrobe:delete-failed', message=message)
+        messages.error(request, message)
         return redirect('digital_wardrobe:item_detail', pk=item.pk)
 
     name = item.name
     try:
         result = item.remove_from_wardrobe()
     except ValidationError as error:
-        messages.error(request, ' '.join(error.messages))
+        message = ' '.join(error.messages)
+        if is_htmx(request):
+            return hx_response(_card(request, item), 'wardrobe:delete-failed', message=message)
+        messages.error(request, message)
         return redirect('digital_wardrobe:item_detail', pk=item.pk)
     if result == 'archived':
-        messages.success(request, f'"{name}" sudah dihapus dari lemarimu. '
-                                  'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
+        message = (f'"{name}" sudah dihapus dari lemarimu. '
+                   'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
     else:
-        messages.success(request, f'"{name}" sudah dihapus dari lemarimu.')
+        message = f'"{name}" sudah dihapus dari lemarimu.'
+    if is_htmx(request):   # HTMX mengganti kartu dengan respons kosong = kartu hilang
+        return hx_response('', 'wardrobe:deleted', kind='item', message=message,
+                           total=ClothingItem.objects.in_wardrobe(request.user).count())
+    messages.success(request, message)
     return redirect('digital_wardrobe:index')
 
 
@@ -460,5 +503,9 @@ def outfit_delete(request, pk):
     upcoming.delete()
     outfit.delete()
     note = f' {removed} jadwal mendatang di Kalender Outfit ikut dihapus.' if removed else ''
-    messages.success(request, f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.{note}')
+    message = f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.{note}'
+    if is_htmx(request):
+        return hx_response('', 'wardrobe:deleted', kind='outfit', message=message,
+                           total=Outfit.objects.filter(user=request.user).count())
+    messages.success(request, message)
     return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit")

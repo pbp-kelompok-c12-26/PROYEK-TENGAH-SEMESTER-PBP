@@ -2112,3 +2112,61 @@ body.wd-no-scroll {
         bottom: 8rem;
     }
 }
+
+/* =========================================================
+   HTMX: filter, pindah tab, & hapus tanpa reload
+   (partials/wardrobe_content.html, partials/item_results.html, js/htmx-events.js)
+   ========================================================= */
+/* Chip "Semua pakaian / Jarang dipakai" berupa radio di dalam form filter */
+.wd-chip--radio {
+    position: relative;
+    cursor: pointer;
+}
+
+.wd-chip--radio input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.wd-chip--radio:has(input:checked) {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: linear-gradient(to right, var(--sw-berry), #B66CB0, var(--sw-plum));
+    color: var(--sw-white);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.wd-chip--radio:has(input:focus-visible) {
+    outline: 2px solid var(--sw-plum);
+    outline-offset: 2px;
+}
+
+/* Tombol "Pilih" hanya ada artinya kalau ada pakaian (bar hapus banyak ikut dirender) */
+#wardrobe-content:not(:has([data-bulk-form])) .wd-chip--select {
+    display: none;
+}
+
+/* Jarak antarbagian sama seperti .wd-page (isi tab & hasil kini dibungkus elemen target HTMX) */
+#wardrobe-content > :not([hidden]) ~ :not([hidden]),
+.wd-results > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 2rem;
+    margin-bottom: 0px;
+}
+
+/* Feedback instan saat daftar sedang diambil ulang */
+.wd-results {
+    transition: opacity 150ms ease;
+}
+
+.wd-results.htmx-request {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* Kartu yang sedang dihapus HTMX (swap:250ms) memudar & mengecil */
+.wd-card.htmx-swapping {
+    opacity: 0;
+    transform: scale(0.94);
+    transition: opacity 250ms ease, transform 250ms ease;
+}

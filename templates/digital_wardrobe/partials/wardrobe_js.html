@@ -3,4 +3,6 @@
 <div id="modal-root" data-index-url="{% url 'digital_wardrobe:index' %}"></div>
 {% include 'digital_wardrobe/partials/delete_modal.html' %}
 {% include 'digital_wardrobe/partials/messages.html' %}
+{# HTMX disimpan lokal (tanpa CDN): filter, pindah tab, & hapus tanpa reload #}
+<script src="{% static 'digital_wardrobe/vendor/htmx-2.0.4.min.js' %}" defer></script>
 <script type="module" src="{% static 'digital_wardrobe/js/main.js' %}"></script>

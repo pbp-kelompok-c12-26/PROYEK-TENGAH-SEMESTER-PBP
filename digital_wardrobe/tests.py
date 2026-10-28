@@ -1,3 +1,4 @@
+import json
 import shutil
 import tempfile
 
@@ -187,3 +188,129 @@ class BulkDeleteTests(TestCase):
     def test_index_without_items_hides_select_mode(self):
         response = self.client.get(reverse('digital_wardrobe:index'))
         self.assertNotContains(response, 'id="bulk-delete-form"')
+
+
+class HtmxInteractionTests(TestCase):
+    """Filter / pindah tab / hapus tanpa reload lewat HTMX (views.index, item_delete, outfit_delete)."""
+
+    def setUp(self):
+        self.user = User.objects.create_user('fanny', password='Password123!')
+        self.other = User.objects.create_user('rico', password='Password123!')
+        self.client.login(username='fanny', password='Password123!')
+        self.index = reverse('digital_wardrobe:index')
+
+    def make_item(self, name, user=None, **extra):
+        fields = {'category': 'top', 'size': 'M', 'color': 'neutral', 'condition': 'good', 'gender': 'unisex', **extra}
+        return ClothingItem.objects.create(user=user or self.user, name=name, **fields)
+
+    def hx(self, target):
+        return {'HTTP_HX_REQUEST': 'true', 'HTTP_HX_TARGET': target}
+
+    def trigger(self, response):
+        return json.loads(response['HX-Trigger'])
+
+    # ---------- potongan halaman ----------
+    def test_full_page_without_htmx(self):
+        self.make_item('Kemeja Linen')
+        response = self.client.get(self.index)
+        self.assertContains(response, 'class="wd-hero"')
+        self.assertContains(response, 'id="wardrobe-content"')
+        self.assertContains(response, 'htmx-2.0.4.min.js')
+        self.assertIn('HX-Request', response['Vary'])
+
+    def test_filter_returns_only_results(self):
+        self.make_item('Kemeja Linen')
+        self.make_item('Celana Kulot', category='bottom')
+        response = self.client.get(self.index, {'tab': 'pakaian', 'q': 'linen'}, **self.hx('wardrobe-results'))
+        html = response.content.decode()
+        self.assertTrue(html.lstrip().startswith('<div id="wardrobe-results"'))
+        self.assertNotIn('wd-hero', html)
+        self.assertNotIn('<form method="get" class="wd-filter"', html)
+        self.assertIn('Kemeja Linen', html)
+        self.assertNotIn('Celana Kulot', html)
+
+    def test_category_and_idle_filters_with_htmx(self):
+        self.make_item('Kemeja Linen')
+        self.make_item('Celana Kulot', category='bottom')
+        response = self.client.get(self.index, {'category': 'bottom', 'show': 'all'}, **self.hx('wardrobe-results'))
+        self.assertContains(response, 'Celana Kulot')
+        self.assertNotContains(response, 'Kemeja Linen')
+        response = self.client.get(self.index, {'show': 'idle'}, **self.hx('wardrobe-results'))
+        self.assertContains(response, 'Tidak ada pakaian yang cocok')   # baju baru belum "jarang dipakai"
+
+    def test_tab_switch_returns_tab_content(self):
+        Outfit.objects.create(user=self.user, name='Kampus')
+        response = self.client.get(self.index, {'tab': 'outfit'}, **self.hx('wardrobe-content'))
+        html = response.content.decode()
+        self.assertTrue(html.lstrip().startswith('<div id="wardrobe-content"'))
+        self.assertIn('class="wd-tabs"', html)
+        self.assertIn('Kampus', html)
+        self.assertNotIn('wd-hero', html)
+
+    def test_history_restore_gets_full_page(self):
+        headers = {**self.hx('wardrobe-results'), 'HTTP_HX_HISTORY_RESTORE_REQUEST': 'true'}
+        response = self.client.get(self.index, **headers)
+        self.assertContains(response, 'class="wd-hero"')
+
+    def test_load_more_link_uses_htmx(self):
+        for i in range(13):   # PAGE_SIZE = 12
+            self.make_item(f'Kaos {i}')
+        response = self.client.get(self.index, **self.hx('wardrobe-results'))
+        self.assertContains(response, 'hx-get="?limit=24" hx-target="#wardrobe-results"')
+        self.assertContains(response, 'Menampilkan <span data-shown-count>12</span> dari <span data-filtered-total>13</span>')
+
+    # ---------- hapus ----------
+    def test_htmx_delete_item_returns_empty_and_event(self):
+        item = self.make_item('Kaos Polos')
+        self.make_item('Kemeja Linen')
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]), **self.hx(f'item-{item.pk}'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'')
+        event = self.trigger(response)['wardrobe:deleted']
+        self.assertEqual(event['kind'], 'item')
+        self.assertEqual(event['total'], 1)
+        self.assertEqual(event['message'], '"Kaos Polos" sudah dihapus dari lemarimu.')
+        self.assertFalse(ClothingItem.objects.filter(pk=item.pk).exists())
+        # Tanpa Django messages, supaya pesan tidak muncul dua kali di halaman berikutnya
+        self.assertNotContains(self.client.get(self.index), 'sudah dihapus dari lemarimu')
+
+    def test_htmx_delete_locked_item_returns_card_again(self):
+        item = self.make_item('Dress Bunga')
+        wanted = self.make_item('Jaket Rico', user=self.other)
+        SwapRequest.objects.create(requester=self.user, owner=self.other, requested_item=wanted, offered_item=item,
+                                   requested_item_name=wanted.name, offered_item_name=item.name,
+                                   status=SwapRequest.PENDING)
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]), **self.hx(f'item-{item.pk}'))
+        self.assertContains(response, f'id="item-{item.pk}"')
+        self.assertIn('sedang dipakai dalam swap request', self.trigger(response)['wardrobe:delete-failed']['message'])
+        item.refresh_from_db()
+        self.assertFalse(item.is_deleted)
+
+    def test_htmx_delete_listed_item_removes_card_with_message(self):
+        item = self.make_item('Hoodie', is_listed_for_swap=True)
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]), **self.hx(f'item-{item.pk}'))
+        self.assertEqual(response.content, b'')
+        self.assertIn('wardrobe:delete-failed', self.trigger(response))
+
+    def test_htmx_delete_other_users_item_is_404(self):
+        item = self.make_item('Blazer Rico', user=self.other)
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]), **self.hx(f'item-{item.pk}'))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(ClothingItem.objects.filter(pk=item.pk).exists())
+
+    def test_delete_without_htmx_still_redirects(self):
+        item = self.make_item('Kaos Polos')
+        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]))
+        self.assertRedirects(response, self.index)
+
+    def test_htmx_delete_outfit(self):
+        outfit = Outfit.objects.create(user=self.user, name='Kampus')
+        response = self.client.post(reverse('digital_wardrobe:outfit_delete', args=[outfit.pk]), **self.hx(f'outfit-{outfit.pk}'))
+        self.assertEqual(response.content, b'')
+        event = self.trigger(response)['wardrobe:deleted']
+        self.assertEqual((event['kind'], event['total']), ('outfit', 0))
+        self.assertFalse(Outfit.objects.filter(pk=outfit.pk).exists())
+
+    def test_cards_have_htmx_delete_hooks(self):
+        item = self.make_item('Kaos Polos')
+        self.assertContains(self.client.get(self.index), f'data-delete-card="item-{item.pk}"')

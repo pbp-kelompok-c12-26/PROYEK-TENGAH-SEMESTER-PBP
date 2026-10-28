@@ -1,4 +1,4 @@
-<article id="outfit-{{ outfit.pk }}" class="wd-card">
+<article id="outfit-{{ outfit.pk }}" class="wd-card" data-outfit-card="{{ outfit.pk }}">
     <a href="{% url 'digital_wardrobe:outfit_detail' outfit.pk %}" class="wd-card__photo">
         {% if outfit.tiles %}
         {# Susunan kolase mengikuti jumlah pakaian (1-5), lihat .wd-collage--N di wardrobe.css #}
@@ -29,7 +29,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
             Edit
         </button>
-        <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit" data-delete-upcoming="{{ outfit.upcoming_total }}" data-delete-history="{{ outfit.history_total }}"
+        <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-card="outfit-{{ outfit.pk }}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit" data-delete-upcoming="{{ outfit.upcoming_total }}" data-delete-history="{{ outfit.history_total }}"
                 class="wd-card-btn wd-card-btn--delete">
             Hapus
         </button>

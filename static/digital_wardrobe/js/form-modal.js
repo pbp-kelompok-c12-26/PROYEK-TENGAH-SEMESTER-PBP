@@ -6,17 +6,20 @@ import { getJson, postForm } from './http.js';
 import { toast } from './toast.js';
 
 const MAX_SIZE = 5 * 1024 * 1024;   // sama dengan batas di forms.py
-let root = null;
+// Dicari ulang setiap dipakai: HTMX bisa mengganti isi <body> (tombol Back / riwayat)
+const getRoot = () => document.getElementById('modal-root');
 let lastTrigger = null;
 
 function close() {
-    if (!root.innerHTML) return;
+    const root = getRoot();
+    if (!root?.innerHTML) return;
     root.innerHTML = '';
     document.body.classList.remove('wd-no-scroll');
     lastTrigger?.focus();
 }
 
 function show(html) {
+    const root = getRoot();
     root.innerHTML = html;
     document.body.classList.add('wd-no-scroll');   // kunci scroll halaman di belakang modal
     bindForm(root.querySelector('[data-item-form]'));
@@ -112,7 +115,7 @@ function applySaved(data) {
     // Tambah: kartu baru langsung muncul di grid tanpa reload
     const grid = document.getElementById(`${kind}-grid`);
     if (!grid) {
-        window.location.href = data.redirect || root.dataset.indexUrl;
+        window.location.href = data.redirect || getRoot().dataset.indexUrl;
         return;
     }
     grid.insertAdjacentHTML('afterbegin', data.card_html);
@@ -149,8 +152,7 @@ function bindForm(form) {
 }
 
 export function init() {
-    root = document.getElementById('modal-root');
-    if (!root) return;
+    if (!getRoot()) return;
 
     document.addEventListener('click', (event) => {
         const trigger = event.target.closest('[data-open-modal]');

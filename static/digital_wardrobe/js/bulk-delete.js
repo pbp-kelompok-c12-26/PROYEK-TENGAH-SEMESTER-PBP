@@ -10,8 +10,8 @@
       Yang dilewati server (mis. sedang dipakai swap request) atau gagal dikembalikan.
    Elemen dicari ulang setiap kali dipakai, jadi tetap jalan setelah grid diganti (filter tanpa reload). */
 import { postForm } from './http.js';
-import { toast, toastAfterReload } from './toast.js';
-import { gridNeedsRefresh, removeCard, updateItemCounters } from './cards.js';
+import { toast } from './toast.js';
+import { gridNeedsRefresh, refreshList, removeCard, updateItemCounters } from './cards.js';
 
 const body = document.body;
 const el = {
@@ -92,11 +92,9 @@ async function sendDelete() {
         updateItemCounters(removed.size, data.total_items);
         toast(data.message, removed.size === 0);
         setSelectMode(false);
+        // Grid kosong / masih ada halaman berikutnya: ambil ulang daftar (HTMX, tanpa reload)
         setTimeout(() => {
-            if (removed.size && gridNeedsRefresh(el.grid())) {
-                toastAfterReload(data.message);
-                window.location.reload();
-            }
+            if (removed.size && gridNeedsRefresh(el.grid())) refreshList();
         }, 450);
     } catch (error) {
         cards.forEach((card) => card.classList.remove('is-removing'));   // gagal: kembalikan semua
