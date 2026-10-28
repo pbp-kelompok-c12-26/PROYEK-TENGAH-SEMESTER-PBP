@@ -2,7 +2,7 @@
 Hapus banyak pakaian sekaligus (mode "Pilih" di tab Pakaian).
 - Checkbox ada di tiap kartu (partials/item_card.html), terhubung ke form ini lewat atribut form="bulk-delete-form".
 - Bar bawah & checkbox hanya tampil saat <body> punya class wd-select-mode (CSS di wardrobe.css).
-- Logika: static/digital_wardrobe/js/bulk_delete.js, view: digital_wardrobe.views.item_bulk_delete.
+- Logika: static/digital_wardrobe/js/bulk-delete.js, view: digital_wardrobe.views.item_bulk_delete.
 {% endcomment %}
 <form id="bulk-delete-form" method="post" action="{% url 'digital_wardrobe:item_bulk_delete' %}" class="wd-bulkbar" data-bulk-form>
     {% csrf_token %}

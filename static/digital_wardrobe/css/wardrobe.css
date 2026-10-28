@@ -1934,7 +1934,7 @@ body.wd-no-scroll {
 
 /* =========================================================
    Hapus banyak pakaian sekaligus: mode "Pilih"
-   (partials/bulk_delete.html, partials/item_card.html, js/bulk_delete.js)
+   (partials/bulk_delete.html, partials/item_card.html, js/bulk-delete.js)
    Checkbox & bar bawah hanya tampil saat <body> punya class wd-select-mode.
    ========================================================= */
 .wd-chip--select {
