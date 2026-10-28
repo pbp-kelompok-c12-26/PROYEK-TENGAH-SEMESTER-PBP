@@ -2040,6 +2040,11 @@ body.wd-no-scroll {
     display: flex;
 }
 
+/* Ruang kosong di bawah supaya kartu baris terakhir tidak tertutup bar */
+.wd-select-mode .wd-page {
+    padding-bottom: 6rem;
+}
+
 .wd-bulkbar__count {
     margin: 0;
     font-size: 0.875rem;
