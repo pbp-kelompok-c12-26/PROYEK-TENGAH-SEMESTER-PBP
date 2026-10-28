@@ -1,7 +1,7 @@
 {% if messages %}
-<div class="space-y-2">
+<div class="cal-messages">
     {% for message in messages %}
-    <div class="px-4 py-3 rounded-xl text-sm font-medium {% if message.tags == 'error' %}bg-swBerry text-white{% else %}bg-swNavy text-white{% endif %}">{{ message }}</div>
+    <div class="cal-message{% if message.tags == 'error' %} cal-message--error{% endif %}">{{ message }}</div>
     {% endfor %}
 </div>
 {% endif %}

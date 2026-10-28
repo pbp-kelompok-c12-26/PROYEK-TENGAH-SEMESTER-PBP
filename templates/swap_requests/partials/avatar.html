@@ -1,8 +1,9 @@
-{% comment %}Avatar foto profil bila tersedia, dengan fallback inisial.{% endcomment %}
+{% comment %}Avatar foto profil bila tersedia, dengan fallback inisial. Diklik membuka profil publik.
+Ukuran: size='sm' | 'md' (default) | 'lg' | 'xl' (lihat .sr-avatar--... di swap_requests.css){% endcomment %}
 {% with p=profile|default:person.profile %}
-<a href="{% url 'accounts:public_profile' person.username %}" title="Lihat profil @{{ person.username }}" class="{{ size|default:'w-9 h-9 text-sm' }} shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-swPink to-swPlum ring-2 ring-white text-white font-bold inline-flex items-center justify-center hover:ring-swPink transition-all">
+<a href="{% url 'accounts:public_profile' person.username %}" title="Lihat profil @{{ person.username }}" class="sr-avatar sr-avatar--{{ size|default:'md' }}">
     {% if p and p.profile_picture %}
-    <img src="{{ p.profile_picture.url }}" alt="Foto profil {{ p.name|default:person.username }}" class="w-full h-full object-cover">
+    <img src="{{ p.profile_picture.url }}" alt="Foto profil {{ p.name|default:person.username }}">
     {% else %}
     {{ person.username|first|upper }}
     {% endif %}

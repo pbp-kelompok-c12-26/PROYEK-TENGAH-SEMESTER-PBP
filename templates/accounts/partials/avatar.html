@@ -1,11 +1,13 @@
 {% comment %}
 Avatar bulat seragam dengan navbar & onboarding.
 Pemakaian:
-  {% include 'accounts/partials/avatar.html' with profile=profile size='w-24 h-24 text-3xl' %}
+  {% include 'accounts/partials/avatar.html' with profile=profile size='xl' %}
+Ukuran: 'xs' (kartu listing), 'md' (default), 'xl' (halaman profil). Lihat .acc-avatar--... di accounts.css
+Bingkai: default cincin putih tebal + bayangan; ring='soft' = cincin tipis pink (kartu listing).
 {% endcomment %}
-<span class="{{ size|default:'w-20 h-20 text-2xl' }} {{ ring|default:'ring-4 ring-white shadow-md' }} shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-[#C9A6E8] to-[#9FB4F0] flex items-center justify-center font-extrabold text-white select-none">
+<span class="acc-avatar acc-avatar--{{ size|default:'md' }}{% if ring %} acc-avatar--ring-{{ ring }}{% endif %}">
     {% if profile.profile_picture %}
-    <img src="{{ profile.profile_picture.url }}" alt="Foto profil {{ profile.name }}" class="w-full h-full object-cover">
+    <img src="{{ profile.profile_picture.url }}" alt="Foto profil {{ profile.name }}" class="acc-avatar__img">
     {% else %}
     {{ profile.user.username|first|upper }}
     {% endif %}

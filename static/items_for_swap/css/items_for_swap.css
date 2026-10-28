@@ -15,3 +15,959 @@
      (jangan pakai nama seperti .hidden, .flex, .grid, .container).
    - Komponen yang dipakai banyak modul taruh di static/css/components.css.
    ========================================================= */
+
+/* =========================================================
+   Halaman Item Swap Saya (items_for_swap/index.html)
+   (sebelumnya ditulis di <style> dalam template)
+   ========================================================= */
+.ifs {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.ifs-info {
+    background: #e6f7fd;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: .9rem;
+}
+
+.ifs-tabs {
+    display: flex;
+    gap: 32px;
+    margin: 24px 0 12px;
+}
+
+.ifs-tabs a {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #777;
+    text-decoration: none;
+    padding-bottom: 4px;
+}
+
+/* Tab yang sedang dibuka */
+.ifs-tabs a.on {
+    color: #3a5fa8;
+    border-bottom: 2px solid #3a5fa8;
+}
+
+.ifs-search {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.ifs-search input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+}
+
+.ifs-search select {
+    padding: 12px;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.ifs-table {
+    width: 100%;
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    border-collapse: collapse;
+}
+
+.ifs-table th {
+    text-align: left;
+    font-size: .75rem;
+    color: #00007a;
+    padding: 12px 8px;
+}
+
+.ifs-table td {
+    padding: 12px 8px;
+    border-top: 1px solid #eee;
+    vertical-align: middle;
+}
+
+/* Wadah foto kecil + tombol like di pojoknya */
+.ifs-thumb-wrap {
+    position: relative;
+    flex: 0 0 88px;
+    width: 88px;
+    height: 88px;
+}
+
+.ifs-thumb {
+    width: 88px;
+    height: 88px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #eee;
+}
+
+.ifs-item {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.ifs-item a {
+    font-weight: 600;
+    color: #00007a;
+    text-decoration: none;
+}
+
+.ifs-sub {
+    font-size: .8rem;
+    color: #666;
+}
+
+/* Tombol kecil & label status di tabel */
+.ifs-btn {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 0;
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.ifs-btn.blue {
+    background: #3a5fa8;
+    color: #fff;
+}
+
+.ifs-btn.grey {
+    background: #eee;
+    color: #555;
+}
+
+.ifs-btn.red {
+    background: #d0114f;
+    color: #fff;
+}
+
+.ifs-empty {
+    text-align: center;
+    color: #777;
+    padding: 32px;
+}
+
+/* Pop-up (<dialog>) di halaman daftar & form */
+dialog.ifs-dialog {
+    border: 0;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 420px;
+}
+
+dialog.ifs-dialog::backdrop {
+    background: rgba(0, 0, 0, .4);
+}
+
+.ifs-dialog__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* =========================================================
+   Form tambah / edit item swap (items_for_swap/form.html)
+   (sebelumnya ditulis di <style> dalam template)
+   ========================================================= */
+.ifs-form {
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 24px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #e88fa0, #fbe9d0 50%, #9fb0cc);
+}
+
+.ifs-form h1 {
+    color: #00007a;
+    font-size: 1.6rem;
+    margin: 0 0 16px;
+}
+
+.ifs-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 700px) {
+    .ifs-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ifs-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.ifs-card h2 {
+    color: #00007a;
+    font-size: 1.1rem;
+    margin: 0 0 12px;
+}
+
+.ifs-card label {
+    display: block;
+    font-weight: 600;
+    font-size: .8rem;
+    color: #00007a;
+    margin: 12px 0 6px;
+}
+
+.ifs-card input,
+.ifs-card select,
+.ifs-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+}
+
+.ifs-preview {
+    background: #f1f1f5;
+    border-radius: 12px;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: .8rem;
+    padding: 12px;
+}
+
+.ifs-preview img {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+}
+
+.ifs-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+/* Tombol besar di form (namanya beda dari .ifs-btn di halaman daftar) */
+.ifs-form-btn {
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: 0;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.ifs-form-btn.red {
+    background: #d0114f;
+}
+
+.ifs-form-btn.green {
+    background: #16a34a;
+}
+
+.ifs-form-btn.grey {
+    background: #eee;
+    color: #555;
+}
+
+.ifs-error {
+    color: #d0114f;
+    font-size: .8rem;
+}
+
+/* =========================================================
+   Detail item swap (items_for_swap/detail.html)
+   ========================================================= */
+.ifs-detail {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 72rem;
+}
+
+.ifs-detail > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.75rem;
+    margin-bottom: 0px;
+}
+
+.ifs-messages > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.5rem;
+    margin-bottom: 0px;
+}
+
+.ifs-message {
+    border-radius: 1rem;
+    background-color: var(--sw-navy);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-white);
+}
+
+.ifs-message--error {
+    background-color: var(--sw-berry);
+}
+
+.ifs-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-plum);
+}
+
+.ifs-back:hover {
+    text-decoration-line: underline;
+}
+
+.ifs-detail__grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .ifs-detail__grid {
+        grid-template-columns: 1.1fr 1fr;
+    }
+}
+
+
+/* Kartu foto + pemilik */
+.ifs-photo-card {
+    border-radius: 1.5rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    background-color: var(--sw-white);
+    padding: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.ifs-photo-card__img {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    border-radius: 1rem;
+    background-color: var(--sw-cream);
+}
+
+.ifs-photo-card__img img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.ifs-owner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+.ifs-owner__who {
+    display: flex;
+    min-width: 0px;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ifs-owner__avatar {
+    display: flex;
+    height: 2.5rem;
+    width: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-image: linear-gradient(to bottom right, var(--sw-berry), var(--sw-pink), var(--sw-plum));
+    font-weight: 700;
+    color: var(--sw-white);
+    box-shadow: 0 0 0 2px rgb(215 136 178 / 0.3);
+}
+
+.ifs-owner__avatar img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.ifs-owner__text {
+    min-width: 0px;
+}
+
+.ifs-owner__label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.ifs-owner__profile-link {
+    font-weight: 600;
+    color: var(--sw-plum);
+}
+
+.ifs-owner__who:hover .ifs-owner__profile-link {
+    text-decoration-line: underline;
+}
+
+.ifs-owner__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+    color: var(--sw-navy);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.ifs-owner__who:hover .ifs-owner__name {
+    color: var(--sw-plum);
+}
+
+.ifs-owner__username {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-slate);
+}
+
+.ifs-status {
+    border-radius: 9999px;
+    background-color: var(--sw-blush);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    color: var(--sw-berry);
+}
+
+.ifs-status--available {
+    background-color: #E3F1E3;
+    color: var(--sw-forest);
+}
+
+
+/* Kolom info */
+.ifs-info-col > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.25rem;
+    margin-bottom: 0px;
+}
+
+.ifs-detail__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.ifs-detail__heading {
+    min-width: 0px;
+}
+
+.ifs-detail__eyebrow {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--sw-plum);
+}
+
+.ifs-detail__title {
+    margin-top: 0.25rem;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+@media (min-width: 640px) {
+    .ifs-detail__title {
+        font-size: 1.875rem;
+        line-height: 2.25rem;
+    }
+}
+
+.ifs-detail__date {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+
+/* Tombol like besar. Warna saat disukai diatur dari atribut data-liked="true" pada <form> (diubah oleh JS like di base.html) */
+.ifs-like-form {
+    flex-shrink: 0;
+}
+
+.ifs-like {
+    display: inline-flex;
+    height: 3rem;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+    color: var(--sw-navy);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.ifs-like--button {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+}
+
+.ifs-like--button:hover {
+    border-color: rgb(96 99 180 / 0.3);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.ifs-like__orb {
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+}
+
+.ifs-like--button .ifs-like__orb {
+    background-color: transparent;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+}
+
+[data-liked="true"] .ifs-like__orb {
+    background-color: #D50959;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.ifs-like__orb svg {
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+.ifs-like--button .ifs-like__orb svg {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+}
+
+[data-liked="true"] .ifs-like__orb svg {
+    transform: scale(1.05);
+}
+
+.ifs-like__count {
+    min-width: 3.5rem;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* Kotak atribut */
+.ifs-specs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .ifs-specs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.ifs-spec {
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    background-color: var(--sw-white);
+    padding: 1rem;
+}
+
+.ifs-spec__label {
+    font-size: 11px;
+    color: var(--sw-slate);
+}
+
+.ifs-spec__value {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.ifs-spec--requests {
+    border-color: rgb(64 121 76 / 0.1);
+    background-color: #E3F1E3;
+}
+
+.ifs-spec--requests .ifs-spec__label {
+    color: var(--sw-forest);
+}
+
+.ifs-spec--requests .ifs-spec__value {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-forest);
+}
+
+
+/* Lokasi & deskripsi */
+.ifs-about {
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    background-color: var(--sw-white);
+    padding: 1.25rem;
+}
+
+.ifs-about > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem;
+    margin-bottom: 0px;
+}
+
+.ifs-about__block {
+    border-top-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    padding-top: 0.75rem;
+}
+
+.ifs-about__label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.ifs-about__text {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.ifs-about__text--multiline {
+    white-space: pre-line;
+}
+
+.ifs-about__note {
+    border-top-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    padding-top: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+
+/* Tombol aksi */
+.ifs-detail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.ifs-action {
+    height: 2.75rem;
+    border-radius: 9999px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+}
+
+.ifs-action--outline {
+    display: inline-flex;
+    align-items: center;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.2);
+    color: var(--sw-navy);
+}
+
+.ifs-action--outline:hover {
+    background-color: var(--sw-cream);
+}
+
+.ifs-action--waiting {
+    cursor: not-allowed;
+    background-color: var(--sw-cream);
+    color: var(--sw-slate);
+}
+
+.ifs-action--return {
+    background-color: var(--sw-blush);
+    color: var(--sw-berry);
+}
+
+.ifs-action--swap {
+    display: inline-flex;
+    align-items: center;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    color: var(--sw-white);
+}
+
+.ifs-has-request {
+    max-width: 24rem;
+    border-radius: 1rem;
+    background-color: #EEF4FF;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    text-align: right;
+}
+
+.ifs-has-request__text {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.ifs-has-request__link {
+    margin-top: 0.25rem;
+    display: inline-flex;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    color: var(--sw-plum);
+}
+
+.ifs-has-request__link:hover {
+    text-decoration-line: underline;
+}
+
+
+/* Pakaian lain dari pengguna yang sama */
+.ifs-others > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem;
+    margin-bottom: 0px;
+}
+
+.ifs-others__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.ifs-others__profile {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    color: var(--sw-plum);
+}
+
+.ifs-others__profile:hover {
+    text-decoration-line: underline;
+}
+
+.ifs-others__title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.ifs-others__text {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.ifs-others__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .ifs-others__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.ifs-other {
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.05);
+    background-color: var(--sw-white);
+    padding: 0.75rem;
+    transition-property: box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.ifs-other:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.ifs-other__photo {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background-color: var(--sw-cream);
+}
+
+.ifs-other__photo-link {
+    display: block;
+    height: 100%;
+    width: 100%;
+}
+
+.ifs-other__photo img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.ifs-other:hover .ifs-other__photo img {
+    transform: scale(1.05);
+}
+
+.ifs-other__name {
+    margin-top: 0.75rem;
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.ifs-other__name:hover {
+    color: var(--sw-plum);
+}
+
+.ifs-other__meta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+
+/* Pop-up kembalikan ke lemari (<dialog>) */
+.ifs-return-dialog {
+    width: calc(100% - 2rem);
+    max-width: 24rem;
+    border-radius: 1rem;
+    padding: 0px;
+}
+
+.ifs-return-dialog::backdrop {
+    background-color: rgb(23 31 99 / 0.4);
+}
+
+.ifs-return-dialog__form {
+    padding: 1.5rem;
+}
+
+.ifs-return-dialog__form > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem;
+    margin-bottom: 0px;
+}
+
+.ifs-return-dialog__title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.ifs-return-dialog__text {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.ifs-return-dialog__note {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.ifs-return-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.ifs-return-dialog__cancel {
+    height: 2.5rem;
+    border-radius: 9999px;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.15);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.ifs-return-dialog__confirm {
+    height: 2.5rem;
+    border-radius: 9999px;
+    background-color: var(--sw-berry);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-white);
+}

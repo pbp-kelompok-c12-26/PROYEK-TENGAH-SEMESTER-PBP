@@ -3,41 +3,41 @@ Kartu listing pakaian untuk halaman Profil Saya & Profil Publik.
 Parameter: `listing` (ItemForSwap), `owner_profile` (UserProfile).
 {% endcomment %}
 {% with item=listing.clothing_item %}
-<article data-like-card class="group bg-white rounded-3xl border border-swNavy/10 shadow-sm p-3.5 flex flex-col hover:shadow-md transition-shadow">
-    <div class="relative rounded-2xl overflow-hidden bg-swCream aspect-[4/3]">
-        <a href="{% url 'items_for_swap:detail' listing.pk %}" class="block w-full h-full">
+<article data-like-card class="acc-listing">
+    <div class="acc-listing__photo">
+        <a href="{% url 'items_for_swap:detail' listing.pk %}" class="acc-listing__photo-link">
             {% if item.image %}
-            <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="acc-listing__img">
             {% endif %}
         </a>
         {% include 'home/partials/like_button.html' with listing=listing item=item %}
     </div>
 
-    <div class="pt-3.5 px-1 flex-grow flex flex-col gap-1">
-        <div class="flex items-start justify-between gap-2">
-            <a href="{% url 'items_for_swap:detail' listing.pk %}" class="font-extrabold text-sm sm:text-base text-swNavy hover:text-swBerry transition-colors leading-snug">
+    <div class="acc-listing__body">
+        <div class="acc-listing__top">
+            <a href="{% url 'items_for_swap:detail' listing.pk %}" class="acc-listing__name">
                 {{ item.name }}
             </a>
-            <div class="flex flex-wrap justify-end gap-1.5 shrink-0">
+            <div class="acc-listing__tags">
                 {% if listing.is_reserved %}
-                <span class="px-3 py-0.5 rounded-full bg-swBlush text-swBerry text-[10px] font-bold">Reserved</span>
+                <span class="acc-tag acc-tag--reserved">Reserved</span>
                 {% else %}
-                <span class="px-2.5 py-0.5 rounded-full bg-swForest text-white text-[10px] font-bold">Available</span>
-                <span class="px-2.5 py-0.5 rounded-full bg-[#E3F1E3] text-swForest text-[10px] font-bold">{{ listing.request_count|default:0 }} request(s)</span>
+                <span class="acc-tag acc-tag--available">Available</span>
+                <span class="acc-tag acc-tag--requests">{{ listing.request_count|default:0 }} request(s)</span>
                 {% endif %}
             </div>
         </div>
-        <p class="text-xs text-swSlate">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
+        <p class="acc-listing__meta">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
     </div>
 
-    <div class="flex items-center justify-between gap-2 pt-3.5 px-1 pb-1 text-xs">
-        <a href="{% url 'accounts:public_profile' listing.user.username %}" class="flex items-center gap-2 min-w-0 text-swNavy font-semibold hover:text-swBerry transition-colors">
-            {% include 'accounts/partials/avatar.html' with profile=owner_profile size='w-6 h-6 text-[10px]' ring='ring-1 ring-swPink/30' %}
-            <span class="truncate hover:underline">{{ owner_profile.name }}</span>
+    <div class="acc-listing__footer">
+        <a href="{% url 'accounts:public_profile' listing.user.username %}" class="acc-listing__owner">
+            {% include 'accounts/partials/avatar.html' with profile=owner_profile size='xs' ring='soft' %}
+            <span class="acc-listing__owner-name">{{ owner_profile.name }}</span>
         </a>
         {% if listing.meeting_location or owner_profile.domicile %}
-        <span class="flex items-center gap-1 text-swSlate shrink-0">
-            <svg class="w-3.5 h-3.5 text-swPlum" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <span class="acc-listing__place">
+            <svg class="acc-listing__place-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
             </svg>
             {{ listing.meeting_location|default:owner_profile.domicile }}
@@ -46,26 +46,26 @@ Parameter: `listing` (ItemForSwap), `owner_profile` (UserProfile).
     </div>
 
     {% if listing.user_id != request.user.id %}
-    <div class="grid grid-cols-2 gap-2 pt-3">
+    <div class="acc-listing__actions">
         <a href="{% url 'items_for_swap:detail' listing.pk %}"
-           class="h-9 inline-flex items-center justify-center rounded-xl border border-swNavy/15 text-swNavy text-xs font-bold hover:bg-swCream transition-colors">
+           class="acc-listing__btn acc-listing__btn--detail">
             Lihat detail
         </a>
         {% if not listing.is_reserved %}
         <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}"
-           class="h-9 inline-flex items-center justify-center rounded-xl sw-btn-holo text-white text-xs font-bold">
+           class="acc-listing__btn acc-listing__btn--swap sw-btn-holo">
             Ajukan swap
         </a>
         {% else %}
-        <span class="h-9 inline-flex items-center justify-center rounded-xl bg-swCream text-swSlate text-xs font-semibold">
+        <span class="acc-listing__btn acc-listing__btn--busy">
             Sedang ditukar
         </span>
         {% endif %}
     </div>
     {% else %}
-    <div class="pt-3">
+    <div class="acc-listing__actions-own">
         <a href="{% url 'items_for_swap:detail' listing.pk %}"
-           class="w-full h-9 inline-flex items-center justify-center rounded-xl border border-swNavy/15 text-swNavy text-xs font-bold hover:bg-swCream transition-colors">
+           class="acc-listing__btn acc-listing__btn--detail acc-listing__btn--full">
             Lihat detail
         </a>
     </div>

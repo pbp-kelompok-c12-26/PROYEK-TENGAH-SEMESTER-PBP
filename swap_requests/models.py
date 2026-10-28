@@ -66,12 +66,12 @@ class SwapRequest(models.Model):
         (AWAITING, 'Awaiting exchange'),
         (COMPLETED, 'Completed'),
     ]
-    # warna badge status (class Tailwind)
+    # class CSS warna badge status (lihat .sr-status--... di static/swap_requests/css/swap_requests.css)
     STATUS_STYLES = {
-        PENDING: 'bg-[#DCEBFF] text-[#2B4C9B]',
-        REJECTED: 'bg-[#FBE1EA] text-swBerry',
-        AWAITING: 'bg-[#E4F3D5] text-[#3C6E2A]',
-        COMPLETED: 'bg-[#3E8E4E] text-white',
+        PENDING: 'sr-status--pending',
+        REJECTED: 'sr-status--rejected',
+        AWAITING: 'sr-status--awaiting',
+        COMPLETED: 'sr-status--completed',
     }
     STATUS_NOTES = {
         PENDING: 'Menunggu pemilik pakaian menyetujui atau menolak request ini.',

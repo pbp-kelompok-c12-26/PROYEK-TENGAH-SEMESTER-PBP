@@ -1,147 +1,152 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}{{ item.name }} · Item Swap · Swapdrobe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'items_for_swap/css/items_for_swap.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-7">
+<div class="ifs-detail">
     {% if messages %}
-    <div class="space-y-2">
+    <div class="ifs-messages">
         {% for message in messages %}
-        <p class="rounded-2xl px-4 py-3 text-sm font-semibold {% if message.tags == 'error' %}bg-swBerry text-white{% else %}bg-swNavy text-white{% endif %}">{{ message }}</p>
+        <p class="ifs-message{% if message.tags == 'error' %} ifs-message--error{% endif %}">{{ message }}</p>
         {% endfor %}
     </div>
     {% endif %}
 
     <a href="{% if is_owner %}{% url 'items_for_swap:index' %}{% else %}{% url 'home:index' %}{% endif %}"
-       class="inline-flex items-center gap-2 text-sm font-semibold text-swPlum hover:underline">&larr; Kembali</a>
+       class="ifs-back">&larr; Kembali</a>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-6 items-start">
-        <section class="bg-white rounded-3xl border border-swNavy/5 shadow-sm p-3">
-            <div class="relative aspect-[4/3] rounded-2xl overflow-hidden bg-swCream">
-                {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover">{% endif %}
+    <div class="ifs-detail__grid">
+        <section class="ifs-photo-card">
+            <div class="ifs-photo-card__img">
+                {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% endif %}
             </div>
-            <div class="flex items-center justify-between gap-3 p-3">
+            <div class="ifs-owner">
                 <a href="{% url 'accounts:public_profile' listing.user.username %}"
                    title="Lihat profil @{{ listing.user.username }}"
-                   class="group flex items-center gap-3 min-w-0">
-                    <span class="w-10 h-10 shrink-0 rounded-full overflow-hidden bg-gradient-to-br from-swBerry via-swPink to-swPlum text-white font-bold flex items-center justify-center ring-2 ring-swPink/30">
+                   class="ifs-owner__who">
+                    <span class="ifs-owner__avatar">
                         {% if listing.user.profile.profile_picture %}
-                        <img src="{{ listing.user.profile.profile_picture.url }}" alt="{{ listing.user.username }}" class="w-full h-full object-cover">
+                        <img src="{{ listing.user.profile.profile_picture.url }}" alt="{{ listing.user.username }}">
                         {% else %}
                         {{ listing.user.username|first|upper }}
                         {% endif %}
                     </span>
-                    <div class="min-w-0">
-                        <p class="text-xs text-swSlate">{% if is_owner %}Ditawarkan oleh{% else %}Pemilik pakaian{% endif %} · <span class="text-swPlum font-semibold group-hover:underline">Lihat profil &rarr;</span></p>
-                        <p class="font-bold text-swNavy group-hover:text-swPlum transition-colors truncate">{{ listing.user.profile.name|default:listing.user.username }} <span class="text-xs font-semibold text-swSlate">@{{ listing.user.username }}</span></p>
+                    <div class="ifs-owner__text">
+                        <p class="ifs-owner__label">{% if is_owner %}Ditawarkan oleh{% else %}Pemilik pakaian{% endif %} · <span class="ifs-owner__profile-link">Lihat profil &rarr;</span></p>
+                        <p class="ifs-owner__name">{{ listing.user.profile.name|default:listing.user.username }} <span class="ifs-owner__username">@{{ listing.user.username }}</span></p>
                     </div>
                 </a>
-                <span class="px-3 py-1 rounded-full text-xs font-bold {% if listing.status == 'available' %}bg-[#E3F1E3] text-swForest{% else %}bg-swBlush text-swBerry{% endif %}">{{ listing.get_status_display }}</span>
+                <span class="ifs-status{% if listing.status == 'available' %} ifs-status--available{% endif %}">{{ listing.get_status_display }}</span>
             </div>
         </section>
 
-        <section class="space-y-5">
-            <header class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="text-xs uppercase tracking-[0.2em] font-bold text-swPlum">Item untuk swap</p>
-                    <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy">{{ item.name }}</h1>
-                    <p class="mt-2 text-sm text-swSlate">Ditawarkan {{ listing.posted_at|date:"j F Y" }}</p>
+        <section class="ifs-info-col">
+            <header class="ifs-detail__head">
+                <div class="ifs-detail__heading">
+                    <p class="ifs-detail__eyebrow">Item untuk swap</p>
+                    <h1 class="ifs-detail__title">{{ item.name }}</h1>
+                    <p class="ifs-detail__date">Ditawarkan {{ listing.posted_at|date:"j F Y" }}</p>
                 </div>
                 {% if listing.status == 'available' and listing.user_id != request.user.id or listing.is_liked %}
                 <form method="post" action="{% url 'home:toggle_like' listing.pk %}"
                       data-like-toggle data-liked="{{ listing.is_liked|yesno:'true,false' }}" data-item-name="{{ item.name }}"
                       {% if not request.user.is_authenticated %}data-auth-required{% endif %}
-                      class="shrink-0">
+                      class="ifs-like-form">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <button type="submit" data-like-button aria-label="{% if listing.is_liked %}Hapus suka{% else %}Sukai{% endif %} {{ item.name }}; {{ listing.like_count }} suka"
                             aria-pressed="{{ listing.is_liked|yesno:'true,false' }}"
-                            class="inline-flex h-12 items-center gap-3 rounded-2xl border border-swNavy/10 bg-white px-3.5 text-swNavy shadow-sm transition-all duration-200 hover:border-swPlum/30 hover:shadow-md">
-                        <span data-like-orb class="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 {% if listing.is_liked %}bg-[#D50959] shadow-sm{% else %}bg-transparent{% endif %}">
-                            <svg class="h-6 w-6 transition-transform duration-200 {% if listing.is_liked %}scale-105{% endif %}" viewBox="0 0 24 24" aria-hidden="true">
+                            class="ifs-like ifs-like--button">
+                        <span data-like-orb class="ifs-like__orb">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <defs><linearGradient id="detail-heart-{{ listing.pk }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F6A9C4"/><stop offset="52%" stop-color="#FFF9FB"/><stop offset="100%" stop-color="#A9C8FF"/></linearGradient></defs>
                                 <path data-like-heart d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21l7.78-7.55 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" fill="{% if listing.is_liked %}url(#detail-heart-{{ listing.pk }}){% else %}none{% endif %}" stroke="#171F63" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
-                        <span data-like-count class="min-w-[3.5rem] text-left text-sm font-bold tabular-nums">{{ listing.like_count }} likes</span>
+                        <span data-like-count class="ifs-like__count">{{ listing.like_count }} likes</span>
                     </button>
                 </form>
                 {% else %}
-                <span class="inline-flex h-12 shrink-0 items-center gap-3 rounded-2xl border border-swNavy/10 bg-white px-3.5 text-swNavy shadow-sm" aria-label="{{ listing.like_count }} suka">
-                    <span class="flex h-9 w-9 items-center justify-center rounded-full">
-                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
+                <span class="ifs-like ifs-like-form" aria-label="{{ listing.like_count }} suka">
+                    <span class="ifs-like__orb">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
                     </span>
-                    <span class="min-w-[3.5rem] text-left text-sm font-bold tabular-nums">{{ listing.like_count }} likes</span>
+                    <span class="ifs-like__count">{{ listing.like_count }} likes</span>
                 </span>
                 {% endif %}
             </header>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Kategori</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_category_display }}</p></div>
-                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Ukuran</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.size_label }}</p></div>
-                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Kondisi</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_condition_display }}</p></div>
-                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Warna</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_color_display }}</p></div>
-                <div class="bg-white rounded-2xl border border-swNavy/5 p-4"><p class="text-[11px] text-swSlate">Gender pakaian</p><p class="mt-1 text-sm font-bold text-swNavy">{{ item.get_gender_display }}</p></div>
+            <div class="ifs-specs">
+                <div class="ifs-spec"><p class="ifs-spec__label">Kategori</p><p class="ifs-spec__value">{{ item.get_category_display }}</p></div>
+                <div class="ifs-spec"><p class="ifs-spec__label">Ukuran</p><p class="ifs-spec__value">{{ item.size_label }}</p></div>
+                <div class="ifs-spec"><p class="ifs-spec__label">Kondisi</p><p class="ifs-spec__value">{{ item.get_condition_display }}</p></div>
+                <div class="ifs-spec"><p class="ifs-spec__label">Warna</p><p class="ifs-spec__value">{{ item.get_color_display }}</p></div>
+                <div class="ifs-spec"><p class="ifs-spec__label">Gender pakaian</p><p class="ifs-spec__value">{{ item.get_gender_display }}</p></div>
                 {% if listing.is_available %}
-                <div class="bg-[#E3F1E3] rounded-2xl border border-swForest/10 p-4"><p class="text-[11px] text-swForest">Request berlangsung</p><p class="mt-1 text-lg font-extrabold text-swForest">{{ listing.request_count }}</p></div>
+                <div class="ifs-spec ifs-spec--requests"><p class="ifs-spec__label">Request berlangsung</p><p class="ifs-spec__value">{{ listing.request_count }}</p></div>
                 {% endif %}
             </div>
 
-            <div class="bg-white rounded-2xl border border-swNavy/5 p-5 space-y-3">
+            <div class="ifs-about">
                 <div>
-                    <p class="text-xs font-bold text-swNavy">Lokasi bertemu</p>
-                    <p class="mt-1 text-sm text-swSlate">{{ listing.meeting_location }}</p>
+                    <p class="ifs-about__label">Lokasi bertemu</p>
+                    <p class="ifs-about__text">{{ listing.meeting_location }}</p>
                 </div>
                 {% if listing.reason %}
-                <div class="border-t border-swNavy/5 pt-3">
-                    <p class="text-xs font-bold text-swNavy">Tentang pakaian ini</p>
-                    <p class="mt-1 text-sm text-swSlate whitespace-pre-line">{{ listing.reason }}</p>
+                <div class="ifs-about__block">
+                    <p class="ifs-about__label">Tentang pakaian ini</p>
+                    <p class="ifs-about__text ifs-about__text--multiline">{{ listing.reason }}</p>
                 </div>
                 {% endif %}
-                <p class="border-t border-swNavy/5 pt-3 text-xs text-swSlate">Atur detail pertukaran dengan pengguna lain setelah request disetujui.</p>
+                <p class="ifs-about__note">Atur detail pertukaran dengan pengguna lain setelah request disetujui.</p>
             </div>
 
-            <div class="flex flex-wrap justify-end gap-2">
+            <div class="ifs-detail__actions">
                 {% if is_owner %}
                     {% if listing.is_available %}
-                    <a href="{% url 'items_for_swap:edit' listing.pk %}" class="h-11 px-5 inline-flex items-center rounded-full border border-swNavy/20 text-swNavy text-sm font-bold hover:bg-swCream">Edit listing</a>
+                    <a href="{% url 'items_for_swap:edit' listing.pk %}" class="ifs-action ifs-action--outline">Edit listing</a>
                     {% if listing.has_locking_request %}
-                    <button type="button" disabled title="Pertukaran Awaiting harus diselesaikan atau dibatalkan bersama" class="h-11 px-5 rounded-full bg-swCream text-swSlate text-sm font-bold cursor-not-allowed">Menunggu pertukaran</button>
+                    <button type="button" disabled title="Pertukaran Awaiting harus diselesaikan atau dibatalkan bersama" class="ifs-action ifs-action--waiting">Menunggu pertukaran</button>
                     {% else %}
-                    <button type="button" id="open-return" class="h-11 px-5 rounded-full bg-swBlush text-swBerry text-sm font-bold">Kembalikan ke lemari</button>
+                    <button type="button" id="open-return" class="ifs-action ifs-action--return">Kembalikan ke lemari</button>
                     {% endif %}
                     {% endif %}
                 {% elif existing_request %}
-                    <div class="max-w-sm rounded-2xl bg-[#EEF4FF] px-4 py-3 text-right">
-                        <p class="text-xs font-semibold text-swNavy">Kamu sudah punya request aktif untuk pakaian ini.</p>
-                        <a href="{% url 'swap_requests:detail' existing_request.pk %}" class="mt-1 inline-flex text-xs font-bold text-swPlum hover:underline">Lihat detail request &rarr;</a>
+                    <div class="ifs-has-request">
+                        <p class="ifs-has-request__text">Kamu sudah punya request aktif untuk pakaian ini.</p>
+                        <a href="{% url 'swap_requests:detail' existing_request.pk %}" class="ifs-has-request__link">Lihat detail request &rarr;</a>
                     </div>
                 {% elif request_url %}
-                    <a href="{{ request_url }}"{% if not request.user.is_authenticated %} data-auth-required{% endif %} class="h-11 px-6 inline-flex items-center rounded-full sw-btn-holo text-white text-sm font-bold">Ajukan swap</a>
+                    <a href="{{ request_url }}"{% if not request.user.is_authenticated %} data-auth-required{% endif %} class="ifs-action ifs-action--swap sw-btn-holo">Ajukan swap</a>
                 {% endif %}
             </div>
         </section>
     </div>
 
     {% if others %}
-    <section class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
+    <section class="ifs-others">
+        <div class="ifs-others__head">
             <div>
-                <h2 class="text-xl font-extrabold text-swNavy">Pakaian lain dari {{ listing.user.profile.name|default:listing.user.username }}</h2>
-                <p class="text-sm text-swSlate mt-1">Lihat penawaran lain dari pengguna ini.</p>
+                <h2 class="ifs-others__title">Pakaian lain dari {{ listing.user.profile.name|default:listing.user.username }}</h2>
+                <p class="ifs-others__text">Lihat penawaran lain dari pengguna ini.</p>
             </div>
-            <a href="{% url 'accounts:public_profile' listing.user.username %}" class="text-xs font-bold text-swPlum hover:underline">Lihat profil @{{ listing.user.username }} &rarr;</a>
+            <a href="{% url 'accounts:public_profile' listing.user.username %}" class="ifs-others__profile">Lihat profil @{{ listing.user.username }} &rarr;</a>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div class="ifs-others__grid">
             {% for other in others %}
-            <article class="group bg-white rounded-2xl border border-swNavy/5 p-3 hover:shadow-md transition-shadow">
-                <div class="relative aspect-[4/3] rounded-xl overflow-hidden bg-swCream">
-                    <a href="{% url 'items_for_swap:detail' other.pk %}" aria-label="Lihat detail {{ other.clothing_item.name }}" class="block w-full h-full">
-                        {% if other.clothing_item.image %}<img src="{{ other.clothing_item.image.url }}" alt="{{ other.clothing_item.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">{% endif %}
+            <article class="ifs-other">
+                <div class="ifs-other__photo">
+                    <a href="{% url 'items_for_swap:detail' other.pk %}" aria-label="Lihat detail {{ other.clothing_item.name }}" class="ifs-other__photo-link">
+                        {% if other.clothing_item.image %}<img src="{{ other.clothing_item.image.url }}" alt="{{ other.clothing_item.name }}">{% endif %}
                     </a>
                     {% include 'home/partials/like_button.html' with listing=other item=other.clothing_item %}
                 </div>
-                <a href="{% url 'items_for_swap:detail' other.pk %}" class="mt-3 block text-sm font-bold text-swNavy hover:text-swPlum">{{ other.clothing_item.name }}</a>
-                <p class="text-xs text-swSlate">{{ other.clothing_item.get_category_display }} · {{ other.clothing_item.size_label }}</p>
+                <a href="{% url 'items_for_swap:detail' other.pk %}" class="ifs-other__name">{{ other.clothing_item.name }}</a>
+                <p class="ifs-other__meta">{{ other.clothing_item.get_category_display }} · {{ other.clothing_item.size_label }}</p>
             </article>
             {% endfor %}
         </div>
@@ -150,11 +155,11 @@
 </div>
 
 {% if is_owner and listing.is_available and not listing.has_locking_request %}
-<dialog id="ret-dialog" class="rounded-2xl p-0 w-[calc(100%-2rem)] max-w-sm backdrop:bg-swNavy/40">
-    <form method="post" action="{% url 'items_for_swap:return_item' listing.pk %}" class="p-6 space-y-4">
+<dialog id="ret-dialog" class="ifs-return-dialog">
+    <form method="post" action="{% url 'items_for_swap:return_item' listing.pk %}" class="ifs-return-dialog__form">
         {% csrf_token %}
-        <div><h2 class="text-lg font-extrabold text-swNavy">Kembalikan ke lemari?</h2><p class="mt-2 text-sm text-swSlate">“{{ item.name }}” akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p><p class="mt-2 text-xs text-swSlate">Request yang masih aktif untuk item ini akan berubah menjadi Rejected. Request Completed tidak terpengaruh.</p></div>
-        <div class="flex justify-end gap-2"><button type="button" id="ret-cancel" class="h-10 px-4 rounded-full border border-swNavy/15 text-swNavy text-sm font-bold">Batal</button><button type="submit" class="h-10 px-4 rounded-full bg-swBerry text-white text-sm font-bold">Ya, kembalikan</button></div>
+        <div><h2 class="ifs-return-dialog__title">Kembalikan ke lemari?</h2><p class="ifs-return-dialog__text">“{{ item.name }}” akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p><p class="ifs-return-dialog__note">Request yang masih aktif untuk item ini akan berubah menjadi Rejected. Request Completed tidak terpengaruh.</p></div>
+        <div class="ifs-return-dialog__actions"><button type="button" id="ret-cancel" class="ifs-return-dialog__cancel">Batal</button><button type="submit" class="ifs-return-dialog__confirm">Ya, kembalikan</button></div>
     </form>
 </dialog>
 <script>

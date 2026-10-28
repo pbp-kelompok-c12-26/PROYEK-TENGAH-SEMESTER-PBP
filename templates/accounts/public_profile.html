@@ -1,47 +1,52 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Profil {{ target_profile.name }} (@{{ target_user.username }}) · Swapdrobe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/accounts.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="acc-page">
     {% include 'accounts/partials/messages.html' %}
 
     <!-- HERO CONTAINER PROFIL PUBLIK (PALET UNGU-PINK HOLO BERRY) -->
-    <section class="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#AF3F5F_0%,#BE4E74_28%,#C96490_55%,#A978BE_80%,#8F86D6_100%)] p-5 sm:p-7 lg:p-8 shadow-[0_20px_48px_-20px_rgba(23,31,99,0.45)]">
+    <section class="acc-hero">
         {% include 'digital_wardrobe/partials/holo_bg.html' %}
 
-        <div class="relative z-10 space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="acc-hero__inner">
+        <div class="acc-hero__head">
             <div>
-                <p class="text-[11px] sm:text-xs font-semibold tracking-[0.28em] text-white/80">PROFIL PUBLIK</p>
-                <h1 class="mt-0.5 text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Profil Pengguna</h1>
+                <p class="acc-hero__eyebrow">PROFIL PUBLIK</p>
+                <h1 class="acc-hero__title">Profil Pengguna</h1>
             </div>
             {% if is_own_profile %}
             <a href="{% url 'accounts:profile' %}"
-               class="h-10 px-5 inline-flex items-center gap-2 rounded-full bg-white text-xs sm:text-sm font-bold text-swNavy shadow-[0_6px_16px_-6px_rgba(23,31,99,0.45)] hover:bg-swBlush transition-colors">
+               class="acc-hero__btn">
                 Ke Profil Saya
             </a>
             {% endif %}
         </div>
 
         <!-- KARTU PUTIH IDENTITAS & PREFERENSI (TANPA NOMOR HP) -->
-        <div class="relative bg-white rounded-3xl p-6 sm:p-8 shadow-sm">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-6 min-w-0 flex-1">
-                    {% include 'accounts/partials/avatar.html' with profile=target_profile size='w-24 h-24 sm:w-28 sm:h-28 text-3xl' %}
+        <div class="acc-identity">
+            <div class="acc-identity__row">
+                <div class="acc-identity__main">
+                    {% include 'accounts/partials/avatar.html' with profile=target_profile size='xl' %}
 
-                    <div class="min-w-0 flex-1 space-y-1.5">
-                        <h2 class="text-2xl sm:text-3xl font-extrabold text-swNavy truncate">{{ target_profile.name }}</h2>
-                        <p class="text-xs sm:text-sm font-bold text-swBerry">@{{ target_user.username }}</p>
+                    <div class="acc-identity__text">
+                        <h2 class="acc-identity__name">{{ target_profile.name }}</h2>
+                        <p class="acc-identity__username">@{{ target_user.username }}</p>
 
-                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-swSlate pt-0.5">
-                            <span class="inline-flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 text-swPlum shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <div class="acc-identity__facts">
+                            <span class="acc-identity__fact">
+                                <svg class="acc-identity__fact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
                                 </svg>
                                 {% if target_profile.domicile %}
                                 <span>{{ target_profile.domicile }}</span>
                                 {% else %}
-                                <span class="italic text-swSlate/70">Domisili belum diisi</span>
+                                <span class="acc-muted-italic">Domisili belum diisi</span>
                                 {% endif %}
                             </span>
                             <span aria-hidden="true">·</span>
@@ -49,19 +54,19 @@
                         </div>
 
                         {% if target_profile.bio %}
-                        <p class="pt-1.5 text-xs sm:text-sm text-swNavy/90 leading-relaxed whitespace-pre-line">{{ target_profile.bio }}</p>
+                        <p class="acc-identity__bio">{{ target_profile.bio }}</p>
                         {% else %}
-                        <p class="pt-1.5 text-xs sm:text-sm italic text-swSlate/70">Belum ada biografi.</p>
+                        <p class="acc-identity__bio acc-identity__bio--empty">Belum ada biografi.</p>
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Kanan: 3 Badge Preferensi (Palet Ungu-Pink) -->
-                <div class="flex flex-col sm:items-start lg:items-end gap-2.5 shrink-0">
-                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-swBlush text-xs text-swNavy">
-                        <strong class="font-bold text-swBerry">Ukuran pakaian favorit</strong>
-                        <span class="text-swBerry/60">·</span>
-                        <span class="font-semibold text-swNavy">
+                <div class="acc-prefs">
+                    <span class="acc-pref acc-pref--clothing">
+                        <strong class="acc-pref__label acc-pref__label--berry">Ukuran pakaian favorit</strong>
+                        <span class="acc-pref__dot acc-pref__dot--berry">·</span>
+                        <span class="acc-pref__value">
                             {% if target_profile.preferred_clothing_sizes %}
                                 {{ target_profile.preferred_clothing_sizes|join:", " }}
                             {% else %}
@@ -70,10 +75,10 @@
                         </span>
                     </span>
 
-                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-swLilac/75 text-xs text-swNavy">
-                        <strong class="font-bold text-swNavy">Ukuran alas kaki favorit</strong>
-                        <span class="text-swNavy/50">·</span>
-                        <span class="font-semibold text-swNavy">
+                    <span class="acc-pref acc-pref--shoe">
+                        <strong class="acc-pref__label acc-pref__label--navy">Ukuran alas kaki favorit</strong>
+                        <span class="acc-pref__dot acc-pref__dot--navy">·</span>
+                        <span class="acc-pref__value">
                             {% if target_profile.preferred_shoe_sizes %}
                                 {% for shoe in target_profile.preferred_shoe_sizes %}EU {{ shoe }}{% if not forloop.last %}, {% endif %}{% endfor %}
                             {% else %}
@@ -82,10 +87,10 @@
                         </span>
                     </span>
 
-                    <span class="inline-flex flex-wrap items-center gap-1 px-4 py-1.5 rounded-full bg-[#E8E6F8] text-xs text-swNavy">
-                        <strong class="font-bold text-swPlum">Gaya</strong>
-                        <span class="text-swPlum/60">·</span>
-                        <span class="font-semibold text-swNavy">
+                    <span class="acc-pref acc-pref--style">
+                        <strong class="acc-pref__label acc-pref__label--plum">Gaya</strong>
+                        <span class="acc-pref__dot acc-pref__dot--plum">·</span>
+                        <span class="acc-pref__value">
                             {% if target_profile.style_labels %}
                                 {{ target_profile.style_labels|join:", " }}
                             {% else %}
@@ -98,18 +103,18 @@
         </div>
 
         <!-- 3 KARTU STATISTIK -->
-        <div class="relative grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Ringkasan statistik pengguna">
-            <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
-                <p class="text-xs font-medium text-swSlate">Pakaian tersedia untuk swap</p>
-                <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ swap_count }}</p>
+        <div class="acc-stats" aria-label="Ringkasan statistik pengguna">
+            <div class="acc-stat">
+                <p class="acc-stat__label">Pakaian tersedia untuk swap</p>
+                <p class="acc-stat__value">{{ swap_count }}</p>
             </div>
-            <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
-                <p class="text-xs font-medium text-swSlate">Swap selesai</p>
-                <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ completed_swap_count }}</p>
+            <div class="acc-stat">
+                <p class="acc-stat__label">Swap selesai</p>
+                <p class="acc-stat__value">{{ completed_swap_count }}</p>
             </div>
-            <div class="bg-white rounded-2xl px-5 py-4 shadow-sm">
-                <p class="text-xs font-medium text-swSlate">Like didapatkan</p>
-                <p class="mt-1 text-2xl sm:text-3xl font-extrabold text-swNavy tabular-nums">{{ likes_received_count }}</p>
+            <div class="acc-stat">
+                <p class="acc-stat__label">Like didapatkan</p>
+                <p class="acc-stat__value">{{ likes_received_count }}</p>
             </div>
         </div>
         </div>
@@ -117,15 +122,15 @@
 
     <!-- DAFTAR ITEM SWAP PENGGUNA -->
     {% if swap_listings %}
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <section class="acc-listings">
         {% for listing in swap_listings %}
             {% include 'accounts/partials/listing_card.html' with listing=listing owner_profile=target_profile %}
         {% endfor %}
     </section>
     {% else %}
-    <section class="bg-white rounded-3xl border border-swNavy/10 p-10 text-center space-y-2 shadow-sm">
-        <p class="text-base font-extrabold text-swNavy">Belum ada pakaian yang sedang ditawarkan untuk swap.</p>
-        <p class="text-xs text-swSlate">{{ target_profile.name }} belum memiliki pakaian yang sedang ditawarkan untuk swap saat ini.</p>
+    <section class="acc-empty">
+        <p class="acc-empty__title">Belum ada pakaian yang sedang ditawarkan untuk swap.</p>
+        <p class="acc-empty__text">{{ target_profile.name }} belum memiliki pakaian yang sedang ditawarkan untuk swap saat ini.</p>
     </section>
     {% endif %}
 </div>

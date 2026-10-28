@@ -1,23 +1,23 @@
-
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Login — SwapDrobe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/accounts.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="min-h-[75vh] px-6 py-8 md:px-10">
+<div class="acc-auth acc-login">
 
     <!-- HERO BANNER -->
-    <section
-        class="relative flex min-h-[214px] items-center overflow-hidden rounded-[30px] bg-cover bg-center px-8 py-7 md:px-11"
-        style="background-image: linear-gradient(90deg, rgba(190,34,83,.45), rgba(225,59,105,.10)), url(&quot;{% static 'images/login-hero.png' %}&quot;);"
-    >
-        <div class="relative z-10 max-w-2xl text-white">
-            <h1 class="text-3xl md:text-[42px] font-extrabold leading-tight">
+    <section class="acc-login-hero">
+        <div class="acc-login-hero__text">
+            <h1 class="acc-login-hero__title">
                 Swap what you have.<br>
                 Refresh your wardrobe.
             </h1>
-            <p class="mt-5 text-sm">
+            <p class="acc-login-hero__lead">
                 Atur lemari, rencanakan outfit, dan tukar pakaian.
                 Semua dalam satu tempat.
             </p>
@@ -25,31 +25,31 @@
     </section>
 
     <!-- LOGIN FORM -->
-    <section class="mt-12">
-        <h2 class="text-3xl md:text-[32px] font-extrabold text-swBlue">
+    <section class="acc-login__body">
+        <h2 class="acc-login__title">
             Selamat datang kembali!
         </h2>
 
-        <p class="mt-3 mb-6 text-sm text-gray-500">
+        <p class="acc-login__lead">
             Lemari dan inspirasi outfit kamu sudah menunggu.
         </p>
 
         {% if messages %}
-        <div class="mb-6 space-y-2">
+        <div class="acc-auth-messages">
             {% for message in messages %}
-            <p class="rounded-xl px-4 py-3 text-sm font-semibold {% if message.tags == 'error' %}bg-red-50 text-red-700{% else %}bg-[#E4F3D5] text-[#3C6E2A]{% endif %}">{{ message }}</p>
+            <p class="acc-auth-message{% if message.tags == 'error' %} acc-auth-message--error{% endif %}">{{ message }}</p>
             {% endfor %}
         </div>
         {% endif %}
 
-        <form method="POST" action="{% url 'accounts:login' %}" class="space-y-6">
+        <form method="POST" action="{% url 'accounts:login' %}" class="acc-login__form">
             {% csrf_token %}
             {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
 
             {% for field in form %}
                 <div>
                     <label for="{{ field.id_for_label }}"
-                        class="block mb-2 text-xs font-bold text-swBlue">
+                        class="acc-login__label">
                         {% if field.name == 'username' %}
                             Username
                         {% elif field.name == 'password' %}
@@ -62,17 +62,17 @@
                     {{ field }}
 
                     {% for error in field.errors %}
-                        <p class="mt-2 text-xs text-swRed">{{ error }}</p>
+                        <p class="acc-login__field-error">{{ error }}</p>
                     {% endfor %}
                 </div>
             {% endfor %}
 
             {% if form.non_field_errors %}
-                <div class="flex items-start gap-3 rounded-xl bg-swRose p-4 text-sm text-swDark">
-                    <span class="text-lg text-swRed">ⓘ</span>
+                <div class="acc-login-error">
+                    <span class="acc-login-error__icon">ⓘ</span>
                     <div>
-                        <p class="font-bold">Belum bisa masuk</p>
-                        <p class="mt-1 text-xs text-gray-500">
+                        <p class="acc-login-error__title">Belum bisa masuk</p>
+                        <p class="acc-login-error__text">
                             Periksa kembali username dan kata sandi kamu.
                         </p>
                     </div>
@@ -80,15 +80,15 @@
             {% endif %}
 
             <!-- BUTTONS -->
-            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-3">
+            <div class="acc-auth-actions acc-auth-actions--login">
                 <a href="{% url 'home:index' %}"
-                class="inline-flex justify-center items-center gap-2 rounded-xl bg-gray-200 text-swBlue px-5 py-3 font-bold text-sm hover:bg-gray-300 transition-colors">
+                class="acc-auth-btn acc-auth-btn--guest">
                     <span aria-hidden="true">→</span>
                     Lanjutkan Tanpa Akun
                 </a>
 
                 <button type="submit"
-                        class="inline-flex justify-center items-center gap-2 rounded-xl bg-swGreen text-white px-6 py-3 font-bold text-sm hover:brightness-95 active:scale-[0.98] transition">
+                        class="acc-auth-btn acc-auth-btn--submit sw-btn-holo">
                     <span aria-hidden="true">→</span>
                     Masuk
                 </button>
@@ -96,56 +96,20 @@
         </form>
 
         <!-- REGISTER LINK -->
-        <p class="text-center text-sm text-gray-600 mt-8">
+        <p class="acc-auth__switch">
             Belum punya akun?
             <a href="{% url 'accounts:register' %}"
-            class="font-bold text-sky-600 hover:text-swBlue transition-colors">
+            class="acc-auth__switch-link">
                 Daftar sekarang
             </a>
         </p>
 
         <!-- PRIVACY NOTE -->
-        <p class="text-xs text-gray-400 leading-relaxed mt-6">
+        <p class="acc-auth__privacy acc-auth__privacy--login">
             Privasi kamu penting. Data akun hanya digunakan untuk mengelola
             lemari dan pertukaran.
         </p>
     </section>
 </div>
 
-<!-- INPUT STYLING -->
-<style>
-    .login-input {
-        width: 100%;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 13px 14px;
-        background: white;
-        color: #1E1E1E;
-        font-family: "Plus Jakarta Sans", sans-serif;
-        font-size: 14px;
-        outline: none;
-    }
-    .login-input:focus {
-        border-color: #3462AE;
-        box-shadow: 0 0 0 3px rgb(52 98 174 / 12%);
-    }
-        form input {
-        display: block;
-        width: 100%;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 13px 14px;
-        background: white;
-        color: #1E1E1E;
-        font-family: "Plus Jakarta Sans", sans-serif;
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    form input:focus {
-        border-color: #3462AE;
-        box-shadow: 0 0 0 3px rgb(52 98 174 / 12%);
-    }
-</style>
 {% endblock %}

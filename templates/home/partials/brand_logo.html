@@ -1,5 +1,5 @@
-{# Logo Swapdrobe (Holo Berry), sama dengan di navbar. Pakai: include 'home/partials/brand_logo.html' with class='h-9 w-auto' #}
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 331.3 64.0" class="{{ class|default:'h-8 sm:h-9 w-auto' }}" role="img" aria-hidden="true"><g transform="translate(0 0)">
+{# Logo Swapdrobe (Holo Berry), sama dengan di navbar. Pakai: include 'home/partials/brand_logo.html' (opsional size='sm', lihat .home-logo di home.css) #}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 331.3 64.0" class="home-logo{% if size %} home-logo--{{ size }}{% endif %}" role="img" aria-hidden="true"><g transform="translate(0 0)">
 <defs>
 <linearGradient id="hnbase" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#AF3F5F"/><stop offset=".26" stop-color="#D788B2"/><stop offset=".44" stop-color="#C9A6E8"/><stop offset=".58" stop-color="#9FB4F0"/><stop offset=".76" stop-color="#D788B2"/><stop offset="1" stop-color="#CA6D88"/></linearGradient>
 <linearGradient id="hnshine" x1="0" y1="0.18" x2="1" y2="0.82"><stop offset=".34" stop-color="#fff" stop-opacity="0"/><stop offset=".47" stop-color="#fff" stop-opacity=".5"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>

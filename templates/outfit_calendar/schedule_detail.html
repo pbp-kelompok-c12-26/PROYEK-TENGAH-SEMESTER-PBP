@@ -1,70 +1,75 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Jadwal {{ tanggal }} · Swapdrobe{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'outfit_calendar/css/outfit_calendar.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-    <a href="{% url 'outfit_calendar:index' %}?month={{ schedule.date|date:'Y-m' }}" class="text-sm font-semibold text-swPlum hover:underline">&larr; Kembali ke kalender</a>
+<div class="cal-page cal-page--narrow">
+    <a href="{% url 'outfit_calendar:index' %}?month={{ schedule.date|date:'Y-m' }}" class="cal-back">&larr; Kembali ke kalender</a>
 
     {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow=tanggal title=schedule.display_name subtitle=schedule.note %}
 
     {% include 'outfit_calendar/_messages.html' %}
 
-    <section class="bg-white rounded-2xl border border-swNavy/10 p-5">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-extrabold text-swNavy">Pakaian di outfit ini</h2>
+    <section class="cal-card cal-worn">
+        <div class="cal-worn__head">
+            <h2 class="cal-worn__title">Pakaian di outfit ini</h2>
             {% if schedule.outfit_deleted %}
-            <span class="text-xs font-semibold text-swSlate">Outfit sudah dihapus</span>
+            <span class="cal-worn__deleted-outfit">Outfit sudah dihapus</span>
             {% else %}
-            <a href="{% url 'digital_wardrobe:outfit_detail' schedule.outfit.pk %}" class="text-xs font-semibold text-swPlum hover:underline">Lihat outfit &rarr;</a>
+            <a href="{% url 'digital_wardrobe:outfit_detail' schedule.outfit.pk %}" class="cal-link">Lihat outfit &rarr;</a>
             {% endif %}
         </div>
-        <ul class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <ul class="cal-worn__grid">
             {% for entry in schedule.worn_items.all %}
             {% with item=entry.clothing_item %}
-            <li class="rounded-xl border border-swNavy/10 overflow-hidden {% if entry.is_deleted %}bg-swCream{% endif %}">
-                <div class="relative aspect-square bg-swBlush">
+            <li class="cal-worn__item{% if entry.is_deleted %} is-deleted{% endif %}">
+                <div class="cal-worn__photo">
                     {% if item and item.image %}
-                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-full h-full object-cover {% if item.status_label %}opacity-60{% endif %}">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}"{% if item.status_label %} class="is-faded"{% endif %}>
                     {% endif %}
                     {% if item %}
-                    <span class="absolute left-2 top-2">{% include 'digital_wardrobe/partials/item_status_badge.html' with item=item %}</span>
+                    <span class="cal-worn__badge">{% include 'digital_wardrobe/partials/item_status_badge.html' with item=item %}</span>
                     {% else %}
-                    <span class="absolute inset-0 flex items-center justify-center text-3xl text-swSlate/50">&times;</span>
+                    <span class="cal-worn__gone">&times;</span>
                     {% endif %}
                 </div>
-                <div class="p-2.5">
-                    <p class="text-sm font-bold {% if entry.is_deleted %}text-swSlate line-through{% else %}text-swNavy{% endif %}">{{ entry.name }}</p>
+                <div class="cal-worn__info">
+                    <p class="cal-worn__name">{{ entry.name }}</p>
                     {% if entry.is_deleted %}
-                    <p class="text-xs font-semibold text-swBerry">Sudah dihapus dari lemari</p>
+                    <p class="cal-worn__status">Sudah dihapus dari lemari</p>
                     {% elif item.is_swapped_away %}
-                    <p class="text-xs font-semibold text-swBerry">Pakaian tidak tersedia</p>
+                    <p class="cal-worn__status">Pakaian tidak tersedia</p>
                     {% else %}
-                    <p class="text-xs text-swSlate">{{ item.get_category_display }}{% if item.size_label %} · {{ item.size_label }}{% endif %}</p>
+                    <p class="cal-worn__meta">{{ item.get_category_display }}{% if item.size_label %} · {{ item.size_label }}{% endif %}</p>
                     {% endif %}
                 </div>
             </li>
             {% endwith %}
             {% empty %}
-            <li class="col-span-full text-sm text-swSlate">Tidak ada pakaian tercatat.</li>
+            <li class="cal-worn__empty">Tidak ada pakaian tercatat.</li>
             {% endfor %}
         </ul>
     </section>
 
-    <div class="flex gap-3">
-        <a href="{% url 'outfit_calendar:schedule_update' schedule.pk %}" class="h-11 px-5 inline-flex items-center rounded-full border border-swNavy/25 text-swNavy text-sm font-semibold hover:bg-swCream">Edit jadwal</a>
-        <button type="button" onclick="document.getElementById('delete-dialog').showModal()" class="h-11 px-5 rounded-full bg-swBerry text-white text-sm font-bold hover:bg-swBerry/90">Hapus jadwal</button>
+    <div class="cal-actions">
+        <a href="{% url 'outfit_calendar:schedule_update' schedule.pk %}" class="cal-btn cal-btn--outline">Edit jadwal</a>
+        <button type="button" onclick="document.getElementById('delete-dialog').showModal()" class="cal-actions__delete">Hapus jadwal</button>
     </div>
 </div>
 
 <!-- Pop-up konfirmasi hapus -->
-<dialog id="delete-dialog" class="rounded-2xl p-0 w-[calc(100%-2rem)] max-w-sm backdrop:bg-swNavy/40">
-    <form method="post" action="{% url 'outfit_calendar:schedule_delete' schedule.pk %}" class="p-6 space-y-4">
+<dialog id="delete-dialog" class="cal-dialog">
+    <form method="post" action="{% url 'outfit_calendar:schedule_delete' schedule.pk %}" class="cal-dialog__form">
         {% csrf_token %}
-        <h3 class="text-lg font-extrabold text-swNavy">Hapus jadwal ini?</h3>
-        <p class="text-sm text-swSlate">Jadwal "{{ schedule.display_name }}" pada {{ tanggal }} akan dihapus. Outfit dan pakaiannya tetap ada di Digital Wardrobe.</p>
-        <div class="flex justify-end gap-2">
-            <button type="button" onclick="this.closest('dialog').close()" class="h-10 px-4 rounded-full border border-swNavy/25 text-swNavy text-sm font-semibold">Batal</button>
-            <button type="submit" class="h-10 px-4 rounded-full bg-swBerry text-white text-sm font-bold">Ya, hapus</button>
+        <h3 class="cal-dialog__title">Hapus jadwal ini?</h3>
+        <p class="cal-dialog__text">Jadwal "{{ schedule.display_name }}" pada {{ tanggal }} akan dihapus. Outfit dan pakaiannya tetap ada di Digital Wardrobe.</p>
+        <div class="cal-dialog__actions">
+            <button type="button" onclick="this.closest('dialog').close()" class="cal-dialog__cancel">Batal</button>
+            <button type="submit" class="cal-dialog__confirm">Ya, hapus</button>
         </div>
     </form>
 </dialog>

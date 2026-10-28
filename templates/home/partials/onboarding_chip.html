@@ -1,5 +1,8 @@
-{# Satu chip pilihan. Pakai: include ... with option=opt size='h-10' #}
-<label class="cursor-pointer">
+{% comment %}
+Satu chip pilihan. Pakai: include ... with option=opt size='compact'
+Ukuran: 'md' (default), 'compact', 'tall', 'wrap' (lihat .sw-chip--... di static/css/components.css)
+{% endcomment %}
+<label class="sw-chip-label">
     {{ option.tag }}
-    <span class="sw-chip {{ size|default:'h-10 px-4' }} w-full inline-flex items-center justify-center rounded-xl bg-[#ECEAF1] text-sm font-semibold text-swNavy/80 hover:bg-[#E2DEEA]">{{ option.choice_label }}</span>
+    <span class="sw-chip sw-chip--{{ size|default:'md' }}">{{ option.choice_label }}</span>
 </label>

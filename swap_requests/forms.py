@@ -4,8 +4,9 @@ from digital_wardrobe.models import ClothingItem
 from items_for_swap.models import ItemForSwap
 from .models import SwapRequest
 
-INPUT_CLASS = ('w-full h-11 px-3 rounded-xl bg-white border border-swNavy/15 text-sm text-swNavy '
-               'focus:outline-none focus:ring-2 focus:ring-swPlum/40 focus:border-swPlum')
+# Style input ada di static/swap_requests/css/swap_requests.css
+INPUT_CLASS = 'sr-input'
+TEXTAREA_CLASS = 'sr-textarea'
 
 
 def offerable_items(user):
@@ -25,7 +26,7 @@ class SwapRequestForm(forms.ModelForm):
         widgets = {
             'offered_item': forms.Select(attrs={'class': INPUT_CLASS, 'data-offer-select': ''}),
             'message': forms.Textarea(attrs={
-                'class': INPUT_CLASS.replace('h-11', 'min-h-[110px] py-2'), 'rows': 4,
+                'class': TEXTAREA_CLASS, 'rows': 4,
                 'placeholder': 'Ceritakan kenapa kamu tertarik, kondisi pakaianmu, atau ajak ngobrol soal ukuran...'}),
         }
 

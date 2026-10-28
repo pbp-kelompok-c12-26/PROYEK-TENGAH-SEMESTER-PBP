@@ -13,46 +13,6 @@
     <!-- CSS dasar: token warna & font, reset (static/css/base.css) -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
-    <!-- Tailwind CSS CDN: masih dipakai header/footer & modul yang belum pindah ke CSS.
-         Hapus bagian ini kalau semua template sudah memakai file CSS. -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Poppins"', 'sans-serif'],
-                        logo: ['"Poppins"', 'sans-serif'],
-                    },
-                    colors: {
-                        // PALET WARNA SWAPDROBE (dari desain Figma)
-                        swNavy: '#171F63',      // Teks utama, judul, logo
-                        swBerry: '#AF3F5F',     // Tombol utama, hero
-                        swPlum: '#6063B4',      // Aksen biru-ungu, tombol sekunder
-                        swForest: '#40794C',    // Aksen hijau, tombol tambah
-                        swPink: '#D788B2',      // Highlight & dekorasi (bukan untuk teks)
-                        swMint: '#AAD0AE',      // Latar banner hijau
-                        swLavender: '#C1C7D6',  // Latar banner ungu
-                        swLilac: '#E6C4F9',     // Tab navigasi aktif
-                        swBlush: '#EDDFEE',     // Latar pink muda, hover
-                        swCream: '#F7F5F0',     // Latar halaman
-                        swSlate: '#56546A',     // Teks pendukung
-
-                        // Nama lama tetap ada supaya template modul lain tidak rusak,
-                        // nilainya diarahkan ke palet baru.
-                        swRose: '#EDDFEE',
-                        swRed: '#AF3F5F',
-                        swBlue: '#6063B4',
-                        swGreen: '#40794C',
-                        swOffWhite: '#F7F5F0',
-                        swDark: '#171F63',
-                        swBtn: '#AF3F5F',
-                        swBg: '#F7F5F0',
-                    }
-                }
-            }
-        }
-    </script>
     <!-- Komponen bersama: tombol hologram, holo banner, badge status (static/css/components.css) -->
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <!-- Kerangka halaman: header, navigasi, footer, pop-up login (static/css/layout.css) -->
@@ -300,21 +260,12 @@
                 if (!response.ok) throw new Error('Like request failed');
                 const result = await response.json();
                 const liked = Boolean(result.liked);
+                // Warna tombol like (pink saat disukai) diatur CSS dari atribut data-liked.
                 form.dataset.liked = liked ? 'true' : 'false';
 
                 if (submitButton) {
                     submitButton.setAttribute('aria-pressed', liked ? 'true' : 'false');
                     submitButton.setAttribute('aria-label', `${liked ? 'Hapus suka' : 'Sukai'} ${form.dataset.itemName || 'pakaian'}; ${result.like_count} suka`);
-                    const orb = submitButton.querySelector('[data-like-orb]');
-                    if (orb) {
-                        orb.classList.toggle('bg-[#D50959]', liked);
-                        orb.classList.toggle('shadow-sm', liked);
-                        const heartSvg = orb.querySelector('svg');
-                        if (heartSvg) heartSvg.classList.toggle('scale-105', liked);
-                    } else {
-                        submitButton.classList.toggle('bg-[#D50959]', liked);
-                        submitButton.classList.toggle('bg-white', !liked);
-                    }
                     const heartPath = submitButton.querySelector('[data-like-heart]');
                     if (heartPath) {
                         const gradient = heartPath.closest('svg').querySelector('linearGradient');
@@ -329,9 +280,11 @@
                     const grid = card && card.closest('[data-liked-grid]');
                     if (card) card.remove();
                     if (grid && !grid.querySelector('[data-like-card]')) {
-                        grid.classList.add('hidden');
-                        document.querySelector('[data-liked-empty]')?.classList.remove('hidden');
-                        document.querySelector('[data-liked-pagination]')?.classList.add('hidden');
+                        grid.hidden = true;
+                        const empty = document.querySelector('[data-liked-empty]');
+                        if (empty) empty.hidden = false;
+                        const pagination = document.querySelector('[data-liked-pagination]');
+                        if (pagination) pagination.hidden = true;
                     }
                 }
             } catch (error) {

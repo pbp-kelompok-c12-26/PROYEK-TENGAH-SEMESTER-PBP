@@ -12,9 +12,9 @@ from .models import (
     SHOE_SIZE_CHOICES,
 )
 
-INPUT_CLASS = ('w-full rounded-xl bg-[#F8F3FA] border border-swPink/30 px-4 text-sm text-swNavy '
-               'placeholder:text-swSlate/60 focus:outline-none focus:bg-white focus:border-swBerry focus:ring-2 focus:ring-swPink/35')
-CHIP_INPUT = {'class': 'peer sr-only'}
+# Class CSS form (style-nya di static/css/components.css karena dipakai juga oleh Onboarding)
+INPUT_CLASS = 'sw-input'
+CHIP_INPUT = {'class': 'sw-chip-input'}
 MAX_PICTURE_MB = 5
 
 
@@ -103,30 +103,30 @@ class UserProfileForm(forms.ModelForm):
         ]
         widgets = {
             "display_name": forms.TextInput(attrs={
-                "class": INPUT_CLASS + " h-11",
+                "class": INPUT_CLASS + " sw-input--line",
                 "placeholder": "Contoh: Fanny",
                 "maxlength": "15",
             }),
             "profile_picture": forms.FileInput(attrs={
                 "accept": "image/jpeg,image/png",
-                "class": "sr-only",
+                "class": "sw-sr-only",
                 "data-avatar-input": "",
             }),
             "bio": forms.Textarea(attrs={
-                "class": INPUT_CLASS + " py-3 min-h-[96px]",
+                "class": INPUT_CLASS + " sw-input--area",
                 "rows": 3,
                 "maxlength": "300",
                 "data-bio-input": "",
                 "placeholder": "Ceritakan sedikit tentang gaya berpakaianmu...",
             }),
             "phone_number": forms.TextInput(attrs={
-                "class": INPUT_CLASS + " h-11",
+                "class": INPUT_CLASS + " sw-input--line",
                 "placeholder": "Contoh: 081234567890",
                 "inputmode": "tel",
                 "autocomplete": "tel",
             }),
             "domicile": forms.TextInput(attrs={
-                "class": INPUT_CLASS + " h-11",
+                "class": INPUT_CLASS + " sw-input--line",
                 "placeholder": "Contoh: Depok",
                 "autocomplete": "address-level2",
             }),
@@ -173,9 +173,9 @@ class ProfileSetupForm(forms.ModelForm):
         model = UserProfile
         fields = ['display_name', 'profile_picture', 'bio', 'preferred_styles']
         widgets = {
-            'display_name': forms.TextInput(attrs={'class': INPUT_CLASS + ' h-11', 'placeholder': 'Contoh: Fanny'}),
-            'profile_picture': forms.FileInput(attrs={'accept': 'image/jpeg,image/png', 'class': 'sr-only', 'data-avatar-input': ''}),
-            'bio': forms.Textarea(attrs={'class': INPUT_CLASS + ' py-3 min-h-[96px]', 'rows': 3,
+            'display_name': forms.TextInput(attrs={'class': INPUT_CLASS + ' sw-input--line', 'placeholder': 'Contoh: Fanny'}),
+            'profile_picture': forms.FileInput(attrs={'accept': 'image/jpeg,image/png', 'class': 'sw-sr-only', 'data-avatar-input': ''}),
+            'bio': forms.Textarea(attrs={'class': INPUT_CLASS + ' sw-input--area', 'rows': 3,
                                          'placeholder': 'Ceritakan sedikit tentang gaya berpakaianmu...'}),
         }
 
@@ -250,6 +250,6 @@ class StyledPasswordChangeForm(PasswordChangeForm):
         }
         for name, field in self.fields.items():
             field.widget.attrs.update({
-                "class": INPUT_CLASS + " h-11",
+                "class": INPUT_CLASS + " sw-input--line",
                 "placeholder": placeholders.get(name, ""),
             })
