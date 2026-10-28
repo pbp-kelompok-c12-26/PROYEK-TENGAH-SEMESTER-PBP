@@ -5,6 +5,8 @@ from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.db import transaction
 from PIL import Image
 
+from home.wilayah import LocationField
+
 from .models import (
     UserProfile,
     STYLE_CHOICES,
@@ -89,6 +91,9 @@ class UserProfileForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple(attrs=CHIP_INPUT),
     )
 
+    # Domisili dipilih dari autocomplete API Wilayah Indonesia (kode kab/kota, dicek di server)
+    domicile_code = LocationField(label='Domisili')
+
     class Meta:
         model = UserProfile
         fields = [
@@ -96,7 +101,6 @@ class UserProfileForm(forms.ModelForm):
             "profile_picture",
             "bio",
             "phone_number",
-            "domicile",
             "preferred_styles",
             "preferred_clothing_sizes",
             "preferred_shoe_sizes",
@@ -125,17 +129,19 @@ class UserProfileForm(forms.ModelForm):
                 "inputmode": "tel",
                 "autocomplete": "tel",
             }),
-            "domicile": forms.TextInput(attrs={
-                "class": INPUT_CLASS + " sw-input--line",
-                "placeholder": "Contoh: Depok",
-                "autocomplete": "address-level2",
-            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["phone_number"].required = True
-        self.fields["domicile"].required = True
+        self.fields["phone_number"].error_messages["required"] = "Wajib diisi."
+        self.fields["domicile_code"].initial = self.instance.domicile_code
+
+    @property
+    def domicile_label(self):
+        """Teks yang tampil di input domisili (pilihan tersimpan atau pilihan yang baru dikirim)."""
+        location = self.cleaned_data.get("domicile_code") if hasattr(self, "cleaned_data") else None
+        return location["label"] if location else self.instance.domicile
 
     def clean_bio(self):
         bio = (self.cleaned_data.get("bio") or "").strip()
@@ -149,14 +155,12 @@ class UserProfileForm(forms.ModelForm):
     def clean_phone_number(self):
         return validate_phone(self.cleaned_data.get("phone_number", ""), exclude_profile=self.instance)
 
-    def clean_domicile(self):
-        domicile = (self.cleaned_data.get("domicile") or "").strip()
-        if not domicile:
-            raise forms.ValidationError("Wajib diisi.")
-        return domicile
-
     def clean_preferred_shoe_sizes(self):
         return _shoe_sizes_to_int(self.cleaned_data["preferred_shoe_sizes"])
+
+    def save(self, commit=True):
+        self.instance.set_domicile(self.cleaned_data["domicile_code"])
+        return super().save(commit=commit)
 
 
 # Alias eksplisit jika dipanggil sebagai ProfileEditForm
@@ -210,22 +214,20 @@ class RegisterForm(UserCreationForm):
         label='Nomor HP', max_length=20,
         widget=forms.TextInput(attrs={'placeholder': 'Contoh: 081234567890', 'inputmode': 'tel', 'autocomplete': 'tel'}),
     )
-    domicile = forms.CharField(
-        label='Domisili', max_length=100,
-        widget=forms.TextInput(attrs={'placeholder': 'Contoh: Depok', 'autocomplete': 'address-level2'}),
-    )
+    # Domisili dipilih dari autocomplete API Wilayah Indonesia (kode kab/kota, dicek di server)
+    domicile_code = LocationField(label='Domisili')
 
     class Meta(UserCreationForm.Meta):
-        fields = ('username', 'phone_number', 'domicile')
+        fields = ('username', 'phone_number', 'domicile_code')
 
     def clean_phone_number(self):
         return validate_phone(self.cleaned_data['phone_number'])
 
-    def clean_domicile(self):
-        domicile = self.cleaned_data['domicile'].strip()
-        if not domicile:
-            raise forms.ValidationError('Wajib diisi.')
-        return domicile
+    @property
+    def domicile_label(self):
+        """Teks yang tampil lagi di input domisili kalau form dikirim ulang karena ada error."""
+        location = self.cleaned_data.get('domicile_code') if hasattr(self, 'cleaned_data') else None
+        return location['label'] if location else ''
 
     def save(self, commit=True):
         with transaction.atomic():
@@ -233,8 +235,9 @@ class RegisterForm(UserCreationForm):
             if commit:
                 profile = UserProfile.for_user(user)
                 profile.phone_number = self.cleaned_data['phone_number']
-                profile.domicile = self.cleaned_data['domicile']
-                profile.save(update_fields=['phone_number', 'domicile'])
+                profile.set_domicile(self.cleaned_data['domicile_code'])
+                profile.save(update_fields=['phone_number', 'domicile', 'domicile_code',
+                                            'domicile_city', 'domicile_province'])
         return user
 
 

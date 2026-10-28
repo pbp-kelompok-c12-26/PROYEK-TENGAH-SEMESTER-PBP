@@ -8,7 +8,7 @@
 
 <div class="ifs">
   {% url 'items_for_swap:add' as add_url %}
-  {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='ITEM SWAP SAYA' title='Item untuk Swap' subtitle='Kelola pakaian kamu untuk ditukar dengan orang lain.' button_url=add_url button_label='+ Tambahkan pakaian dari lemari untuk ditukar' %}
+  {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='ITEM SWAP SAYA' title='Item untuk Swap' subtitle='Kelola pakaian kamu untuk ditukar dengan orang lain.' button_url=add_url button_modal=True button_label='+ Tambahkan pakaian dari lemari untuk ditukar' %}
 
   <div class="ifs-info">
     <strong>Item yang sudah masuk daftar swap tidak dapat dikelola di lemari pribadi lagi</strong><br>
@@ -56,7 +56,7 @@
         <td>
           <a class="ifs-btn blue" href="{% url 'items_for_swap:detail' listing.pk %}">Lihat detail</a>
           {% if listing.is_available %}
-            <a class="ifs-btn grey" href="{% url 'items_for_swap:edit' listing.pk %}">Edit</a>
+            <a class="ifs-btn grey" href="{% url 'items_for_swap:edit' listing.pk %}" data-form-modal>Edit</a>
             {% if listing.has_locking_request %}
               <button type="button" class="ifs-btn grey" disabled title="Pertukaran Awaiting harus diselesaikan atau dibatalkan bersama">Menunggu pertukaran</button>
             {% else %}

@@ -7,21 +7,34 @@
 {% endblock %}
 
 {% block content %}
-<div class="sr-form-wrap">
-    <form method="post" novalidate class="sr-form">
+{% comment %}
+Form ini tampil sebagai pop-up (static/js/form_modal.js) saat dibuka dari tombol ber-atribut
+data-form-modal (mis. "Ajukan swap" di Jelajahi), atau sebagai panel di tengah halaman kalau
+URL-nya dibuka langsung. Gaya: .sw-fmodal... di static/css/components.css.
+{% endcomment %}
+{% if swap %}{% url 'swap_requests:detail' swap.pk as cancel_url %}{% else %}{% url 'swap_requests:index' as cancel_url %}{% endif %}
+<div class="sw-fmodal-page" data-modal-content>
+    <form method="post" action="{{ request.get_full_path }}" novalidate class="sw-fmodal__panel">
+        <div class="sw-fmodal__glow" aria-hidden="true"></div>
         {% csrf_token %}
-        <h1 class="sr-form__title">{{ title }}</h1>
+
+        <div class="sw-fmodal__head">
+            <h2 class="sw-fmodal__title">{{ title }}</h2>
+            <a href="{{ cancel_url }}" class="sw-fmodal__close" data-modal-close aria-label="Tutup">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </a>
+        </div>
 
         {% for error in form.non_field_errors %}
-        <p class="sr-form__alert">{{ error }}</p>
+        <div class="sw-fmodal__alert" role="alert">{{ error }}</div>
         {% endfor %}
 
-        <div class="sr-form__grid">
+        <div class="sw-fmodal__grid">
             <!-- Kiri: pakaian -->
-            <div class="sr-form__panel">
-                <h2 class="sr-form__subtitle">Pakaian yang kamu tawarkan</h2>
-                <div class="sr-offer-box" data-offer-box>
-                    <p class="sr-offer-box__empty" data-offer-empty>Pilih pakaian dari lemarimu. Pakaian yang sedang dipakai request aktif tidak bisa dipilih.</p>
+            <section class="sw-fpanel">
+                <h3 class="sw-fpanel__title">Pakaian yang kamu tawarkan</h3>
+                <div class="sw-fpreview" data-offer-box>
+                    <p data-offer-empty>Pilih pakaian dari lemarimu. Pakaian yang sedang dipakai request aktif tidak bisa dipilih.</p>
                     {% for it in offer_items %}
                     <div class="sr-offer-box__preview" data-offer-preview="{{ it.pk }}" hidden>
                         {% if it.image %}<img src="{{ it.image.url }}" alt="{{ it.name }}">{% else %}<div class="sr-offer-box__name">{{ it.name }}</div>{% endif %}
@@ -33,7 +46,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v16l-3-3M16 20V4l3 3"/></svg>
                 </div>
 
-                <h2 class="sr-form__subtitle">Pakaian yang kamu dapat</h2>
+                <h3 class="sw-fpanel__title">Pakaian yang kamu dapat</h3>
                 <div class="sr-get">
                     {% include 'swap_requests/partials/thumb.html' with item=requested_item size='xl' %}
                     <div class="sr-get__text">
@@ -42,46 +55,45 @@
                         <p class="sr-get__owner">milik <a href="{% url 'accounts:public_profile' requested_item.user.username %}">@{{ requested_item.user.username }}</a></p>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <!-- Kanan: informasi -->
-            <div class="sr-form__panel sr-form__panel--info">
-                <h2 class="sr-form__subtitle">Informasi request</h2>
+            <section class="sw-fpanel">
+                <h3 class="sw-fpanel__title">Informasi request</h3>
                 {% for field in form %}
-                <div class="sr-field">
-                    <label for="{{ field.id_for_label }}" class="sr-field__label">{{ field.label }}{% if field.field.required %} <span class="sr-required">*</span>{% endif %}</label>
+                <div class="sw-ffield">
+                    <label for="{{ field.id_for_label }}" class="sw-ffield__label">{{ field.label }}{% if field.field.required %} <span class="sw-ffield__required">*</span>{% endif %}</label>
                     {{ field }}
-                    {% for error in field.errors %}<p class="sr-field__error">{{ error }}</p>{% endfor %}
+                    {% for error in field.errors %}<p class="sw-ffield__error">{{ error }}</p>{% endfor %}
                 </div>
                 {% endfor %}
                 {% if not has_offerable %}
-                <p class="sr-form__notice">Belum ada pakaian yang bisa ditawarkan. Tambahkan pakaian ke <a href="{% url 'digital_wardrobe:index' %}">Wardrobe Digital</a> atau selesaikan request aktif yang sedang memakai pakaianmu.</p>
+                <p class="sw-fpanel__text">Belum ada pakaian yang bisa ditawarkan. Tambahkan pakaian ke <a href="{% url 'digital_wardrobe:index' %}">Wardrobe Digital</a> atau selesaikan request aktif yang sedang memakai pakaianmu.</p>
                 {% endif %}
-            </div>
+            </section>
         </div>
 
-        <div class="sr-form__actions">
-            <a href="{% if swap %}{% url 'swap_requests:detail' swap.pk %}{% else %}{% url 'swap_requests:index' %}{% endif %}"
-               class="sr-btn sr-btn--outline sr-btn--white">Batal</a>
-            <button type="submit" class="sr-btn sr-btn--holo sw-btn-holo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+        <div class="sw-fmodal__footer">
+            <a href="{{ cancel_url }}" class="sw-fmodal__cancel" data-modal-close>Batal</a>
+            <button type="submit" class="sw-fmodal__submit sw-btn-holo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
                 {{ submit_label }}
             </button>
         </div>
     </form>
-</div>
 
-<script>
-(() => {
-    const select = document.querySelector('[data-offer-select]');
-    if (!select) return;
-    const show = () => {
-        // Tampilkan pratinjau pakaian yang dipilih (lainnya disembunyikan dengan atribut hidden)
-        document.querySelectorAll('[data-offer-preview]').forEach((el) => { el.hidden = el.dataset.offerPreview !== select.value; });
-        document.querySelector('[data-offer-empty]').hidden = !!select.value;
-    };
-    select.addEventListener('change', show);
-    show();
-})();
-</script>
+    <script>
+    (() => {
+        const select = document.querySelector('[data-offer-select]');
+        if (!select) return;
+        const show = () => {
+            // Tampilkan pratinjau pakaian yang dipilih (lainnya disembunyikan dengan atribut hidden)
+            document.querySelectorAll('[data-offer-preview]').forEach((el) => { el.hidden = el.dataset.offerPreview !== select.value; });
+            document.querySelector('[data-offer-empty]').hidden = !!select.value;
+        };
+        select.addEventListener('change', show);
+        show();
+    })();
+    </script>
+</div>
 {% endblock %}

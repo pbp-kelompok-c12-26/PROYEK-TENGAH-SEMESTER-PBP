@@ -906,14 +906,11 @@
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
     align-items: flex-start;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
-@media (min-width: 1024px) {
-    .acc-settings__grid {
-        grid-template-columns: 280px 1fr;
-    }
-}
+/* Kotak info tampil sebagai strip di atas form (bukan kolom samping),
+   supaya tidak ada ruang kosong panjang di sebelah kiri form. */
 
 .acc-infobox {
     display: flex;

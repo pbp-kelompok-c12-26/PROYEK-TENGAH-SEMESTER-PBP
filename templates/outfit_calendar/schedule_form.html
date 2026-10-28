@@ -7,29 +7,49 @@
 {% endblock %}
 
 {% block content %}
-<div class="cal-page cal-page--form">
-    {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='KALENDER OUTFIT' title=title %}
-
-    <form method="post" class="cal-card cal-form" novalidate>
+{% comment %}
+Form ini tampil sebagai pop-up (static/js/form_modal.js) saat dibuka dari tombol ber-atribut
+data-form-modal, atau sebagai panel di tengah halaman kalau URL-nya dibuka langsung.
+Gaya: .sw-fmodal... di static/css/components.css (sama dengan pop-up form Lemari Saya).
+{% endcomment %}
+{% if schedule %}{% url 'outfit_calendar:schedule_detail' schedule.pk as cancel_url %}{% else %}{% url 'outfit_calendar:index' as cancel_url %}{% endif %}
+<div class="sw-fmodal-page sw-fmodal-page--narrow" data-modal-content data-modal-narrow>
+    <form method="post" action="{{ request.get_full_path }}" class="sw-fmodal__panel" novalidate>
+        <div class="sw-fmodal__glow" aria-hidden="true"></div>
         {% csrf_token %}
-        {% for field in form %}
-        <div class="cal-field">
-            <label for="{{ field.id_for_label }}" class="cal-field__label">{{ field.label }}</label>
-            {{ field }}
-            {% for error in field.errors %}<p class="cal-field__error">{{ error }}</p>{% endfor %}
+
+        <div class="sw-fmodal__head">
+            <h2 class="sw-fmodal__title">{{ title }}</h2>
+            <a href="{{ cancel_url }}" class="sw-fmodal__close" data-modal-close aria-label="Tutup">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </a>
         </div>
-        {% endfor %}
 
-        {% if not form.fields.outfit.queryset.exists %}
-        <p class="cal-form__notice">
-            Belum ada outfit. <a href="{% url 'digital_wardrobe:index' %}?tab=outfit&add_outfit=1">Buat outfit di Digital Wardrobe</a>
-        </p>
-        {% endif %}
+        {% if form.non_field_errors %}<div class="sw-fmodal__alert" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
 
-        <div class="cal-form__actions">
-            <a href="{% if schedule %}{% url 'outfit_calendar:schedule_detail' schedule.pk %}{% else %}{% url 'outfit_calendar:index' %}{% endif %}"
-               class="cal-btn cal-btn--outline">Batal</a>
-            <button type="submit" class="cal-form__submit">{{ submit_label }}</button>
+        <section class="sw-fpanel">
+            <h3 class="sw-fpanel__title">Detail jadwal</h3>
+            {% for field in form %}
+            <div class="sw-ffield">
+                <label for="{{ field.id_for_label }}" class="sw-ffield__label">{{ field.label }}{% if field.field.required %} <span class="sw-ffield__required">*</span>{% endif %}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="sw-ffield__error">{{ error }}</p>{% endfor %}
+            </div>
+            {% endfor %}
+
+            {% if not form.fields.outfit.queryset.exists %}
+            <p class="sw-fpanel__text">
+                Belum ada outfit. <a href="{% url 'digital_wardrobe:index' %}?tab=outfit&add_outfit=1">Buat outfit di Digital Wardrobe</a>
+            </p>
+            {% endif %}
+        </section>
+
+        <div class="sw-fmodal__footer">
+            <a href="{{ cancel_url }}" class="sw-fmodal__cancel" data-modal-close>Batal</a>
+            <button type="submit" class="sw-fmodal__submit sw-btn-holo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+                {{ submit_label }}
+            </button>
         </div>
     </form>
 </div>
