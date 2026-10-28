@@ -1295,13 +1295,6 @@
     font-weight: 700;
 }
 
-.acc-tag--reserved {
-    background-color: var(--sw-blush);
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-    color: var(--sw-berry);
-}
-
 .acc-tag--available {
     background-color: var(--sw-forest);
     padding-left: 0.625rem;
@@ -1343,12 +1336,6 @@
 .acc-listing__btn--swap {
     font-weight: 700;
     color: var(--sw-white);
-}
-
-.acc-listing__btn--busy {
-    background-color: var(--sw-cream);
-    font-weight: 600;
-    color: var(--sw-slate);
 }
 
 .acc-identity__bio {

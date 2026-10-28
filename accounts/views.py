@@ -75,8 +75,6 @@ def profile(request):
         )
         .select_related('clothing_item', 'user')
     )
-    for listing in swap_listings:
-        listing.is_reserved = listing.has_locking_request()
 
     return render(request, "accounts/profile.html", {
         "profile": user_profile,
@@ -149,8 +147,6 @@ def public_profile(request, username):
             )
         )
     )
-    for listing in swap_listings:
-        listing.is_reserved = listing.has_locking_request()
 
     completed_swap_count = SwapRequest.objects.filter(
         Q(requester=target_user) | Q(owner=target_user),

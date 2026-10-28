@@ -188,9 +188,6 @@ def create(request):
     if requested_item.user_id == request.user.pk:
         messages.error(request, 'Itu pakaianmu sendiri.')
         return redirect('swap_requests:index')
-    if SwapRequest.objects.is_locked(requested_item):
-        messages.error(request, 'Pakaian ini sedang dalam proses tukar dengan orang lain. Coba lagi nanti.')
-        return redirect('swap_requests:index')
 
     form = SwapRequestForm(request.POST or None, user=request.user, requested_item=requested_item)
     if request.method == 'POST' and form.is_valid():

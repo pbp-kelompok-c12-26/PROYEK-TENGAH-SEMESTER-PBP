@@ -51,8 +51,6 @@ class SwapRequestForm(forms.ModelForm):
             raise forms.ValidationError('Pakaian yang kamu minta sudah tidak tersedia untuk ditukar.')
         if item.user_id == self.user.pk:
             raise forms.ValidationError('Kamu tidak bisa mengajukan swap untuk pakaianmu sendiri.')
-        if SwapRequest.objects.is_locked(item):
-            raise forms.ValidationError('Pakaian ini sedang dalam proses tukar dengan orang lain. Coba lagi nanti.')
         offered = cleaned.get('offered_item')
         if offered and not self.instance.pk:
             duplicate = SwapRequest.objects.filter(
