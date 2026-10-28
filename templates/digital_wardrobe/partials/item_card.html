@@ -1,4 +1,9 @@
-<article id="item-{{ item.pk }}" class="wd-card">
+<article id="item-{{ item.pk }}" class="wd-card" data-item-card="{{ item.pk }}">
+    {# Checkbox mode "Pilih" (hapus banyak): hanya tampil saat body.wd-select-mode, lihat partials/bulk_delete.html #}
+    <label class="wd-card__check"{% if item.swap_request_locked %} title="Sedang dipakai dalam swap request"{% endif %}>
+        <input type="checkbox" name="items" value="{{ item.pk }}" form="bulk-delete-form" data-select-item{% if item.swap_request_locked %} disabled{% endif %}>
+        <span class="wd-sr-only">Pilih {{ item.name }}</span>
+    </label>
     <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="wd-card__photo">
         {% if item.image %}
         <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">

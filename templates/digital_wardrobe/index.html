@@ -113,6 +113,12 @@
                class="wd-chip{% if show != 'idle' %} is-active{% endif %}">Semua pakaian</a>
             <a href="?tab=pakaian&show=idle&category={{ category }}&q={{ query|urlencode }}&sort={{ sort }}"
                class="wd-chip{% if show == 'idle' %} is-active{% endif %}">Jarang dipakai</a>
+            {% if items %}
+            <button type="button" class="wd-chip wd-chip--select" data-select-toggle aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+                <span data-select-label>Pilih</span>
+            </button>
+            {% endif %}
         </div>
 
         <div class="wd-filter__row">
@@ -170,14 +176,16 @@
 
     {% if items %}
     <div class="wd-list-footer">
-        <p class="wd-list-footer__count">Menampilkan {{ shown_count }} dari {{ filtered_total }} pakaian</p>
+        <p class="wd-list-footer__count">Menampilkan <span data-shown-count>{{ shown_count }}</span> dari <span data-filtered-total>{{ filtered_total }}</span> pakaian</p>
         {% if has_more %}
         <a href="{{ more_url }}" class="wd-btn-more">Muat lebih banyak</a>
         {% endif %}
     </div>
     {% endif %}
+    {% if items %}{% include 'digital_wardrobe/partials/bulk_delete.html' %}{% endif %}
     {% endif %}
 </div>
 
 {% include 'digital_wardrobe/partials/wardrobe_js.html' %}
+<script src="{% static 'digital_wardrobe/js/bulk_delete.js' %}" defer></script>
 {% endblock %}

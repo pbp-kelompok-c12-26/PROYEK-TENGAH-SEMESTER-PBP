@@ -13,6 +13,7 @@ from .forms import ClothingItemForm, OutfitForm
 from .models import ClothingItem, Outfit
 
 PAGE_SIZE = 12
+BULK_DELETE_LIMIT = 50  # maksimal pakaian per sekali hapus banyak
 
 SORT_OPTIONS = {
     'newest': ('-created_at', 'Terbaru'),
@@ -269,6 +270,45 @@ def item_delete(request, pk):
                                   'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
     else:
         messages.success(request, f'"{name}" sudah dihapus dari lemarimu.')
+    return redirect('digital_wardrobe:index')
+
+
+# D -> Delete banyak sekaligus (bulk delete) dari mode "Pilih" di Lemari Saya
+@login_required
+@require_POST
+def item_bulk_delete(request):
+    ids = {int(value) for value in request.POST.getlist('items') if value.isdigit()}
+    if not ids:
+        error = 'Pilih minimal 1 pakaian yang ingin dihapus.'
+    elif len(ids) > BULK_DELETE_LIMIT:
+        error = f'Maksimal {BULK_DELETE_LIMIT} pakaian sekali hapus.'
+    else:
+        error = ''
+    if error:
+        if is_ajax(request):
+            return JsonResponse({'ok': False, 'message': error}, status=400)
+        messages.error(request, error)
+        return redirect('digital_wardrobe:index')
+
+    result = ClothingItem.objects.remove_many(request.user, ids)
+    removed = result['archived'] + result['deleted']
+    parts = [f'{len(removed)} pakaian dihapus dari lemarimu.' if removed else 'Tidak ada pakaian yang dihapus.']
+    if result['skipped']:
+        names = ', '.join(f'"{item.name}"' for item in result['skipped'])
+        parts.append(f'{len(result["skipped"])} dilewati karena sedang dipakai dalam swap request: {names}.')
+    if result['not_found']:
+        parts.append(f'{result["not_found"]} pakaian tidak ditemukan di lemarimu.')
+    message = ' '.join(parts)
+
+    if is_ajax(request):
+        return JsonResponse({
+            'ok': True,
+            'removed': [item.pk for item in removed],
+            'skipped': [item.pk for item in result['skipped']],
+            'total_items': ClothingItem.objects.in_wardrobe(request.user).count(),
+            'message': message,
+        })
+    (messages.success if removed else messages.info)(request, message)
     return redirect('digital_wardrobe:index')
 
 

@@ -20,6 +20,7 @@
         setTimeout(() => el.remove(), 4000);
     }
     toastBox.querySelectorAll('[data-toast]').forEach((el) => setTimeout(() => el.remove(), 4000));
+    window.WardrobeToast = toast;   // dipakai juga oleh static/digital_wardrobe/js/bulk_delete.js
 
     // ---------- Modal tambah / edit ----------
     function closeModal() {

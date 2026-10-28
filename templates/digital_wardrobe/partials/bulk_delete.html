@@ -1,0 +1,34 @@
+{% comment %}
+Hapus banyak pakaian sekaligus (mode "Pilih" di tab Pakaian).
+- Checkbox ada di tiap kartu (partials/item_card.html), terhubung ke form ini lewat atribut form="bulk-delete-form".
+- Bar bawah & checkbox hanya tampil saat <body> punya class wd-select-mode (CSS di wardrobe.css).
+- Logika: static/digital_wardrobe/js/bulk_delete.js, view: digital_wardrobe.views.item_bulk_delete.
+{% endcomment %}
+<form id="bulk-delete-form" method="post" action="{% url 'digital_wardrobe:item_bulk_delete' %}" class="wd-bulkbar" data-bulk-form>
+    {% csrf_token %}
+    <p class="wd-bulkbar__count" aria-live="polite"><b data-bulk-count>0</b> dipilih</p>
+    <div class="wd-bulkbar__actions">
+        <button type="button" class="wd-bulkbar__link" data-bulk-all>Pilih semua</button>
+        <button type="button" class="wd-bulkbar__link" data-select-toggle>Batal</button>
+        <button type="submit" class="wd-bulkbar__delete" data-bulk-submit disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>
+            Hapus terpilih
+        </button>
+    </div>
+</form>
+
+<div id="bulk-delete-modal" class="wd-dialog" role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title" hidden>
+    <div class="wd-dialog__backdrop" data-close-bulk></div>
+    <div class="wd-dialog__panel">
+        <div class="wd-dialog__stripe" aria-hidden="true"></div>
+        <h2 id="bulk-delete-title" class="wd-dialog__title">Yakin hapus <span data-bulk-total>0</span> pakaian?</h2>
+        <div class="wd-dialog__body">
+            <p>Pakaian terpilih akan dihapus dari lemarimu.</p>
+            <p class="wd-dialog__note">Pakaian yang sudah dipakai di outfit atau Kalender Outfit tetap tampil di sana dengan status <b>"Sudah dihapus dari lemari"</b>.</p>
+        </div>
+        <div class="wd-dialog__actions">
+            <button type="button" data-close-bulk class="wd-dialog__btn wd-dialog__btn--cancel">Batal</button>
+            <button type="button" data-bulk-confirm class="wd-dialog__btn wd-dialog__btn--danger">Ya, hapus</button>
+        </div>
+    </div>
+</div>
