@@ -300,6 +300,7 @@
                 if (!response.ok) throw new Error('Like request failed');
                 const result = await response.json();
                 const liked = Boolean(result.liked);
+                // Warna tombol like (pink saat disukai) diatur CSS dari atribut data-liked.
                 form.dataset.liked = liked ? 'true' : 'false';
 
                 if (submitButton) {
@@ -311,9 +312,6 @@
                         orb.classList.toggle('shadow-sm', liked);
                         const heartSvg = orb.querySelector('svg');
                         if (heartSvg) heartSvg.classList.toggle('scale-105', liked);
-                    } else {
-                        submitButton.classList.toggle('bg-[#D50959]', liked);
-                        submitButton.classList.toggle('bg-white', !liked);
                     }
                     const heartPath = submitButton.querySelector('[data-like-heart]');
                     if (heartPath) {
@@ -329,9 +327,11 @@
                     const grid = card && card.closest('[data-liked-grid]');
                     if (card) card.remove();
                     if (grid && !grid.querySelector('[data-like-card]')) {
-                        grid.classList.add('hidden');
-                        document.querySelector('[data-liked-empty]')?.classList.remove('hidden');
-                        document.querySelector('[data-liked-pagination]')?.classList.add('hidden');
+                        grid.hidden = true;
+                        const empty = document.querySelector('[data-liked-empty]');
+                        if (empty) empty.hidden = false;
+                        const pagination = document.querySelector('[data-liked-pagination]');
+                        if (pagination) pagination.hidden = true;
                     }
                 }
             } catch (error) {

@@ -1,7 +1,7 @@
-<div class="flex flex-col gap-1.5">
-    <label for="filter-{{ name }}" class="text-xs font-bold text-swNavy">{{ label }}</label>
+<div class="home-field">
+    <label for="filter-{{ name }}" class="home-field__label">{{ label }}</label>
     <select id="filter-{{ name }}" name="{{ name }}" form="catalog-filter-form"
-            class="w-full h-10 px-3 rounded-lg bg-white border border-swNavy/15 text-sm text-swNavy focus:outline-none focus:ring-2 focus:ring-swPlum/40 focus:border-swPlum">
+            class="home-select">
         <option value="">{{ placeholder }}</option>
         {% for value, text in choices %}
         <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ text }}</option>

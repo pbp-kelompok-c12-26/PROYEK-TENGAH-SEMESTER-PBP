@@ -5,14 +5,14 @@
       {% if not request.user.is_authenticated %}data-auth-required{% endif %}
       data-item-name="{{ item.name }}"
       data-remove-on-unlike="{% if request.resolver_match.view_name == 'home:liked_items' %}true{% else %}false{% endif %}"
-      class="absolute {% if compact %}top-1 right-1{% else %}top-2 right-2{% endif %} z-20">
+      class="sw-like{% if compact %} sw-like--compact{% endif %}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ request.get_full_path }}">
     <button type="submit" data-like-button
             aria-label="{% if listing.is_liked %}Hapus {{ item.name }} dari pakaian disukai{% else %}Sukai {{ item.name }}{% endif %}"
             aria-pressed="{{ listing.is_liked|yesno:'true,false' }}"
-            class="flex {% if compact %}h-9 w-9{% else %}h-11 w-11{% endif %} items-center justify-center rounded-full shadow-sm ring-1 ring-swNavy/5 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-swPlum {% if listing.is_liked %}bg-[#D50959]{% else %}bg-white{% endif %}">
-        <svg class="{% if compact %}h-6 w-6{% else %}h-7 w-7{% endif %}" viewBox="0 0 24 24" aria-hidden="true">
+            class="sw-like__btn">
+        <svg class="sw-like__icon" viewBox="0 0 24 24" aria-hidden="true">
             <defs>
                 <linearGradient id="liked-heart-{{ listing.pk }}" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#F6A9C4"/>
