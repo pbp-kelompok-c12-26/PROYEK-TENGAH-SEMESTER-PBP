@@ -669,3 +669,390 @@
         animation-duration: 2s;
     }
 }
+
+/* ---------- Form pop-up (static/js/form_modal.js) ----------
+   Gaya sama dengan pop-up "Tambah penghuni lemari digitalmu" di Lemari Saya.
+   Dipakai form Tambah/Edit Item for Swap, Jadwal Kalender Outfit, dan Ajukan/Edit Swap Request.
+   Elemen [data-modal-content] di template form diambil script lalu ditampilkan sebagai pop-up.
+   Kalau URL form dibuka langsung (tanpa script), panel yang sama tampil di tengah halaman. */
+.sw-fmodal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.sw-fmodal[hidden] {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .sw-fmodal {
+        align-items: center;
+    }
+}
+
+.sw-fmodal__backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgb(23 31 99 / 0.4);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.sw-fmodal__slot {
+    position: relative;
+    width: 100%;
+    max-width: 56rem;
+}
+
+.sw-fmodal__slot--narrow {
+    max-width: 36rem;
+}
+
+body.sw-no-scroll {
+    overflow: hidden;
+}
+
+/* Halaman form yang dibuka langsung: panel di tengah */
+.sw-fmodal-page {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 56rem;
+}
+
+.sw-fmodal-page--narrow {
+    max-width: 36rem;
+}
+
+.sw-fmodal__panel {
+    position: relative;
+    isolation: isolate;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    background-image: linear-gradient(to bottom right, #F2B8CF, #E2CDF5, #C3D0F7);
+    padding: 1rem;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+@media (min-width: 640px) {
+    .sw-fmodal__panel {
+        padding: 1.25rem;
+    }
+}
+
+.sw-fmodal-page .sw-fmodal__panel {
+    margin-top: 0;
+    box-shadow: 0 18px 40px -20px rgb(23 31 99 / 0.35);
+}
+
+.sw-fmodal__glow {
+    pointer-events: none;
+    position: absolute;
+    right: -4rem;
+    top: -5rem;
+    z-index: -10;
+    height: 16rem;
+    width: 16rem;
+    border-radius: 9999px;
+    background-color: rgb(255 255 255 / 0.4);
+    filter: blur(64px);
+}
+
+.sw-fmodal__head {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.sw-fmodal__title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+@media (min-width: 640px) {
+    .sw-fmodal__title {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+}
+
+.sw-fmodal__close {
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    color: var(--sw-navy);
+}
+
+.sw-fmodal__close:hover {
+    background-color: rgb(255 255 255 / 0.6);
+}
+
+.sw-fmodal__close svg {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.sw-fmodal__alert {
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    background-color: var(--sw-white);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-berry);
+}
+
+.sw-fmodal__grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .sw-fmodal__grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    }
+}
+
+/* Kotak putih di dalam pop-up */
+.sw-fpanel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-radius: 1rem;
+    background-color: var(--sw-white);
+    padding: 1.25rem;
+}
+
+.sw-fpanel__title {
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.sw-fpanel__text {
+    font-size: 0.75rem;
+    line-height: 1.125rem;
+    color: var(--sw-slate);
+}
+
+.sw-fpanel__text a {
+    font-weight: 700;
+    color: var(--sw-plum);
+    text-decoration-line: underline;
+}
+
+/* Pratinjau foto pakaian (sama dengan kotak foto di form lemari) */
+.sw-fpreview {
+    display: flex;
+    aspect-ratio: 4 / 3;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    border: 1px dashed rgb(23 31 99 / 0.2);
+    background-color: var(--sw-cream);
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+/* Ada foto yang tampil (pratinjau lain yang disembunyikan dengan atribut hidden tidak dihitung) */
+.sw-fpreview:has(> img),
+.sw-fpreview:has(> :not([hidden]) img) {
+    padding: 0;
+    border-style: solid;
+}
+
+.sw-fpreview img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+/* Field: label + input + pesan */
+.sw-ffield {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.sw-ffield__label {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.sw-ffield__required {
+    color: var(--sw-berry);
+}
+
+.sw-ffield__error {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-berry);
+}
+
+.sw-ffield__hint {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.sw-ffield input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+.sw-ffield select,
+.sw-ffield textarea {
+    height: 2.5rem;
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(23 31 99 / 0.15);
+    background-color: var(--sw-white);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+    box-shadow: none;
+}
+
+.sw-ffield textarea {
+    height: auto;
+    min-height: 6.5rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    resize: vertical;
+}
+
+.sw-ffield input::placeholder,
+.sw-ffield textarea::placeholder {
+    color: rgb(86 84 106 / 0.7);
+}
+
+.sw-ffield input:not([type="hidden"]):focus,
+.sw-ffield select:focus,
+.sw-ffield textarea:focus {
+    border-color: var(--sw-plum);
+    background-color: var(--sw-white);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(96 99 180 / 0.4);
+}
+
+.sw-ffield input:disabled {
+    cursor: not-allowed;
+    background-color: var(--sw-cream);
+    color: var(--sw-slate);
+}
+
+.sw-ffield [aria-invalid="true"] {
+    border-color: var(--sw-berry);
+}
+
+.sw-frow {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .sw-frow--2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.sw-fmodal__footer {
+    margin-top: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.sw-fmodal__cancel {
+    display: inline-flex;
+    height: 2.5rem;
+    align-items: center;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(23 31 99 / 0.25);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.sw-fmodal__cancel:hover {
+    background-color: var(--sw-cream);
+}
+
+.sw-fmodal__submit {
+    display: inline-flex;
+    height: 2.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-white);
+}
+
+.sw-fmodal__submit svg {
+    height: 1rem;
+    width: 1rem;
+}
+
+.sw-fmodal__submit:disabled {
+    opacity: 0.6;
+}
+
+/* Saat isi pop-up sedang dimuat */
+.sw-fmodal__loading {
+    margin: 4rem auto;
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 9999px;
+    background-color: var(--sw-white);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+    box-shadow: 0 18px 40px -18px rgb(23 31 99 / 0.45);
+}
+
+.sw-fmodal__loading::before {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    border: 2px solid rgb(96 99 180 / 0.25);
+    border-top-color: var(--sw-plum);
+    animation: sw-location-spin .8s linear infinite;
+}

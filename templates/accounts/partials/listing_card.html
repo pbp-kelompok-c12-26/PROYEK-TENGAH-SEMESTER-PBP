@@ -52,7 +52,7 @@ Parameter: `listing` (ItemForSwap), `owner_profile` (UserProfile).
             Lihat detail
         </a>
         {% if not listing.is_reserved %}
-        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}"
+        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}" data-form-modal
            class="acc-listing__btn acc-listing__btn--swap sw-btn-holo">
             Ajukan swap
         </a>
