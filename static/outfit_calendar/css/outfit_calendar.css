@@ -15,3 +15,732 @@
      (jangan pakai nama seperti .hidden, .flex, .grid, .container).
    - Komponen yang dipakai banyak modul taruh di static/css/components.css.
    ========================================================= */
+
+/* ---------- Umum ---------- */
+.cal-page > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem;
+    margin-bottom: 0px;
+}
+
+.cal-page--narrow {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 48rem;
+}
+
+.cal-page--form {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 36rem;
+}
+
+.cal-card {
+    border-radius: 1rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+}
+
+.cal-link {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-plum);
+}
+
+.cal-link:hover {
+    text-decoration-line: underline;
+}
+
+.cal-back {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-plum);
+}
+
+.cal-back:hover {
+    text-decoration-line: underline;
+}
+
+.cal-btn {
+    display: inline-flex;
+    height: 2.75rem;
+    align-items: center;
+    border-radius: 9999px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.cal-btn--outline {
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.25);
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.cal-btn--outline:hover {
+    background-color: var(--sw-cream);
+}
+
+
+/* ---------- Pesan (_messages.html) ---------- */
+.cal-messages > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.5rem;
+    margin-bottom: 0px;
+}
+
+.cal-message {
+    border-radius: 0.75rem;
+    background-color: var(--sw-navy);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: var(--sw-white);
+}
+
+.cal-message--error {
+    background-color: var(--sw-berry);
+}
+
+
+/* ---------- Kalender bulanan (index.html) ---------- */
+.cal-no-outfit {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .cal-no-outfit {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.cal-no-outfit__text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+}
+
+.cal-no-outfit__btn {
+    display: inline-flex;
+    height: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    border-radius: 9999px;
+    background-color: var(--sw-berry);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-white);
+}
+
+.cal-no-outfit__btn:hover {
+    background-color: rgb(175 63 95 / 0.9);
+}
+
+.cal-layout {
+    display: grid;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .cal-layout {
+        grid-template-columns: 1fr 300px;
+    }
+}
+
+.cal-month {
+    padding: 1rem;
+}
+
+@media (min-width: 640px) {
+    .cal-month {
+        padding: 1.25rem;
+    }
+}
+
+.cal-month__head {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cal-month__nav {
+    display: inline-flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.15);
+    color: var(--sw-navy);
+}
+
+.cal-month__nav:hover {
+    background-color: var(--sw-cream);
+}
+
+.cal-month__center {
+    text-align: center;
+}
+
+.cal-month__title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.cal-weekdays {
+    margin-bottom: 0.25rem;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.25rem;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sw-slate);
+}
+
+@media (min-width: 640px) {
+    .cal-weekdays {
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        line-height: 1rem;
+    }
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.25rem;
+}
+
+@media (min-width: 640px) {
+    .cal-grid {
+        gap: 0.5rem;
+    }
+}
+
+
+/* Satu kotak tanggal. .is-outside = tanggal di luar bulan ini, .is-today = hari ini */
+.cal-day {
+    display: flex;
+    min-height: 64px;
+    flex-direction: column;
+    border-radius: 0.75rem;
+    padding: 0.375rem;
+    text-align: left;
+}
+
+@media (min-width: 640px) {
+    .cal-day {
+        min-height: 92px;
+        padding: 0.5rem;
+    }
+}
+
+.cal-day.is-outside {
+    opacity: 0.4;
+}
+
+
+/* Tanggal yang sudah ada jadwal */
+.cal-day--scheduled {
+    position: relative;
+    gap: 0.25rem;
+    overflow: hidden;
+    background-image: linear-gradient(to bottom right, var(--sw-berry), #C65A86, #8F86D6);
+    color: var(--sw-white);
+}
+
+.cal-day--scheduled:hover {
+    opacity: 0.9;
+}
+
+.cal-day--scheduled.is-today {
+    box-shadow: 0 0 0 1px var(--sw-white), 0 0 0 3px var(--sw-navy);
+}
+
+.cal-day__thumbs {
+    position: absolute;
+    inset: 0px;
+    display: grid;
+    gap: 1px;
+    background-color: var(--sw-white);
+}
+
+.cal-day__thumbs img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.cal-day__thumbs--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cal-day__thumbs--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.cal-day__thumbs--3 img:first-child {
+    grid-row: span 2 / span 2;
+}
+
+.cal-day__thumbs--4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.cal-day__shade {
+    position: absolute;
+    inset: 0px;
+    background-image: linear-gradient(to top, rgb(23 31 99 / 0.85), rgb(23 31 99 / 0.1), rgb(23 31 99 / 0.3));
+}
+
+.cal-day__num {
+    position: relative;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+}
+
+.cal-day__outfit {
+    position: relative;
+    margin-top: auto;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+@media (min-width: 640px) {
+    .cal-day__outfit {
+        font-size: 0.75rem;
+        line-height: 1rem;
+    }
+}
+
+
+/* Tanggal kosong: muncul "+ Jadwal" saat kursor di atasnya */
+.cal-day--empty {
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+}
+
+.cal-day--empty:hover {
+    border-color: var(--sw-plum);
+    background-color: var(--sw-cream);
+}
+
+.cal-day--empty.is-today {
+    box-shadow: 0 0 0 2px var(--sw-berry);
+}
+
+.cal-day--empty .cal-day__num {
+    color: var(--sw-navy);
+}
+
+.cal-day--empty.is-today .cal-day__num {
+    color: var(--sw-berry);
+}
+
+.cal-day__add {
+    margin-top: auto;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--sw-plum);
+    opacity: 0;
+}
+
+.cal-day--empty:hover .cal-day__add {
+    opacity: 1;
+}
+
+
+/* Daftar jadwal mendatang */
+.cal-upcoming {
+    padding: 1.25rem;
+}
+
+.cal-upcoming__title {
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.cal-upcoming__item {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    display: block;
+    border-radius: 0.5rem;
+    border-top-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.cal-upcoming__item:first-child {
+    border-top-width: 0px;
+}
+
+.cal-upcoming__item:hover {
+    background-color: var(--sw-cream);
+}
+
+.cal-upcoming__date {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-plum);
+}
+
+.cal-upcoming__name {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.cal-upcoming__note {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.cal-muted {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+
+/* ---------- Detail jadwal (schedule_detail.html) ---------- */
+.cal-worn {
+    padding: 1.25rem;
+}
+
+.cal-worn__head {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cal-worn__title {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.cal-worn__deleted-outfit {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-slate);
+}
+
+.cal-worn__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .cal-worn__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.cal-worn__item {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.1);
+}
+
+.cal-worn__item.is-deleted {
+    background-color: var(--sw-cream);
+}
+
+.cal-worn__photo {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background-color: var(--sw-blush);
+}
+
+.cal-worn__photo img {
+    height: 100%;
+    width: 100%;
+    -o-object-fit: cover;
+    object-fit: cover;
+}
+
+.cal-worn__photo img.is-faded {
+    opacity: 0.6;
+}
+
+.cal-worn__badge {
+    position: absolute;
+    left: 0.5rem;
+    top: 0.5rem;
+}
+
+.cal-worn__gone {
+    position: absolute;
+    inset: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    color: rgb(86 84 106 / 0.5);
+}
+
+.cal-worn__info {
+    padding: 0.625rem;
+}
+
+.cal-worn__name {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.cal-worn__item.is-deleted .cal-worn__name {
+    color: var(--sw-slate);
+    text-decoration-line: line-through;
+}
+
+.cal-worn__status {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-berry);
+}
+
+.cal-worn__meta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.cal-worn__empty {
+    grid-column: 1 / -1;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.cal-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.cal-actions__delete {
+    height: 2.75rem;
+    border-radius: 9999px;
+    background-color: var(--sw-berry);
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-white);
+}
+
+.cal-actions__delete:hover {
+    background-color: rgb(175 63 95 / 0.9);
+}
+
+
+/* Pop-up hapus jadwal (<dialog>) */
+.cal-dialog {
+    width: calc(100% - 2rem);
+    max-width: 24rem;
+    border-radius: 1rem;
+    padding: 0px;
+}
+
+.cal-dialog::backdrop {
+    background-color: rgb(23 31 99 / 0.4);
+}
+
+.cal-dialog__form {
+    padding: 1.5rem;
+}
+
+.cal-dialog__form > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1rem;
+    margin-bottom: 0px;
+}
+
+.cal-dialog__title {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.cal-dialog__text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.cal-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.cal-dialog__cancel {
+    height: 2.5rem;
+    border-radius: 9999px;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.25);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.cal-dialog__confirm {
+    height: 2.5rem;
+    border-radius: 9999px;
+    background-color: var(--sw-berry);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-white);
+}
+
+
+/* ---------- Form jadwal (schedule_form.html + forms.py) ---------- */
+.cal-form {
+    padding: 1.25rem;
+}
+
+.cal-form > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.25rem;
+    margin-bottom: 0px;
+}
+
+@media (min-width: 640px) {
+    .cal-form {
+        padding: 1.5rem;
+    }
+}
+
+.cal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.cal-field__label {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-navy);
+}
+
+.cal-field__error {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    color: var(--sw-berry);
+}
+
+.cal-input {
+    height: 2.75rem;
+    width: 100%;
+    border-radius: 0.75rem;
+    border-width: 1px;
+    border-color: rgb(23 31 99 / 0.15);
+    background-color: var(--sw-white);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+}
+
+.cal-input:focus {
+    border-color: var(--sw-plum);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(96 99 180 / 0.4);
+}
+
+.cal-form__notice {
+    border-radius: 0.75rem;
+    background-color: var(--sw-blush);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--sw-navy);
+}
+
+.cal-form__notice a {
+    font-weight: 700;
+    color: var(--sw-berry);
+    text-decoration-line: underline;
+}
+
+.cal-form__actions {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+.cal-form__submit {
+    height: 2.75rem;
+    border-radius: 9999px;
+    background-color: var(--sw-berry);
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    color: var(--sw-white);
+}
+
+.cal-form__submit:hover {
+    background-color: rgb(175 63 95 / 0.9);
+}

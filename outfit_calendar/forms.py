@@ -3,8 +3,8 @@ from django import forms
 from digital_wardrobe.models import Outfit
 from .models import OutfitSchedule
 
-INPUT_CLASS = ('w-full h-11 px-3 rounded-xl bg-white border border-swNavy/15 text-sm text-swNavy '
-               'focus:outline-none focus:ring-2 focus:ring-swPlum/40 focus:border-swPlum')
+# Style input ada di static/outfit_calendar/css/outfit_calendar.css
+INPUT_CLASS = 'cal-input'
 
 
 class OutfitScheduleForm(forms.ModelForm):

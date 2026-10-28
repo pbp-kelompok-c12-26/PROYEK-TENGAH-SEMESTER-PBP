@@ -1,29 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'items_for_swap/css/items_for_swap.css' %}">
+{% endblock %}
+
 {% block content %}
-<style>
-  .ifs{max-width:1200px;margin:0 auto;padding:24px 16px}
-  .ifs-info{background:#e6f7fd;border-radius:12px;padding:14px 18px;margin:16px 0;font-size:.9rem}
-  .ifs-tabs{display:flex;gap:32px;margin:24px 0 12px}
-  .ifs-tabs a{font-size:1.3rem;font-weight:600;color:#777;text-decoration:none;padding-bottom:4px}
-  .ifs-tabs a.on{color:#3a5fa8;border-bottom:2px solid #3a5fa8}
-  .ifs-search{display:flex;gap:12px;margin:16px 0}
-  .ifs-search input{flex:1;padding:12px 16px;border:1px solid #e5e5e5;border-radius:12px}
-  .ifs-search select{padding:12px;border:1px solid #e5e5e5;border-radius:12px;background:#fff}
-  .ifs-table{width:100%;background:#fff;border-radius:16px;padding:16px;border-collapse:collapse}
-  .ifs-table th{text-align:left;font-size:.75rem;color:#00007a;padding:12px 8px}
-  .ifs-table td{padding:12px 8px;border-top:1px solid #eee;vertical-align:middle}
-  .ifs-thumb{width:88px;height:88px;object-fit:cover;border-radius:10px;background:#eee}
-  .ifs-item{display:flex;gap:14px;align-items:center}
-  .ifs-item a{font-weight:600;color:#00007a;text-decoration:none}
-  .ifs-sub{font-size:.8rem;color:#666}
-  .ifs-btn{display:inline-block;padding:6px 14px;border-radius:999px;border:0;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none}
-  .ifs-btn.blue{background:#3a5fa8;color:#fff}
-  .ifs-btn.grey{background:#eee;color:#555}
-  .ifs-btn.red{background:#d0114f;color:#fff}
-  .ifs-empty{text-align:center;color:#777;padding:32px}
-  dialog.ifs-dialog{border:0;border-radius:16px;padding:24px;max-width:420px}
-  dialog.ifs-dialog::backdrop{background:rgba(0,0,0,.4)}
-</style>
 
 <div class="ifs">
   {% url 'items_for_swap:add' as add_url %}
@@ -57,7 +38,7 @@
       <tr>
         <td>
           <div class="ifs-item">
-            <div style="position:relative;flex:0 0 88px;width:88px;height:88px">
+            <div class="ifs-thumb-wrap">
               {% if listing.photo_url %}<img class="ifs-thumb" src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}<div class="ifs-thumb"></div>{% endif %}
               {% include 'home/partials/like_button.html' with listing=listing item=listing.clothing_item compact=True %}
             </div>
@@ -101,7 +82,7 @@
     <h3>Kembalikan ke lemari?</h3>
     <p>"<span id="ret-name"></span>" akan dihapus dari daftar swap dan kembali ke lemari pribadimu.</p>
     <p class="ifs-sub">Request aktif untuk item ini akan berubah menjadi Rejected. Request Completed tidak terpengaruh.</p>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
+    <div class="ifs-dialog__actions">
       <button type="button" class="ifs-btn grey" id="ret-cancel">Batal</button>
       <button type="submit" class="ifs-btn red">Ya, kembalikan</button>
     </div>
