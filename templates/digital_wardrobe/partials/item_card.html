@@ -1,4 +1,9 @@
-<article id="item-{{ item.pk }}" class="wd-card">
+<article id="item-{{ item.pk }}" class="wd-card" data-item-card="{{ item.pk }}">
+    {# Checkbox mode "Pilih" (hapus banyak): hanya tampil saat body.wd-select-mode, lihat partials/bulk_delete.html #}
+    <label class="wd-card__check"{% if item.swap_request_locked %} title="Sedang dipakai dalam swap request"{% endif %}>
+        <input type="checkbox" name="items" value="{{ item.pk }}" form="bulk-delete-form" data-select-item{% if item.swap_request_locked %} disabled{% endif %}>
+        <span class="wd-sr-only">Pilih {{ item.name }}</span>
+    </label>
     <a href="{% url 'digital_wardrobe:item_detail' item.pk %}" class="wd-card__photo">
         {% if item.image %}
         <img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy">
@@ -20,7 +25,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 6 4 4"/></svg>
             Edit
         </button>
-        <button type="button" {% if not item.swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ item.outfit_total|default:0 }}"{% endif %}
+        <button type="button" {% if not item.swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-card="item-{{ item.pk }}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ item.outfit_total|default:0 }}"{% endif %}
                 {% if item.swap_request_locked %}disabled title="Batalkan swap request aktif terlebih dahulu" aria-describedby="swap-lock-{{ item.pk }}"{% endif %}
                 class="wd-card-btn wd-card-btn--delete">
             Hapus

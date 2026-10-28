@@ -1,0 +1,43 @@
+{% comment %}
+Hasil daftar pakaian (grid, pesan kosong, "Muat lebih banyak", bar hapus banyak).
+Dikirim sendiri oleh views.index untuk request HTMX ber-target #wardrobe-results
+(filter / cari / urutkan / muat lebih banyak tanpa reload).
+{% endcomment %}
+<div id="wardrobe-results" class="wd-results">
+    <!-- GRID PAKAIAN -->
+    <div id="item-grid" class="wd-grid"{% if not items %} hidden{% endif %}>
+        {% for item in items %}
+            {% include 'digital_wardrobe/partials/item_card.html' %}
+        {% endfor %}
+    </div>
+
+    {% if not items %}
+    <div id="item-empty-state" class="wd-empty">
+        <div class="wd-empty__icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
+        {% if is_filtered %}
+        <h2 class="wd-empty__title">Tidak ada pakaian yang cocok</h2>
+        <p class="wd-empty__text">Coba kata kunci atau filter lain.</p>
+        <a href="?tab=pakaian" hx-get="?tab=pakaian" hx-target="#wardrobe-content" hx-swap="outerHTML" hx-push-url="true"
+           class="wd-btn wd-btn--outline wd-empty__action">Hapus filter</a>
+        {% else %}
+        <h2 class="wd-empty__title">Lemarimu masih kosong</h2>
+        <p class="wd-empty__text">Tambahkan pakaian pertamamu supaya gampang dipadu-padankan jadi outfit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
+                class="wd-btn wd-btn--holo sw-btn-holo wd-empty__action">
+            <span aria-hidden="true">+</span> Tambah pakaian pertama
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if items %}
+    <div class="wd-list-footer">
+        <p class="wd-list-footer__count">Menampilkan <span data-shown-count>{{ shown_count }}</span> dari <span data-filtered-total>{{ filtered_total }}</span> pakaian</p>
+        {% if has_more %}
+        <a href="{{ more_url }}" hx-get="{{ more_url }}" hx-target="#wardrobe-results" hx-swap="outerHTML" hx-push-url="true"
+           class="wd-btn-more">Muat lebih banyak</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% if items %}{% include 'digital_wardrobe/partials/bulk_delete.html' %}{% endif %}
+</div>

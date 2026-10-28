@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
-from django.db.models import Q
+from django.db import models, transaction
+from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 
@@ -26,6 +26,52 @@ class ClothingItemQuerySet(models.QuerySet):
     def listed_for_swap(self, user):
         """Pakaian milik user yang sedang ditawarkan di Items for Swap."""
         return self.active().filter(user=user, is_listed_for_swap=True)
+
+    def remove_many(self, user, ids):
+        """
+        Hapus banyak pakaian sekaligus (bulk delete) dengan aturan yang sama seperti
+        ClothingItem.remove_from_wardrobe():
+        - hanya pakaian di lemari milik `user` (id milik orang lain / tidak ada diabaikan);
+        - pakaian yang dipakai swap request Pending/Awaiting dilewati;
+        - sudah dipakai di outfit / Kalender Outfit / pernah ditawarkan: diarsipkan (soft-delete);
+        - belum pernah dipakai: dihapus permanen beserta fotonya.
+        Jumlah query tetap (tidak bertambah per pakaian) dan semuanya dalam satu transaksi.
+        Mengembalikan dict berisi daftar pakaian: archived, deleted, skipped, dan jumlah not_found.
+        """
+        from swap_requests.models import SwapRequest
+
+        ids = set(ids)
+        active_requests = SwapRequest.objects.filter(
+            status__in=(SwapRequest.PENDING, SwapRequest.AWAITING),
+        ).filter(Q(requested_item_id=OuterRef('pk')) | Q(offered_item_id=OuterRef('pk')))
+        usage = {'in_outfit': Exists(Outfit.items.through.objects.filter(clothingitem_id=OuterRef('pk')))}
+        # Relasi dari modul lain (Kalender Outfit, Items for Swap), sama seperti is_in_use()
+        for name in ('scheduled_entries', 'swap_listings'):
+            try:
+                related = self.model._meta.get_field(name)
+            except FieldDoesNotExist:
+                continue
+            usage[f'in_{name}'] = Exists(related.related_model.objects.filter(**{related.field.name: OuterRef('pk')}))
+
+        items = list(self.in_wardrobe(user).filter(pk__in=ids)
+                     .annotate(swap_locked=Exists(active_requests), **usage).order_by('name'))
+        skipped = [item for item in items if item.swap_locked]
+        removable = [item for item in items if not item.swap_locked]
+        archived = [item for item in removable if any(getattr(item, key) for key in usage)]
+        deleted = [item for item in removable if item not in archived]
+
+        with transaction.atomic():
+            if archived:
+                now = timezone.now()
+                self.filter(pk__in=[item.pk for item in archived]).update(
+                    deleted_at=now, is_listed_for_swap=False, updated_at=now)
+            if deleted:
+                images = [item.image for item in deleted if item.image]
+                self.filter(pk__in=[item.pk for item in deleted]).delete()
+                # File foto baru dihapus setelah transaksi berhasil
+                transaction.on_commit(lambda: [image.delete(save=False) for image in images])
+        return {'archived': archived, 'deleted': deleted, 'skipped': skipped,
+                'not_found': len(ids) - len(items)}
 
     def refresh_idle(self, user):
         """

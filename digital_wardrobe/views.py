@@ -1,18 +1,25 @@
+import json
+
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Exists, OuterRef, Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.cache import patch_vary_headers
 from django.views.decorators.http import require_POST
 
 from .forms import ClothingItemForm, OutfitForm
 from .models import ClothingItem, Outfit
+from .security import owner_required, rate_limit, wardrobe_login_required
 
 PAGE_SIZE = 12
+# Batas request yang mengubah data (decorator @rate_limit, lihat security.py)
+WRITE_LIMIT = 30      # tambah / edit / hapus per user per menit
+BULK_LIMIT = 10       # hapus banyak per user per menit
+BULK_DELETE_LIMIT = 50  # maksimal pakaian per sekali hapus banyak
 
 SORT_OPTIONS = {
     'newest': ('-created_at', 'Terbaru'),
@@ -37,6 +44,26 @@ def is_ajax(request):
     return request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
 
+# ---------- HTMX (filter, tab, & hapus tanpa reload; lihat static/digital_wardrobe/js/htmx-events.js) ----------
+# id elemen target (header HX-Target) -> potongan template yang dikirim balik
+HX_PARTIALS = {
+    'wardrobe-content': 'digital_wardrobe/partials/wardrobe_content.html',   # tab + isi tab
+    'wardrobe-results': 'digital_wardrobe/partials/item_results.html',       # grid pakaian + footer
+}
+
+
+def is_htmx(request):
+    return request.headers.get('HX-Request') == 'true'
+
+
+def hx_response(content='', event=None, **detail):
+    """Respons untuk HTMX + event di header HX-Trigger (ditangkap JavaScript untuk toast & angka total)."""
+    response = HttpResponse(content)
+    if event:
+        response['HX-Trigger'] = json.dumps({event: detail})
+    return response
+
+
 def _auto_open_url(request):
     """
     Modal yang dibuka otomatis lewat query string (fallback tanpa JS / dari halaman lain):
@@ -58,7 +85,7 @@ def _auto_open_url(request):
 
 
 # R -> Read: halaman Lemari Digital (daftar pakaian + filter)
-@login_required
+@wardrobe_login_required
 def index(request):
     ClothingItem.objects.refresh_idle(request.user)  # is_idle selalu terbaru tiap lemari dibuka
     user_items = ClothingItem.objects.in_wardrobe(request.user)
@@ -123,7 +150,14 @@ def index(request):
         'total_for_swap': ClothingItem.objects.listed_for_swap(request.user).count(),
         'auto_open_url': _auto_open_url(request),
     }
-    return render(request, 'digital_wardrobe/index.html', context)
+    template = 'digital_wardrobe/index.html'
+    # Request HTMX (filter / cari / urutkan / muat lebih banyak / pindah tab): kirim potongannya saja.
+    # Saat tombol Back memulihkan riwayat (HX-History-Restore-Request), kirim halaman penuh.
+    if is_htmx(request) and not request.headers.get('HX-History-Restore-Request'):
+        template = HX_PARTIALS.get(request.headers.get('HX-Target'), template)
+    response = render(request, template, context)
+    patch_vary_headers(response, ['HX-Request', 'HX-Target'])   # cache browser membedakan halaman penuh & potongan
+    return response
 
 
 LISTED_MESSAGE = '"{name}" sedang ditawarkan di Items for Swap. Kelola dari Item Swap Saya, atau kembalikan dulu ke lemari.'
@@ -139,13 +173,14 @@ def _listed_response(request, item):
 
 
 # Alamat lama daftar pakaian diarahkan ke halaman Lemari Digital
-@login_required
+@wardrobe_login_required
 def item_list(request):
     return redirect('digital_wardrobe:index')
 
 
 # R -> Read: detail 1 pakaian
-@login_required
+@wardrobe_login_required
+@owner_required(ClothingItem, 'pakaian')
 def item_detail(request, pk):
     item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
     if item.is_deleted:
@@ -181,7 +216,8 @@ def _card(request, item):
 
 
 # C -> Create: menambahkan pakaian baru (modal, tanpa reload)
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
 def item_create(request):
     if request.method == 'POST':
         form = ClothingItemForm(request.POST, request.FILES)
@@ -208,7 +244,9 @@ def item_create(request):
 
 
 # U -> Update: mengubah informasi pakaian (modal)
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(ClothingItem, 'pakaian')
 def item_update(request, pk):
     item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
     if item.is_listed_for_swap:
@@ -244,31 +282,86 @@ def item_update(request, pk):
 
 
 # D -> Delete: menghapus pakaian dari wardrobe
-@login_required
+@wardrobe_login_required
 @require_POST
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(ClothingItem, 'pakaian')
 def item_delete(request, pk):
     item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
 
     # Cegah data yatim di modul Items for Swap / Swap Request (panduan §2.3)
     if item.is_listed_for_swap:
-        messages.error(request, LISTED_MESSAGE.format(name=item.name))
+        message = LISTED_MESSAGE.format(name=item.name)
+        if is_htmx(request):   # kartu dihapus dari grid (memang tidak lagi ada di lemari)
+            return hx_response('', 'wardrobe:delete-failed', message=message)
+        messages.error(request, message)
         return redirect('digital_wardrobe:index')
     from swap_requests.models import SwapRequest
     if SwapRequest.objects.has_active_request(item):
-        messages.error(request, f'"{item.name}" sedang dipakai dalam swap request. Batalkan request terlebih dahulu sebelum menghapusnya.')
+        message = f'"{item.name}" sedang dipakai dalam swap request. Batalkan request terlebih dahulu sebelum menghapusnya.'
+        if is_htmx(request):   # kartu dikembalikan (dengan status terkunci terbaru)
+            return hx_response(_card(request, item), 'wardrobe:delete-failed', message=message)
+        messages.error(request, message)
         return redirect('digital_wardrobe:item_detail', pk=item.pk)
 
     name = item.name
     try:
         result = item.remove_from_wardrobe()
     except ValidationError as error:
-        messages.error(request, ' '.join(error.messages))
+        message = ' '.join(error.messages)
+        if is_htmx(request):
+            return hx_response(_card(request, item), 'wardrobe:delete-failed', message=message)
+        messages.error(request, message)
         return redirect('digital_wardrobe:item_detail', pk=item.pk)
     if result == 'archived':
-        messages.success(request, f'"{name}" sudah dihapus dari lemarimu. '
-                                  'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
+        message = (f'"{name}" sudah dihapus dari lemarimu. '
+                   'Di outfit & Kalender Outfit, pakaian ini tetap tampil dengan status "Sudah dihapus dari lemari".')
     else:
-        messages.success(request, f'"{name}" sudah dihapus dari lemarimu.')
+        message = f'"{name}" sudah dihapus dari lemarimu.'
+    if is_htmx(request):   # HTMX mengganti kartu dengan respons kosong = kartu hilang
+        return hx_response('', 'wardrobe:deleted', kind='item', message=message,
+                           total=ClothingItem.objects.in_wardrobe(request.user).count())
+    messages.success(request, message)
+    return redirect('digital_wardrobe:index')
+
+
+# D -> Delete banyak sekaligus (bulk delete) dari mode "Pilih" di Lemari Saya
+@wardrobe_login_required
+@require_POST
+@rate_limit('wardrobe-bulk', BULK_LIMIT)
+def item_bulk_delete(request):
+    ids = {int(value) for value in request.POST.getlist('items') if value.isdigit()}
+    if not ids:
+        error = 'Pilih minimal 1 pakaian yang ingin dihapus.'
+    elif len(ids) > BULK_DELETE_LIMIT:
+        error = f'Maksimal {BULK_DELETE_LIMIT} pakaian sekali hapus.'
+    else:
+        error = ''
+    if error:
+        if is_ajax(request):
+            return JsonResponse({'ok': False, 'message': error}, status=400)
+        messages.error(request, error)
+        return redirect('digital_wardrobe:index')
+
+    result = ClothingItem.objects.remove_many(request.user, ids)
+    removed = result['archived'] + result['deleted']
+    parts = [f'{len(removed)} pakaian dihapus dari lemarimu.' if removed else 'Tidak ada pakaian yang dihapus.']
+    if result['skipped']:
+        names = ', '.join(f'"{item.name}"' for item in result['skipped'])
+        parts.append(f'{len(result["skipped"])} dilewati karena sedang dipakai dalam swap request: {names}.')
+    if result['not_found']:
+        parts.append(f'{result["not_found"]} pakaian tidak ditemukan di lemarimu.')
+    message = ' '.join(parts)
+
+    if is_ajax(request):
+        return JsonResponse({
+            'ok': True,
+            'removed': [item.pk for item in removed],
+            'skipped': [item.pk for item in result['skipped']],
+            'total_items': ClothingItem.objects.in_wardrobe(request.user).count(),
+            'message': message,
+        })
+    (messages.success if removed else messages.info)(request, message)
     return redirect('digital_wardrobe:index')
 
 
@@ -325,7 +418,8 @@ def _outfit_modal(request, form, outfit=None):
 
 
 # C -> Create: membuat outfit dari maksimal 5 pakaian
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
 def outfit_create(request):
     if request.method == 'POST':
         form = OutfitForm(request.POST, user=request.user)
@@ -363,7 +457,8 @@ def outfit_create(request):
 
 
 # R -> Read: detail outfit
-@login_required
+@wardrobe_login_required
+@owner_required(Outfit, 'outfit')
 def outfit_detail(request, pk):
     outfit = get_object_or_404(Outfit.objects.prefetch_related('items'), pk=pk, user=request.user)
     outfit_items = outfit_items_for(outfit)
@@ -381,7 +476,9 @@ def outfit_detail(request, pk):
 
 
 # U -> Update: mengubah informasi / susunan outfit
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(Outfit, 'outfit')
 def outfit_update(request, pk):
     outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
     if request.method == 'POST':
@@ -409,8 +506,10 @@ def outfit_update(request, pk):
 
 
 # D -> Delete: menghapus outfit (pakaian di dalamnya tetap ada di lemari)
-@login_required
+@wardrobe_login_required
 @require_POST
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(Outfit, 'outfit')
 def outfit_delete(request, pk):
     outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
     name = outfit.name
@@ -420,5 +519,9 @@ def outfit_delete(request, pk):
     upcoming.delete()
     outfit.delete()
     note = f' {removed} jadwal mendatang di Kalender Outfit ikut dihapus.' if removed else ''
-    messages.success(request, f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.{note}')
+    message = f'Outfit "{name}" sudah dihapus. Pakaiannya tetap ada di lemarimu.{note}'
+    if is_htmx(request):
+        return hx_response('', 'wardrobe:deleted', kind='outfit', message=message,
+                           total=Outfit.objects.filter(user=request.user).count())
+    messages.success(request, message)
     return redirect(f"{reverse('digital_wardrobe:index')}?tab=outfit")
