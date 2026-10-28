@@ -7,7 +7,7 @@ from swap_requests.models import SwapRequest
 from .models import ItemForSwap
 
 
-PLACE_ATTRS = {'placeholder': 'Opsional, mis. Stasiun UI atau Margo City'}
+PLACE_ATTRS = {'placeholder': 'Mis. Stasiun UI atau Margo City'}
 
 
 class MeetingLocationMixin:
@@ -26,18 +26,18 @@ class MeetingLocationMixin:
 
 
 class ItemForSwapForm(MeetingLocationMixin, forms.Form):
-    """Create: pilih baju dari lemari + lokasi (wajib) + deskripsi (opsional)."""
+    """Create: pilih baju dari lemari + kab/kota + detail tempat + deskripsi (semua wajib)."""
     clothing_item = forms.ModelChoiceField(
         queryset=ClothingItem.objects.none(),
         label='Tambahkan pakaian', empty_label='Pilih pakaian',
     )
     meeting_city_code = LocationField(label='Kota/kabupaten bertemu')
     meeting_place = forms.CharField(
-        label='Detail tempat', max_length=150, required=False,
+        label='Detail tempat', max_length=150,
         widget=forms.TextInput(attrs=PLACE_ATTRS),
     )
     reason = forms.CharField(
-        label='Deskripsi', required=False,
+        label='Deskripsi',
         widget=forms.Textarea(attrs={
             'rows': 4,
             'placeholder': 'Ceritakan tentang pakaian ini, apa keinginan penukaranmu, dan lainnya...',
@@ -56,9 +56,12 @@ class ItemForSwapForm(MeetingLocationMixin, forms.Form):
     def clean_meeting_place(self):
         return self.cleaned_data['meeting_place'].strip()
 
+    def clean_reason(self):
+        return self.cleaned_data['reason'].strip()
+
 
 class ItemForSwapEditForm(MeetingLocationMixin, forms.ModelForm):
-    """Update: hanya lokasi & deskripsi. Bajunya tidak bisa diganti."""
+    """Update: hanya lokasi & deskripsi (semua wajib). Bajunya tidak bisa diganti."""
     meeting_city_code = LocationField(label='Kota/kabupaten bertemu')
 
     class Meta:
@@ -77,6 +80,9 @@ class ItemForSwapEditForm(MeetingLocationMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         listing = self.instance
         self.fields['meeting_city_code'].initial = listing.meeting_city_code
+        # Di model boleh kosong (data lama), tetapi di form wajib diisi
+        self.fields['meeting_place'].required = True
+        self.fields['reason'].required = True
         if not listing.meeting_city_code and not listing.meeting_place:
             # Listing lama (lokasi masih teks bebas): tampilkan teks lamanya sebagai detail tempat
             # supaya tidak hilang; pemilik cukup memilih kab/kota dari daftar.
@@ -84,6 +90,9 @@ class ItemForSwapEditForm(MeetingLocationMixin, forms.ModelForm):
 
     def clean_meeting_place(self):
         return (self.cleaned_data.get('meeting_place') or '').strip()
+
+    def clean_reason(self):
+        return (self.cleaned_data.get('reason') or '').strip()
 
     def save(self, commit=True):
         self.instance.set_meeting_location(self.cleaned_data['meeting_city_code'],

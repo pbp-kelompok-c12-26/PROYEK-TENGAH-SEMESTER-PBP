@@ -151,7 +151,8 @@ class LocationFormsTests(WilayahAPIMixin, TestCase):
 
     def test_add_listing_saves_structured_location(self):
         response = self.client.post(reverse('items_for_swap:add'), {
-            'clothing_item': self.item.pk, 'meeting_city_code': '3276', 'meeting_place': 'Stasiun UI', 'reason': '',
+            'clothing_item': self.item.pk, 'meeting_city_code': '3276', 'meeting_place': 'Stasiun UI',
+            'reason': 'Masih bagus, cari ukuran L',
         })
         self.assertEqual(response.status_code, 302)
         listing = ItemForSwap.objects.get(clothing_item=self.item)
@@ -174,11 +175,28 @@ class LocationFormsTests(WilayahAPIMixin, TestCase):
         response = self.client.get(reverse('items_for_swap:edit', args=[listing.pk]))
         self.assertEqual(response.context['form']['meeting_place'].value(), 'Margo City')
         response = self.client.post(reverse('items_for_swap:edit', args=[listing.pk]), {
-            'meeting_city_code': '3276', 'meeting_place': 'Margo City', 'reason': '',
+            'meeting_city_code': '3276', 'meeting_place': 'Margo City', 'reason': 'Kemeja linen',
         })
         self.assertEqual(response.status_code, 302)
         listing.refresh_from_db()
         self.assertEqual(listing.meeting_location, 'Margo City, Kota Depok, Jawa Barat')
+
+    def test_add_listing_requires_all_fields(self):
+        response = self.client.post(reverse('items_for_swap:add'), {
+            'clothing_item': '', 'meeting_city_code': '', 'meeting_place': ' ', 'reason': '',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(response.context['form'].errors),
+                         {'clothing_item', 'meeting_city_code', 'meeting_place', 'reason'})
+        self.assertFalse(ItemForSwap.objects.exists())
+
+    def test_edit_listing_requires_place_and_description(self):
+        listing = ItemForSwap.objects.create(clothing_item=self.item, user=self.user, meeting_location='Depok')
+        response = self.client.post(reverse('items_for_swap:edit', args=[listing.pk]), {
+            'meeting_city_code': '3276', 'meeting_place': '', 'reason': '',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(response.context['form'].errors), {'meeting_place', 'reason'})
 
     def test_catalog_filter_by_location_code_includes_legacy_text(self):
         other = User.objects.create_user('rico', password='Password123!')

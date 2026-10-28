@@ -58,14 +58,14 @@ Gaya: .sw-fmodal... di static/css/components.css (sama dengan pop-up form Lemari
           </div>
 
           <div class="sw-ffield">
-            <label class="sw-ffield__label" for="{{ form.meeting_place.id_for_label }}">Detail tempat bertemu</label>
+            <label class="sw-ffield__label" for="{{ form.meeting_place.id_for_label }}">Detail tempat bertemu <span class="sw-ffield__required">*</span></label>
             {{ form.meeting_place }}
             {% for e in form.meeting_place.errors %}<p class="sw-ffield__error">{{ e }}</p>{% endfor %}
           </div>
         </div>
 
         <div class="sw-ffield">
-          <label class="sw-ffield__label" for="{{ form.reason.id_for_label }}">Deskripsi</label>
+          <label class="sw-ffield__label" for="{{ form.reason.id_for_label }}">Deskripsi <span class="sw-ffield__required">*</span></label>
           {{ form.reason }}
           {% for e in form.reason.errors %}<p class="sw-ffield__error">{{ e }}</p>{% endfor %}
         </div>
@@ -117,9 +117,13 @@ Gaya: .sw-fmodal... di static/css/components.css (sama dengan pop-up form Lemari
     updatePreview();
 
     document.getElementById('open-confirm').addEventListener('click', () => {
-      if (!formEl.reportValidity()) return;
-      // Lokasi wajib dipilih dari daftar (dicek juga di server)
+      // Ada field wajib yang kosong: kirim ke server supaya pesan error tampil di bawah tiap field
+      // (pop-up konfirmasi baru muncul kalau semua field sudah diisi)
       const location = formEl.querySelector('[data-location]');
+      const cityEmpty = location && !location.querySelector('[data-location-code]').value
+                        && !location.querySelector('[data-location-input]').value.trim();
+      if (!formEl.checkValidity() || cityEmpty) { formEl.requestSubmit(); return; }
+      // Lokasi wajib dipilih dari daftar (dicek juga di server)
       if (location && location.swLocation && !location.swLocation.validate()) return;
       document.getElementById('confirm-name').textContent = select.options[select.selectedIndex].text;
       dlg.showModal();

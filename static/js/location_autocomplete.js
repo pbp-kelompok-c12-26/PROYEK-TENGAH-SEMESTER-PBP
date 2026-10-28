@@ -285,7 +285,9 @@
         }
 
         onSubmit(event) {
-            if (this.validate()) return;
+            // Kosong: biarkan terkirim, server yang menampilkan pesan wajib diisi
+            // bersama error field lain. Teks diketik tapi belum dipilih: tahan di sini.
+            if (!this.input.value.trim() || this.validate()) return;
             event.preventDefault();
             event.stopImmediatePropagation();
         }
@@ -295,8 +297,8 @@
             const text = this.input.value.trim();
             if (this.codeInput.value || (!text && this.optional)) return true;
             this.input.setAttribute('aria-invalid', 'true');
+            this.input.focus();   // fokus dulu: handler fokus bisa mengosongkan pesan status
             this.setStatus(text ? 'Pilih lokasi dari daftar rekomendasi.' : 'Wajib diisi: ketik lalu pilih kota/kabupaten.', 'error');
-            this.input.focus();
             return false;
         }
 
