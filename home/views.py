@@ -12,6 +12,7 @@ from accounts.forms import ProfileSetupForm, SizePreferenceForm
 from accounts.models import UserProfile
 from digital_wardrobe.models import ClothingItem
 from items_for_swap.models import ItemForSwap
+from . import wilayah
 from .models import LikedSwapItem
 
 PAGE_SIZE = 12
@@ -93,7 +94,8 @@ def read_filters(request):
 
     filters = {
         'q': get.get('q', '').strip(),
-        'location': get.get('location', '').strip(),
+        # Kode kab/kota dari autocomplete lokasi (teks bebas dari link lama tetap diterima)
+        'location': get.get('location', '').strip()[:100],
         'category': valid(get.get('category', ''), ClothingItem.CATEGORY_CHOICES),
         'gender': valid(get.get('gender', ''), ClothingItem.GENDER_CHOICES),
         'size': valid(get.get('size', ''), ClothingItem.SIZE_CHOICES),
@@ -119,7 +121,29 @@ def read_filters(request):
         shoe_error = 'Ukuran minimum tidak boleh lebih besar dari maksimum.'
     filters['shoe_error'] = shoe_error
     filters['shoe_bounds'] = {} if shoe_error else bounds
+
+    # Lokasi: cari nama kab/kota dari cache data wilayah untuk ditampilkan & mencocokkan data lama
+    filters['location_place'] = None
+    filters['location_code'] = ''
+    filters['location_display'] = filters['location']   # teks dari link lama
+    if wilayah.looks_like_code(filters['location']):
+        filters['location_place'] = wilayah.find_location(filters['location'])
+        filters['location_code'] = filters['location']
+        filters['location_display'] = filters['location_place']['label'] if filters['location_place'] else ''
     return filters
+
+
+def location_query(filters):
+    """Filter lokasi bertemu: kode kab/kota pilihan autocomplete, atau teks (link lama)."""
+    value = filters['location']
+    if not wilayah.looks_like_code(value):
+        return Q(meeting_location__icontains=value)
+    query = Q(meeting_city_code=value)
+    place = filters['location_place']
+    if place:
+        # Listing lama (sebelum ada autocomplete) belum punya kode: cocokkan dari teksnya.
+        query |= Q(meeting_city_code='', meeting_location__icontains=wilayah.city_keyword(place['city']))
+    return query
 
 
 def apply_filters(queryset, filters, prefix=''):
@@ -137,7 +161,7 @@ def apply_filters(queryset, filters, prefix=''):
             | Q(**{f('user__username__icontains'): query})
         )
     if filters['location'] and prefix:
-        queryset = queryset.filter(meeting_location__icontains=filters['location'])
+        queryset = queryset.filter(location_query(filters))
     for field in ('category', 'gender', 'size', 'color', 'condition'):
         if filters[field]:
             queryset = queryset.filter(**{f(field): filters[field]})
@@ -164,6 +188,30 @@ def apply_filters(queryset, filters, prefix=''):
     else:  # rekomendasi & terbaru: yang paling baru dulu
         queryset = queryset.order_by(f'-{posted_field}')
     return queryset
+
+
+def location_data(request):
+    """
+    Daftar kabupaten/kota untuk autocomplete lokasi (static/js/location_autocomplete.js).
+    Data diambil dari API Wilayah Indonesia oleh server lalu di-cache (lihat home/wilayah.py).
+    ?refresh=1 dipakai tombol "Coba lagi" untuk mengambil ulang data dari API.
+    """
+    data = wilayah.get_locations(force_refresh=request.GET.get('refresh') == '1')
+    payload = {
+        'complete': data['complete'],
+        'stale': data['stale'],
+        'error': data['error'],
+        'failed_provinces': data['failed_provinces'],
+        'province_count': data['province_count'],
+        'locations': [
+            {'code': loc['code'], 'city': loc['city'], 'province': loc['province'], 'label': loc['label']}
+            for loc in data['locations']
+        ],
+    }
+    response = JsonResponse(payload, status=503 if data['error'] else 200)
+    # Data lengkap boleh disimpan browser sebentar; data bermasalah jangan.
+    response['Cache-Control'] = 'public, max-age=3600' if data['complete'] else 'no-store'
+    return response
 
 
 def index(request):

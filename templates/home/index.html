@@ -102,11 +102,10 @@
                     {% include 'home/partials/filter_select.html' with name='color' label='Warna' placeholder='Semua warna' choices=color_choices selected=filters.color %}
                     {% include 'home/partials/filter_select.html' with name='condition' label='Kondisi' placeholder='Semua kondisi' choices=condition_choices selected=filters.condition %}
 
-                    <label for="filter-location" class="home-field">
-                        <span class="home-field__label">Lokasi bertemu</span>
-                        <input id="filter-location" type="search" name="location" form="catalog-filter-form" value="{{ filters.location }}" placeholder="Cari lokasi..."
-                               class="home-input">
-                    </label>
+                    <div class="home-field">
+                        <label for="filter-location" class="home-field__label">Lokasi bertemu</label>
+                        {% include 'home/partials/location_input.html' with name='location' input_id='filter-location' code=filters.location_code display=filters.location_display form_id='catalog-filter-form' input_class='home-input' optional=True alert='focus' placeholder='Cari kota/kabupaten...' %}
+                    </div>
 
                     <div class="home-filter__actions">
                         <button type="submit" form="catalog-filter-form" class="home-filter__apply sw-btn-holo">Terapkan filter</button>

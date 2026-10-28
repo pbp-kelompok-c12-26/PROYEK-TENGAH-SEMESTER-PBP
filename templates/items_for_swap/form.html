@@ -34,9 +34,13 @@
           <div class="ifs-error">{{ form.clothing_item.errors|join:" " }}</div>
         {% endif %}
 
-        <label for="{{ form.meeting_location.id_for_label }}">Lokasi Bertemu *</label>
-        {{ form.meeting_location }}
-        <div class="ifs-error">{{ form.meeting_location.errors|join:" " }}</div>
+        <label for="{{ form.meeting_city_code.id_for_label }}">Kota/Kabupaten Bertemu *</label>
+        {% include 'home/partials/location_input.html' with name=form.meeting_city_code.html_name input_id=form.meeting_city_code.id_for_label code=form.meeting_city_code.value display=form.meeting_city_label invalid=form.meeting_city_code.errors placeholder='Ketik kota/kabupaten, mis. Depok' %}
+        <div class="ifs-error">{{ form.meeting_city_code.errors|join:" " }}</div>
+
+        <label for="{{ form.meeting_place.id_for_label }}">Detail Tempat Bertemu</label>
+        {{ form.meeting_place }}
+        <div class="ifs-error">{{ form.meeting_place.errors|join:" " }}</div>
 
         <label for="{{ form.reason.id_for_label }}">Deskripsi</label>
         {{ form.reason }}

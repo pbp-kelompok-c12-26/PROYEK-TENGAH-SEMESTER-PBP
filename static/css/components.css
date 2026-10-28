@@ -459,3 +459,213 @@
     height: 1.5rem;
     width: 1.5rem;
 }
+
+/* ---------- Input lokasi dengan autocomplete (home/partials/location_input.html) ----------
+   Dipakai Register, Edit Profil, Tambah/Edit Item for Swap, dan filter Jelajahi.
+   Input teksnya tetap memakai class input milik halaman masing-masing (mis. .sw-input),
+   jadi tampilannya sama dengan input lain di halaman itu. Logika: static/js/location_autocomplete.js */
+.sw-location {
+    position: relative;
+}
+
+.sw-location__field {
+    position: relative;
+}
+
+.sw-location.is-loading .sw-location__input {
+    padding-right: 2.5rem;
+}
+
+.sw-location__spinner {
+    position: absolute;
+    top: 50%;
+    right: 0.875rem;
+    width: 1rem;
+    height: 1rem;
+    margin-top: -0.5rem;
+    border-radius: 9999px;
+    border: 2px solid rgb(96 99 180 / 0.25);
+    border-top-color: var(--sw-plum);
+    animation: sw-location-spin .8s linear infinite;
+}
+
+@keyframes sw-location-spin {
+    to { transform: rotate(360deg); }
+}
+
+.sw-location .sw-location__list {
+    margin: 0;
+    list-style: none;
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    max-height: 18rem;
+    overflow-y: auto;
+    border-radius: 1rem;
+    border: 1px solid rgb(23 31 99 / 0.1);
+    background-color: var(--sw-white);
+    padding: 0.375rem;
+    box-shadow: 0 18px 40px -18px rgb(23 31 99 / 0.35);
+}
+
+.sw-location__option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    border-radius: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sw-location__option:hover,
+.sw-location__option.is-active {
+    background-color: var(--sw-blush);
+}
+
+.sw-location__city {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    color: var(--sw-navy);
+}
+
+.sw-location__province {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--sw-slate);
+}
+
+.sw-location__empty {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    color: var(--sw-slate);
+}
+
+.sw-location__status {
+    margin-top: 0.375rem;
+    font-size: 0.75rem;
+    line-height: 1.125rem;
+    color: var(--sw-slate);
+}
+
+.sw-location__status--warn {
+    color: #8A5A00;
+}
+
+.sw-location__status--error {
+    font-weight: 600;
+    color: var(--sw-berry);
+}
+
+.sw-location__retry {
+    font-weight: 700;
+    color: var(--sw-plum);
+    text-decoration-line: underline;
+}
+
+.sw-location__retry:hover {
+    color: var(--sw-navy);
+}
+
+@media (max-width: 639px) {
+    .sw-location__list {
+        max-height: 15rem;
+    }
+
+    .sw-location__option {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+
+/* Pop-up saat API wilayah bermasalah (dibuat oleh location_autocomplete.js) */
+.sw-location-dialog {
+    margin: auto;
+    width: calc(100% - 2rem);
+    max-width: 26rem;
+    border-radius: 1.5rem;
+    padding: 0;
+    box-shadow: 0 24px 48px -20px rgb(23 31 99 / 0.45);
+}
+
+.sw-location-dialog::backdrop {
+    background-color: rgb(23 31 99 / 0.4);
+}
+
+.sw-location-dialog__body {
+    padding: 1.75rem 1.5rem 1.5rem;
+    text-align: center;
+}
+
+.sw-location-dialog__icon {
+    display: inline-flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: var(--sw-blush);
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: var(--sw-berry);
+}
+
+.sw-location-dialog__title {
+    margin-top: 0.875rem;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-navy);
+}
+
+.sw-location-dialog__text {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.375rem;
+    color: var(--sw-slate);
+}
+
+.sw-location-dialog__actions {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.625rem;
+}
+
+.sw-location-dialog__close,
+.sw-location-dialog__retry {
+    height: 2.75rem;
+    border-radius: 9999px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.sw-location-dialog__close {
+    border: 1px solid rgb(23 31 99 / 0.2);
+    color: var(--sw-navy);
+}
+
+.sw-location-dialog__close:hover {
+    background-color: var(--sw-cream);
+}
+
+.sw-location-dialog__retry {
+    color: var(--sw-white);
+}
+
+.sw-location-dialog__retry:disabled {
+    opacity: .7;
+    cursor: wait;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sw-location__spinner {
+        animation-duration: 2s;
+    }
+}

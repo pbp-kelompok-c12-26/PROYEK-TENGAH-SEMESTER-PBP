@@ -1,0 +1,37 @@
+{% load static %}{% comment %}
+Input lokasi (kabupaten/kota) dengan autocomplete dari API Wilayah Indonesia.
+Dipakai di Register, Edit Profil, Tambah/Edit Item for Swap, dan filter Jelajahi.
+
+Parameter:
+  name        nama field yang dikirim (berisi KODE kab/kota), mis. form.domicile_code.html_name
+  input_id    id input teks (supaya <label for="..."> tetap terhubung)
+  code        kode yang sedang terpilih (boleh kosong)
+  display     teks yang tampil di input, mis. "Kota Bogor, Jawa Barat"
+  placeholder teks petunjuk (opsional)
+  input_class class input teks, mis. 'sw-input sw-input--line' (opsional)
+  form_id     isi atribut form="..." kalau input berada di luar <form> (opsional, mis. filter Jelajahi)
+  invalid     True kalau field ini sedang error (opsional)
+  optional    True kalau boleh dikosongkan, mis. filter (opsional)
+  alert       'load' (default): pop-up muncul begitu halaman dibuka kalau API bermasalah
+              'focus': pop-up baru muncul saat input dipakai
+
+Cara kerja: static/js/location_autocomplete.js. Data & validasi server: home/wilayah.py.
+{% endcomment %}
+<div class="sw-location" data-location data-source="{% url 'home:location_data' %}" data-alert="{{ alert|default:'load' }}"{% if optional %} data-optional{% endif %}>
+    <div class="sw-location__field">
+        <input type="text" id="{{ input_id }}"{% if form_id %} form="{{ form_id }}"{% endif %}
+               class="{% if input_class %}{{ input_class }} {% endif %}sw-location__input"
+               value="{{ display|default:'' }}"
+               placeholder="{{ placeholder|default:'Ketik nama kota/kabupaten...' }}"
+               autocomplete="off" spellcheck="false"
+               role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="{{ input_id }}-list" aria-describedby="{{ input_id }}-status"
+               {% if invalid %}aria-invalid="true"{% endif %}
+               data-location-input>
+        <span class="sw-location__spinner" aria-hidden="true" data-location-spinner hidden></span>
+    </div>
+    <input type="hidden" name="{{ name }}" value="{{ code|default_if_none:'' }}"{% if form_id %} form="{{ form_id }}"{% endif %} data-location-code>
+    <ul id="{{ input_id }}-list" class="sw-location__list" role="listbox" data-location-list hidden></ul>
+    <p id="{{ input_id }}-status" class="sw-location__status" aria-live="polite" data-location-status hidden></p>
+</div>
+<script src="{% static 'js/location_autocomplete.js' %}" defer></script>
