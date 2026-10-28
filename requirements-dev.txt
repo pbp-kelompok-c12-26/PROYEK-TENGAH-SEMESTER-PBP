@@ -1,0 +1,4 @@
+# Hanya untuk development & testing (TIDAK dipasang di PWS).
+# Pasang dengan: pip install -r requirements-dev.txt
+-r requirements.txt
+coverage>=7.6

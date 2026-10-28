@@ -1,0 +1,104 @@
+{% comment %}
+Tab Koleksi Pakaian / Koleksi Outfit beserta isinya.
+Dikirim sendiri oleh views.index untuk request HTMX ber-target #wardrobe-content (pindah tab tanpa reload).
+{% endcomment %}
+<div id="wardrobe-content">
+    <!-- TABS -->
+    <div class="wd-tabs" hx-target="#wardrobe-content" hx-swap="outerHTML" hx-push-url="true">
+        <a href="?tab=pakaian" hx-get="?tab=pakaian" class="wd-tab{% if tab != 'outfit' %} is-active{% endif %}"
+           {% if tab != 'outfit' %}aria-current="page"{% endif %}>Koleksi Pakaian{% if tab != 'outfit' %}<span class="wd-tab__underline" aria-hidden="true"></span>{% endif %}</a>
+        <a href="?tab=outfit" hx-get="?tab=outfit" class="wd-tab{% if tab == 'outfit' %} is-active{% endif %}"
+           {% if tab == 'outfit' %}aria-current="page"{% endif %}>Koleksi Outfit{% if tab == 'outfit' %}<span class="wd-tab__underline" aria-hidden="true"></span>{% endif %}</a>
+    </div>
+
+    {% if tab == 'outfit' %}
+    <!-- KOLEKSI OUTFIT -->
+    <div class="wd-toolbar">
+        <p class="wd-toolbar__hint">Padukan sampai 5 pakaian dari lemarimu menjadi satu outfit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
+                class="wd-btn wd-btn--holo sw-btn-holo wd-toolbar__action">
+            <span aria-hidden="true">+</span> Buat outfit
+        </button>
+    </div>
+
+    <div id="outfit-grid" class="wd-grid"{% if not outfits %} hidden{% endif %}>
+        {% for outfit in outfits %}
+            {% include 'digital_wardrobe/partials/outfit_card.html' %}
+        {% endfor %}
+    </div>
+
+    {% if not outfits %}
+    <div id="outfit-empty-state" class="wd-empty">
+        <div class="wd-empty__icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M32 29 V25 C32 22 37 21 37 17 C37 14 35 12 32 12 C29 12 27 14 27 16" stroke-width="3.5"/><path d="M6 50 L32 29 L58 50 Q60 52 57 52 H7 Q4 52 6 50 Z" stroke-width="3.5"/><path d="M24 43 H40 M27 39 L22 43 L27 47 M37 39 L42 43 L37 47" stroke-width="3"/></svg></div>
+        <h2 class="wd-empty__title">Belum ada outfit</h2>
+        {% if total_items %}
+        <p class="wd-empty__text">Pilih beberapa pakaian dari lemarimu dan simpan sebagai outfit favorit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:outfit_create' %}"
+                class="wd-btn wd-btn--holo sw-btn-holo wd-empty__action">
+            <span aria-hidden="true">+</span> Buat outfit pertama
+        </button>
+        {% else %}
+        <p class="wd-empty__text">Tambahkan pakaian ke lemarimu dulu, baru padu-padankan jadi outfit.</p>
+        <button type="button" data-open-modal="{% url 'digital_wardrobe:item_create' %}"
+                class="wd-btn wd-btn--holo sw-btn-holo wd-empty__action">
+            <span aria-hidden="true">+</span> Tambah pakaian
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+
+    <!-- FILTER -->
+    {# HTMX: setiap perubahan filter mengambil ulang #wardrobe-results saja (tanpa reload), URL ikut berubah #}
+    <form method="get" class="wd-filter"
+          hx-get="{% url 'digital_wardrobe:index' %}" hx-target="#wardrobe-results" hx-swap="outerHTML"
+          hx-push-url="true" hx-sync="this:replace" hx-indicator="#wardrobe-results"
+          hx-trigger="change, input changed delay:350ms from:find input[name=q], submit">
+        <input type="hidden" name="tab" value="pakaian">
+
+        <div class="wd-chips">
+            <label class="wd-chip wd-chip--radio">
+                <input type="radio" name="show" value="all"{% if show != 'idle' %} checked{% endif %}>Semua pakaian
+            </label>
+            <label class="wd-chip wd-chip--radio">
+                <input type="radio" name="show" value="idle"{% if show == 'idle' %} checked{% endif %}>Jarang dipakai
+            </label>
+            {# Tampil hanya kalau ada bar hapus banyak (#bulk-delete-form) di hasil, lihat wardrobe.css #}
+            <button type="button" class="wd-chip wd-chip--select" data-select-toggle aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+                <span data-select-label>Pilih</span>
+            </button>
+        </div>
+
+        <div class="wd-filter__row">
+            <label class="wd-search">
+                <span class="wd-sr-only">Cari di lemari saya</span>
+                <svg class="wd-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" name="q" value="{{ query }}" placeholder="Cari di lemari saya..." class="wd-search__input">
+            </label>
+            <div class="wd-filter__selects">
+                <label class="wd-filter__select-wrap">
+                    <span class="wd-sr-only">Kategori</span>
+                    <select name="category" class="wd-select">
+                        <option value="">Semua kategori</option>
+                        {% for value, label in category_choices %}
+                        <option value="{{ value }}" {% if value == category %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="wd-filter__select-wrap">
+                    <span class="wd-sr-only">Urutkan</span>
+                    <select name="sort" class="wd-select">
+                        {% for value, label in sort_choices %}
+                        <option value="{{ value }}" {% if value == sort %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </div>
+        </div>
+        <noscript><button type="submit" class="wd-btn wd-btn--outline">Terapkan filter</button></noscript>
+    </form>
+
+    {% include 'digital_wardrobe/partials/item_results.html' %}
+    {% endif %}
+</div>
