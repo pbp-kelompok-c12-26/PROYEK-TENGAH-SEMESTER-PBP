@@ -163,6 +163,22 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Tempat menyimpan file upload (foto pakaian, foto profil, dll.)
+# - PWS (PRODUCTION=True + env CLOUDINARY_URL diisi): disimpan di Cloudinary, karena folder media/
+#   di server PWS ikut kosong setiap kali aplikasi di-deploy ulang. Lihat PROJECTS/storage.py.
+# - Laptop & saat test: tetap di folder media/ (MEDIA_ROOT).
+# CLOUDINARY_URL berisi kunci API -> hanya di environment variable PWS / file .env, JANGAN di-commit.
+USE_CLOUDINARY = PRODUCTION and bool(os.getenv('CLOUDINARY_URL'))
+STORAGES = {
+    'default': {
+        'BACKEND': 'PROJECTS.storage.CloudinaryMediaStorage' if USE_CLOUDINARY
+        else 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
