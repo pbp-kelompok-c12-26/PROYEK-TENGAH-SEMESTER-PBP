@@ -1825,7 +1825,7 @@
     position: relative;
     overflow: hidden;
     border-radius: 1.5rem;
-    background-image: linear-gradient(to right, var(--sw-blush), #D9D9E2, #7895C5);
+    background-image: linear-gradient(to bottom right, var(--sw-berry), #C65A86, #8F86D6);
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     padding-top: 1.75rem;
@@ -1862,7 +1862,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: var(--sw-plum);
+    color: rgb(255 255 255 / 0.8);
 }
 
 .home-liked-hero__title {
@@ -1870,7 +1870,7 @@
     font-size: 1.5rem;
     line-height: 2rem;
     font-weight: 800;
-    color: var(--sw-navy);
+    color: var(--sw-white);
 }
 
 @media (min-width: 640px) {
@@ -1884,7 +1884,7 @@
     margin-top: 0.5rem;
     font-size: 0.875rem;
     line-height: 1.25rem;
-    color: rgb(23 31 99 / 0.7);
+    color: rgb(255 255 255 / 0.9);
 }
 
 .home-liked-hero__link {

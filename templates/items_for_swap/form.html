@@ -52,22 +52,42 @@ Gaya: .sw-fmodal... di static/css/components.css (sama dengan pop-up form Lemari
 
         <div class="sw-frow sw-frow--2">
           <div class="sw-ffield">
-            <label class="sw-ffield__label" for="{{ form.meeting_city_code.id_for_label }}">Kota/kabupaten bertemu <span class="sw-ffield__required">*</span></label>
+            <label class="sw-ffield__label" for="{{ form.meeting_city_code.id_for_label }}">
+              Kota/kabupaten bertemu
+              <span class="sw-ffield__required">*</span>
+            </label>
+
             {% include 'home/partials/location_input.html' with name=form.meeting_city_code.html_name input_id=form.meeting_city_code.id_for_label code=form.meeting_city_code.value display=form.meeting_city_label invalid=form.meeting_city_code.errors placeholder='Ketik kota/kabupaten, mis. Depok' %}
-            {% for e in form.meeting_city_code.errors %}<p class="sw-ffield__error">{{ e }}</p>{% endfor %}
+
+            {% for e in form.meeting_city_code.errors %}
+              <p class="sw-ffield__error">{{ e }}</p>
+            {% endfor %}
           </div>
 
           <div class="sw-ffield">
-            <label class="sw-ffield__label" for="{{ form.meeting_place.id_for_label }}">Detail tempat bertemu <span class="sw-ffield__required">*</span></label>
+            <label class="sw-ffield__label" for="{{ form.meeting_place.id_for_label }}">
+              Detail tempat bertemu
+              <span class="sw-ffield__required">*</span>
+            </label>
+
             {{ form.meeting_place }}
-            {% for e in form.meeting_place.errors %}<p class="sw-ffield__error">{{ e }}</p>{% endfor %}
+
+            {% for e in form.meeting_place.errors %}
+              <p class="sw-ffield__error">{{ e }}</p>
+            {% endfor %}
           </div>
         </div>
 
         <div class="sw-ffield">
-          <label class="sw-ffield__label" for="{{ form.reason.id_for_label }}">Deskripsi <span class="sw-ffield__required">*</span></label>
+          <label class="sw-ffield__label" for="{{ form.reason.id_for_label }}">
+            Deskripsi (opsional)
+          </label>
+
           {{ form.reason }}
-          {% for e in form.reason.errors %}<p class="sw-ffield__error">{{ e }}</p>{% endfor %}
+
+          {% for e in form.reason.errors %}
+            <p class="sw-ffield__error">{{ e }}</p>
+          {% endfor %}
         </div>
       </section>
     </div>
