@@ -134,6 +134,7 @@ class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["phone_number"].required = True
+        self.fields["phone_number"].error_messages["required"] = "Wajib diisi."
         self.fields["domicile_code"].initial = self.instance.domicile_code
 
     @property

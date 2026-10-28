@@ -7,64 +7,93 @@
 {% block content %}
 
 <div class="ifs-form">
-  <h1>{% if is_edit %}Edit penawaran {{ listing.clothing_item.name|lower }}{% else %}Tambahkan pakaian untuk ditukar{% endif %}</h1>
-  <form method="post" id="ifs-form" novalidate>
+  <header class="ifs-form__head">
+    <p class="ifs-form__eyebrow">ITEM SWAP SAYA</p>
+    <h1 class="ifs-form__title">{% if is_edit %}Edit penawaran{% else %}Tambahkan pakaian untuk ditukar{% endif %}</h1>
+    <p class="ifs-form__lead">{% if is_edit %}Ubah lokasi bertemu atau deskripsi untuk <strong>{{ listing.clothing_item.name }}</strong>.{% else %}Pilih pakaian dari lemarimu, tentukan lokasi bertemu, lalu tawarkan ke pengguna lain.{% endif %}</p>
+  </header>
+
+  <form method="post" id="ifs-form" class="ifs-form__shell" novalidate>
     {% csrf_token %}
-    <div class="ifs-cols">
-      <div class="ifs-card">
-        <h2>Pakaian terpilih</h2>
-        <div class="ifs-preview" id="preview">
-          {% if is_edit %}
-            {% if listing.photo_url %}<img src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}{{ listing.clothing_item.name }}{% endif %}
-          {% else %}
-            Tambahkan pakaian dari wardrobe-mu untuk melihat pratinjau
-          {% endif %}
-        </div>
-      </div>
-      <div class="ifs-card">
-        <h2>Informasi item</h2>
-        {% if form.non_field_errors %}<div class="ifs-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    {% include 'digital_wardrobe/partials/holo_bg.html' %}
+    <div class="ifs-form__inner">
+      <div class="ifs-cols">
+        <section class="ifs-card ifs-card--preview" aria-labelledby="ifs-preview-title">
+          <h2 id="ifs-preview-title" class="ifs-card__title">Pakaian terpilih</h2>
+          <p class="ifs-card__sub">Pratinjau pakaian dari lemarimu.</p>
+          <div class="ifs-preview" id="preview">
+            {% if is_edit %}
+              {% if listing.photo_url %}<img src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}{{ listing.clothing_item.name }}{% endif %}
+            {% else %}
+              Tambahkan pakaian dari wardrobe-mu untuk melihat pratinjau
+            {% endif %}
+          </div>
+        </section>
 
+        <section class="ifs-card" aria-labelledby="ifs-info-title">
+          <h2 id="ifs-info-title" class="ifs-card__title">Informasi item</h2>
+          <p class="ifs-card__sub">Lokasi bertemu membantu calon penukar menyesuaikan jadwal COD.</p>
+          {% if form.non_field_errors %}<div class="ifs-form-alert" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+          <div class="ifs-fields">
+            <div class="ifs-field">
+              {% if is_edit %}
+                <label class="ifs-label">Pakaian</label>
+                <input type="text" value="{{ listing.clothing_item.name }}" disabled>
+              {% else %}
+                <label class="ifs-label" for="{{ form.clothing_item.id_for_label }}">Tambahkan pakaian <span class="ifs-required">*</span></label>
+                {{ form.clothing_item }}
+                {% for e in form.clothing_item.errors %}<p class="ifs-error">{{ e }}</p>{% endfor %}
+              {% endif %}
+            </div>
+
+            <div class="ifs-field">
+              <label class="ifs-label" for="{{ form.meeting_city_code.id_for_label }}">Kota/kabupaten bertemu <span class="ifs-required">*</span></label>
+              {% include 'home/partials/location_input.html' with name=form.meeting_city_code.html_name input_id=form.meeting_city_code.id_for_label code=form.meeting_city_code.value display=form.meeting_city_label invalid=form.meeting_city_code.errors placeholder='Ketik kota/kabupaten, mis. Depok' %}
+              {% for e in form.meeting_city_code.errors %}<p class="ifs-error">{{ e }}</p>{% endfor %}
+            </div>
+
+            <div class="ifs-field">
+              <label class="ifs-label" for="{{ form.meeting_place.id_for_label }}">Detail tempat bertemu</label>
+              {{ form.meeting_place }}
+              <p class="ifs-hint">Opsional. Tempat spesifik di kota tersebut.</p>
+              {% for e in form.meeting_place.errors %}<p class="ifs-error">{{ e }}</p>{% endfor %}
+            </div>
+
+            <div class="ifs-field">
+              <label class="ifs-label" for="{{ form.reason.id_for_label }}">Deskripsi</label>
+              {{ form.reason }}
+              {% for e in form.reason.errors %}<p class="ifs-error">{{ e }}</p>{% endfor %}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="ifs-actions">
+        <a class="ifs-form-btn ifs-form-btn--ghost" href="{% url 'items_for_swap:index' %}">Batal</a>
         {% if is_edit %}
-          <label>Pakaian</label>
-          <input type="text" value="{{ listing.clothing_item.name }}" disabled>
+          <button type="submit" class="ifs-form-btn ifs-form-btn--primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+            Simpan perubahan
+          </button>
         {% else %}
-          <label for="{{ form.clothing_item.id_for_label }}">Tambahkan pakaian *</label>
-          {{ form.clothing_item }}
-          <div class="ifs-error">{{ form.clothing_item.errors|join:" " }}</div>
+          <button type="button" class="ifs-form-btn ifs-form-btn--primary" id="open-confirm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+            Tambah ke items for swap
+          </button>
         {% endif %}
-
-        <label for="{{ form.meeting_city_code.id_for_label }}">Kota/Kabupaten Bertemu *</label>
-        {% include 'home/partials/location_input.html' with name=form.meeting_city_code.html_name input_id=form.meeting_city_code.id_for_label code=form.meeting_city_code.value display=form.meeting_city_label invalid=form.meeting_city_code.errors placeholder='Ketik kota/kabupaten, mis. Depok' %}
-        <div class="ifs-error">{{ form.meeting_city_code.errors|join:" " }}</div>
-
-        <label for="{{ form.meeting_place.id_for_label }}">Detail Tempat Bertemu</label>
-        {{ form.meeting_place }}
-        <div class="ifs-error">{{ form.meeting_place.errors|join:" " }}</div>
-
-        <label for="{{ form.reason.id_for_label }}">Deskripsi</label>
-        {{ form.reason }}
-        <div class="ifs-error">{{ form.reason.errors|join:" " }}</div>
       </div>
-    </div>
-    <div class="ifs-actions">
-      <a class="ifs-form-btn red" href="{% url 'items_for_swap:index' %}">Batal</a>
-      {% if is_edit %}
-        <button type="submit" class="ifs-form-btn green">✓ Simpan perubahan</button>
-      {% else %}
-        <button type="button" class="ifs-form-btn green" id="open-confirm">✓ Tambah ke items for swap</button>
-      {% endif %}
     </div>
   </form>
 </div>
 
 {% if not is_edit %}
-<dialog id="confirm-dialog" class="ifs-dialog">
-  <h3>Publish ke items for swap?</h3>
+<dialog id="confirm-dialog" class="ifs-dialog ifs-publish-dialog" aria-labelledby="confirm-title">
+  <h3 id="confirm-title">Publish ke items for swap?</h3>
   <p>"<span id="confirm-name"></span>" akan hilang dari lemarimu dan tampil untuk pengguna lain. Kamu masih bisa mengembalikannya nanti.</p>
   <div class="ifs-dialog__actions">
-    <button type="button" class="ifs-form-btn grey" id="confirm-cancel">Batal</button>
-    <button type="button" class="ifs-form-btn green" id="confirm-publish">Publish</button>
+    <button type="button" class="ifs-publish-dialog__cancel" id="confirm-cancel">Batal</button>
+    <button type="button" class="ifs-publish-dialog__ok sw-btn-holo" id="confirm-publish">Publish</button>
   </div>
 </dialog>
 {{ photo_map|json_script:"photo-map" }}
@@ -87,6 +116,9 @@
 
   document.getElementById('open-confirm').addEventListener('click', () => {
     if (!formEl.reportValidity()) return;
+    // Lokasi wajib dipilih dari daftar (dicek juga di server)
+    const location = formEl.querySelector('[data-location]');
+    if (location && location.swLocation && !location.swLocation.validate()) return;
     document.getElementById('confirm-name').textContent = select.options[select.selectedIndex].text;
     dlg.showModal();
   });

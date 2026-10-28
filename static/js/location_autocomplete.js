@@ -285,14 +285,19 @@
         }
 
         onSubmit(event) {
-            const text = this.input.value.trim();
-            if (this.codeInput.value) return;
-            if (!text && this.optional) return;
+            if (this.validate()) return;
             event.preventDefault();
             event.stopImmediatePropagation();
+        }
+
+        /** True kalau pilihan lokasi sah (atau boleh kosong). Kalau tidak, tampilkan pesan. */
+        validate() {
+            const text = this.input.value.trim();
+            if (this.codeInput.value || (!text && this.optional)) return true;
             this.input.setAttribute('aria-invalid', 'true');
             this.setStatus(text ? 'Pilih lokasi dari daftar rekomendasi.' : 'Wajib diisi: ketik lalu pilih kota/kabupaten.', 'error');
             this.input.focus();
+            return false;
         }
 
         // ---- tampilan
@@ -304,10 +309,15 @@
                 this.reportProblem(false);
                 return;
             }
-            if (normalize(query).length < MIN_CHARS || (this.codeInput.value && query === this.selectedLabel)) {
+            if (this.codeInput.value && query === this.selectedLabel) {
+                this.close();   // sudah memilih; tidak perlu rekomendasi lagi
+                return;
+            }
+            const length = normalize(query).length;
+            if (length < MIN_CHARS) {
                 this.close();
                 if (!problemMessage(this.data) && !this.legacy && this.status.dataset.kind !== 'error') {
-                    this.setStatus(normalize(query).length ? `Ketik minimal ${MIN_CHARS} huruf.` : '', 'hint');
+                    this.setStatus(length ? `Ketik minimal ${MIN_CHARS} huruf.` : '', 'hint');
                 }
                 return;
             }
