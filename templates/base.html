@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Swapdrobe{% endblock %}</title>
+    <script>
+        (() => {
+            try {
+                document.documentElement.dataset.theme = localStorage.getItem('swapdrobe-theme') === 'pink' ? 'pink' : 'light';
+            } catch (_) {
+                document.documentElement.dataset.theme = 'light';
+            }
+        })();
+    </script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +28,7 @@
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
     <!-- CSS khusus modul: diisi oleh template tiap modul -->
     {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/theme-pink.css' %}?v=1">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="sw-page">
@@ -56,6 +66,12 @@
                 <a href="{% url 'home:liked_items' %}"{% if not user.is_authenticated %} data-auth-required{% endif %} class="sw-icon-btn" aria-label="Pakaian yang kamu sukai" title="Pakaian yang kamu sukai" {% if request.resolver_match.view_name == 'home:liked_items' %}aria-current="page"{% endif %}>
                     <svg viewBox="0 0 24 24" fill="{% if request.resolver_match.view_name == 'home:liked_items' %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>
                 </a>
+                <button type="button" class="sw-theme-toggle" data-theme-toggle role="switch" aria-checked="false" aria-label="Aktifkan tema pink" title="Aktifkan tema pink">
+                    <span class="sw-theme-toggle__thumb" aria-hidden="true">
+                        <svg class="sw-theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+                        <svg class="sw-theme-toggle__pink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5 14.6 9l5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8L12 3.5Z"/></svg>
+                    </span>
+                </button>
 
                 {% if user.is_authenticated %}
                 <details class="sw-account" data-account-menu>
@@ -293,6 +309,39 @@
                 if (submitButton?.isConnected) submitButton.disabled = false;
             }
         });
+    </script>
+    <script>
+        // Simpan tema di browser supaya pilihan tetap sama setelah berpindah halaman atau sesi.
+        (() => {
+            const root = document.documentElement;
+            const toggle = document.querySelector('[data-theme-toggle]');
+            if (!toggle) return;
+
+            const applyTheme = (theme, persist = false) => {
+                const isPink = theme === 'pink';
+                root.dataset.theme = isPink ? 'pink' : 'light';
+                toggle.setAttribute('aria-checked', String(isPink));
+                const label = isPink ? 'Aktifkan tema biasa' : 'Aktifkan tema pink';
+                toggle.setAttribute('aria-label', label);
+                toggle.title = label;
+
+                if (persist) {
+                    try {
+                        localStorage.setItem('swapdrobe-theme', root.dataset.theme);
+                    } catch (_) {
+                        // Tema tetap dapat diganti selama halaman ini terbuka.
+                    }
+                }
+            };
+
+            applyTheme(root.dataset.theme);
+            toggle.addEventListener('click', () => {
+                applyTheme(root.dataset.theme === 'pink' ? 'light' : 'pink', true);
+            });
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'swapdrobe-theme') applyTheme(event.newValue);
+            });
+        })();
     </script>
     {% block scripts %}{% endblock %}
 </body>
