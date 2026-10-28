@@ -45,7 +45,14 @@ class ItemForSwap(models.Model):
     # Data baju TIDAK diduplikat: foto/nama/ukuran/kondisi diambil dari clothing_item.
     clothing_item = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name='swap_listings')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='swap_listings')
+    # Teks lokasi yang ditampilkan, mis. "Stasiun UI, Kota Depok, Jawa Barat".
     meeting_location = models.CharField('Lokasi bertemu', max_length=255)
+    # Pilihan terstruktur dari API Wilayah Indonesia (lihat home/wilayah.py) + detail tempat.
+    # Kosong untuk listing lama yang dulu diisi sebagai teks bebas.
+    meeting_city_code = models.CharField('Kode kab/kota bertemu', max_length=20, blank=True)
+    meeting_city = models.CharField('Kab/kota bertemu', max_length=100, blank=True)
+    meeting_province = models.CharField('Provinsi bertemu', max_length=100, blank=True)
+    meeting_place = models.CharField('Detail tempat bertemu', max_length=150, blank=True)
     reason = models.TextField('Deskripsi', blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=AVAILABLE)
     posted_at = models.DateTimeField(auto_now_add=True)
@@ -101,9 +108,24 @@ class ItemForSwap(models.Model):
             if self.status == self.AVAILABLE:
                 ClothingItem.objects.filter(pk=self.clothing_item_id).update(is_listed_for_swap=True)
 
+    # ---------- Lokasi bertemu ----------
+    def set_meeting_location(self, location, place=''):
+        """Isi lokasi bertemu dari dict lokasi hasil home.wilayah.LocationField."""
+        place = (place or '').strip()
+        self.meeting_city_code = location['code']
+        self.meeting_city = location['city']
+        self.meeting_province = location['province']
+        self.meeting_place = place
+        self.meeting_location = f"{place}, {location['label']}" if place else location['label']
+
+    @property
+    def meeting_area(self):
+        """Lokasi singkat untuk kartu: nama kab/kota, atau teks lama kalau belum terstruktur."""
+        return self.meeting_city or self.meeting_location
+
     # ---------- Create ----------
     @classmethod
-    def list_item(cls, clothing_item, user, meeting_location, reason=''):
+    def list_item(cls, clothing_item, user, meeting_location='', reason='', location=None, meeting_place=''):
         """Tawarkan pakaian dari lemari: buat listing + set flag, atomic."""
         with transaction.atomic():
             item = ClothingItem.objects.select_for_update().get(pk=clothing_item.pk)
@@ -117,10 +139,11 @@ class ItemForSwap(models.Model):
             has_active_request = getattr(manager, 'has_active_request', None)
             if has_active_request and has_active_request(item):
                 raise ValidationError('Pakaian ini sedang dipakai dalam swap request. Batalkan request terlebih dahulu.')
-            return cls.objects.create(
-                clothing_item=item, user=user,
-                meeting_location=meeting_location, reason=reason,
-            )
+            listing = cls(clothing_item=item, user=user, meeting_location=meeting_location, reason=reason)
+            if location:
+                listing.set_meeting_location(location, meeting_place)
+            listing.save()
+            return listing
 
     # ---------- Delete ("Kembalikan ke wardrobe") ----------
     @staticmethod

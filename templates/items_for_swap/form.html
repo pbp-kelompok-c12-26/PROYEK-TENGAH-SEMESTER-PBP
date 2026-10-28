@@ -5,89 +5,156 @@
 {% endblock %}
 
 {% block content %}
-
-<div class="ifs-form">
-  <h1>{% if is_edit %}Edit penawaran {{ listing.clothing_item.name|lower }}{% else %}Tambahkan pakaian untuk ditukar{% endif %}</h1>
-  <form method="post" id="ifs-form" novalidate>
+{% comment %}
+Form ini tampil sebagai pop-up (static/js/form_modal.js) saat dibuka dari tombol ber-atribut
+data-form-modal, atau sebagai panel di tengah halaman kalau URL-nya dibuka langsung.
+Gaya: .sw-fmodal... di static/css/components.css (sama dengan pop-up form Lemari Saya).
+{% endcomment %}
+<div class="sw-fmodal-page" data-modal-content>
+  <form method="post" action="{{ request.get_full_path }}" id="ifs-form" class="sw-fmodal__panel" novalidate>
+    <div class="sw-fmodal__glow" aria-hidden="true"></div>
     {% csrf_token %}
-    <div class="ifs-cols">
-      <div class="ifs-card">
-        <h2>Pakaian terpilih</h2>
-        <div class="ifs-preview" id="preview">
+
+    <div class="sw-fmodal__head">
+      <h2 class="sw-fmodal__title">{% if is_edit %}Edit penawaran {{ listing.clothing_item.name }}{% else %}Tambahkan pakaian untuk ditukar{% endif %}</h2>
+      <a href="{% url 'items_for_swap:index' %}" class="sw-fmodal__close" data-modal-close aria-label="Tutup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </a>
+    </div>
+
+    {% if form.non_field_errors %}<div class="sw-fmodal__alert" role="alert">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    <div class="sw-fmodal__grid">
+      <section class="sw-fpanel">
+        <h3 class="sw-fpanel__title">Pakaian terpilih</h3>
+        <div class="sw-fpreview" id="preview">
           {% if is_edit %}
             {% if listing.photo_url %}<img src="{{ listing.photo_url }}" alt="{{ listing.clothing_item.name }}">{% else %}{{ listing.clothing_item.name }}{% endif %}
           {% else %}
             Tambahkan pakaian dari wardrobe-mu untuk melihat pratinjau
           {% endif %}
         </div>
-      </div>
-      <div class="ifs-card">
-        <h2>Informasi item</h2>
-        {% if form.non_field_errors %}<div class="ifs-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      </section>
 
-        {% if is_edit %}
-          <label>Pakaian</label>
-          <input type="text" value="{{ listing.clothing_item.name }}" disabled>
-        {% else %}
-          <label for="{{ form.clothing_item.id_for_label }}">Tambahkan pakaian *</label>
-          {{ form.clothing_item }}
-          <div class="ifs-error">{{ form.clothing_item.errors|join:" " }}</div>
-        {% endif %}
+      <section class="sw-fpanel">
+        <h3 class="sw-fpanel__title">Informasi item</h3>
 
-        <label for="{{ form.meeting_location.id_for_label }}">Lokasi Bertemu *</label>
-        {{ form.meeting_location }}
-        <div class="ifs-error">{{ form.meeting_location.errors|join:" " }}</div>
+        <div class="sw-ffield">
+          {% if is_edit %}
+            <label class="sw-ffield__label">Pakaian</label>
+            <input type="text" value="{{ listing.clothing_item.name }}" disabled>
+          {% else %}
+            <label class="sw-ffield__label" for="{{ form.clothing_item.id_for_label }}">Tambahkan pakaian <span class="sw-ffield__required">*</span></label>
+            {{ form.clothing_item }}
+            {% for e in form.clothing_item.errors %}<p class="sw-ffield__error">{{ e }}</p>{% endfor %}
+          {% endif %}
+        </div>
 
-        <label for="{{ form.reason.id_for_label }}">Deskripsi (opsional)</label>
-        {{ form.reason }}
-        <div class="ifs-error">{{ form.reason.errors|join:" " }}</div>
-      </div>
+        <div class="sw-frow sw-frow--2">
+          <div class="sw-ffield">
+            <label class="sw-ffield__label" for="{{ form.meeting_city_code.id_for_label }}">
+              Kota/kabupaten bertemu
+              <span class="sw-ffield__required">*</span>
+            </label>
+
+            {% include 'home/partials/location_input.html' with name=form.meeting_city_code.html_name input_id=form.meeting_city_code.id_for_label code=form.meeting_city_code.value display=form.meeting_city_label invalid=form.meeting_city_code.errors placeholder='Ketik kota/kabupaten, mis. Depok' %}
+
+            {% for e in form.meeting_city_code.errors %}
+              <p class="sw-ffield__error">{{ e }}</p>
+            {% endfor %}
+          </div>
+
+          <div class="sw-ffield">
+            <label class="sw-ffield__label" for="{{ form.meeting_place.id_for_label }}">
+              Detail tempat bertemu
+              <span class="sw-ffield__required">*</span>
+            </label>
+
+            {{ form.meeting_place }}
+
+            {% for e in form.meeting_place.errors %}
+              <p class="sw-ffield__error">{{ e }}</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="sw-ffield">
+          <label class="sw-ffield__label" for="{{ form.reason.id_for_label }}">
+            Deskripsi (opsional)
+          </label>
+
+          {{ form.reason }}
+
+          {% for e in form.reason.errors %}
+            <p class="sw-ffield__error">{{ e }}</p>
+          {% endfor %}
+        </div>
+      </section>
     </div>
-    <div class="ifs-actions">
-      <a class="ifs-form-btn red" href="{% url 'items_for_swap:index' %}">Batal</a>
+
+    <div class="sw-fmodal__footer">
+      <a href="{% url 'items_for_swap:index' %}" class="sw-fmodal__cancel" data-modal-close>Batal</a>
       {% if is_edit %}
-        <button type="submit" class="ifs-form-btn green">✓ Simpan perubahan</button>
+        <button type="submit" class="sw-fmodal__submit sw-btn-holo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+          Simpan perubahan
+        </button>
       {% else %}
-        <button type="button" class="ifs-form-btn green" id="open-confirm">✓ Tambah ke items for swap</button>
+        <button type="button" class="sw-fmodal__submit sw-btn-holo" id="open-confirm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>
+          Tambah ke items for swap
+        </button>
       {% endif %}
     </div>
   </form>
+
+  {% if not is_edit %}
+  <dialog id="confirm-dialog" class="ifs-dialog ifs-publish-dialog" aria-labelledby="confirm-title">
+    <h3 id="confirm-title">Publish ke items for swap?</h3>
+    <p>"<span id="confirm-name"></span>" akan hilang dari lemarimu dan tampil untuk pengguna lain. Kamu masih bisa mengembalikannya nanti.</p>
+    <div class="ifs-dialog__actions">
+      <button type="button" class="ifs-publish-dialog__cancel" id="confirm-cancel">Batal</button>
+      <button type="button" class="ifs-publish-dialog__ok sw-btn-holo" id="confirm-publish">Publish</button>
+    </div>
+  </dialog>
+  {{ photo_map|json_script:"photo-map" }}
+  <script>
+  (() => {
+    const photos = JSON.parse(document.getElementById('photo-map').textContent);
+    const select = document.getElementById('{{ form.clothing_item.id_for_label }}');
+    const preview = document.getElementById('preview');
+    const placeholder = preview.textContent.trim();
+    const formEl = document.getElementById('ifs-form');
+    const dlg = document.getElementById('confirm-dialog');
+
+    function updatePreview() {
+      const url = photos[select.value];
+      preview.innerHTML = '';
+      if (url) { const img = document.createElement('img'); img.src = url; preview.appendChild(img); }
+      else { preview.textContent = select.value ? select.options[select.selectedIndex].text : placeholder; }
+    }
+    select.addEventListener('change', updatePreview);
+    updatePreview();
+
+    document.getElementById('open-confirm').addEventListener('click', () => {
+      // Ada field wajib yang kosong: kirim ke server supaya pesan error tampil di bawah tiap field
+      // (pop-up konfirmasi baru muncul kalau semua field sudah diisi)
+      const location = formEl.querySelector('[data-location]');
+      const cityEmpty = location && !location.querySelector('[data-location-code]').value
+                        && !location.querySelector('[data-location-input]').value.trim();
+      if (!formEl.checkValidity() || cityEmpty) { formEl.requestSubmit(); return; }
+      // Lokasi wajib dipilih dari daftar (dicek juga di server)
+      if (location && location.swLocation && !location.swLocation.validate()) return;
+      document.getElementById('confirm-name').textContent = select.options[select.selectedIndex].text;
+      dlg.showModal();
+    });
+    document.getElementById('confirm-cancel').addEventListener('click', () => dlg.close());
+    document.getElementById('confirm-publish').addEventListener('click', () => {
+      dlg.close();
+      formEl.requestSubmit();   // lewat event submit, jadi pop-up form tetap bisa menampilkan error
+    });
+  })();
+  </script>
+  {% endif %}
 </div>
-
-{% if not is_edit %}
-<dialog id="confirm-dialog" class="ifs-dialog">
-  <h3>Publish ke items for swap?</h3>
-  <p>"<span id="confirm-name"></span>" akan hilang dari lemarimu dan tampil untuk pengguna lain. Kamu masih bisa mengembalikannya nanti.</p>
-  <div class="ifs-dialog__actions">
-    <button type="button" class="ifs-form-btn grey" id="confirm-cancel">Batal</button>
-    <button type="button" class="ifs-form-btn green" id="confirm-publish">Publish</button>
-  </div>
-</dialog>
-{{ photo_map|json_script:"photo-map" }}
-<script>
-  const photos = JSON.parse(document.getElementById('photo-map').textContent);
-  const select = document.getElementById('{{ form.clothing_item.id_for_label }}');
-  const preview = document.getElementById('preview');
-  const placeholder = preview.textContent.trim();
-  const formEl = document.getElementById('ifs-form');
-  const dlg = document.getElementById('confirm-dialog');
-
-  function updatePreview() {
-    const url = photos[select.value];
-    preview.innerHTML = '';
-    if (url) { const img = document.createElement('img'); img.src = url; preview.appendChild(img); }
-    else { preview.textContent = select.value ? select.options[select.selectedIndex].text : placeholder; }
-  }
-  select.addEventListener('change', updatePreview);
-  updatePreview();
-
-  document.getElementById('open-confirm').addEventListener('click', () => {
-    if (!formEl.reportValidity()) return;
-    document.getElementById('confirm-name').textContent = select.options[select.selectedIndex].text;
-    dlg.showModal();
-  });
-  document.getElementById('confirm-cancel').addEventListener('click', () => dlg.close());
-  document.getElementById('confirm-publish').addEventListener('click', () => formEl.submit());
-</script>
-{% endif %}
 {% endblock %}

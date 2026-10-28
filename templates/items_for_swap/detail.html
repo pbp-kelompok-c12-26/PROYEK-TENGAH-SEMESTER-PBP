@@ -108,7 +108,7 @@
             <div class="ifs-detail__actions">
                 {% if is_owner %}
                     {% if listing.is_available %}
-                    <a href="{% url 'items_for_swap:edit' listing.pk %}" class="ifs-action ifs-action--outline">Edit listing</a>
+                    <a href="{% url 'items_for_swap:edit' listing.pk %}" data-form-modal class="ifs-action ifs-action--outline">Edit listing</a>
                     {% if listing.has_locking_request %}
                     <button type="button" disabled title="Pertukaran Awaiting harus diselesaikan atau dibatalkan bersama" class="ifs-action ifs-action--waiting">Menunggu pertukaran</button>
                     {% else %}
@@ -121,7 +121,7 @@
                         <a href="{% url 'swap_requests:detail' existing_request.pk %}" class="ifs-has-request__link">Lihat detail request &rarr;</a>
                     </div>
                 {% elif request_url %}
-                    <a href="{{ request_url }}"{% if not request.user.is_authenticated %} data-auth-required{% endif %} class="ifs-action ifs-action--swap sw-btn-holo">Ajukan swap</a>
+                    <a href="{{ request_url }}" data-form-modal{% if not request.user.is_authenticated %} data-auth-required{% endif %} class="ifs-action ifs-action--swap sw-btn-holo">Ajukan swap</a>
                 {% endif %}
             </div>
         </section>

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import tempfile
 from dotenv import load_dotenv
 from pathlib import Path
 # Load environment variables from .env file
@@ -28,6 +29,8 @@ SECRET_KEY = 'django-insecure-q$#4$b26*jp1sp=6*v+n9=(h4hvo4)lhwc$&x_yt#kxlw6_p05
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "pbpc12.pws.cs.ui.ac.id", "*.pws.cs.ui.ac.id", "*"]
+# Wajib untuk HTTPS (Django 4+): domain yang boleh mengirim form POST
+CSRF_TRUSTED_ORIGINS = ["https://*.pws.cs.ui.ac.id"]
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 
 
@@ -106,6 +109,17 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+# Cache server: dipakai untuk menyimpan data API Wilayah Indonesia (home/wilayah.py)
+# supaya tidak memanggil API setiap request. Berbasis file supaya semua proses server
+# (mis. beberapa worker gunicorn) memakai cache yang sama.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.getenv('CACHE_DIR', os.path.join(tempfile.gettempdir(), 'swapdrobe_cache')),
+        'TIMEOUT': 24 * 60 * 60,
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

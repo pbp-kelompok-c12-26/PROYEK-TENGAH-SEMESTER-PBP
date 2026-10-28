@@ -33,7 +33,7 @@
             <span class="sr-action sr-action--disabled" title="Menunggu kedua pihak menyelesaikan atau menyetujui pembatalan">Hapus swap request</span>
             {% endif %}
             {% if can_edit %}
-            <a href="{% url 'swap_requests:update' swap.pk %}" class="sr-action sr-action--edit">
+            <a href="{% url 'swap_requests:update' swap.pk %}" data-form-modal class="sr-action sr-action--edit">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>
                 Edit
             </a>

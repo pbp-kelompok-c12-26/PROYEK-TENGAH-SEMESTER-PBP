@@ -91,9 +91,9 @@
                     </div>
                     {% for e in form.profile_picture.errors %}<p class="acc-error acc-error--photo">{{ e }}</p>{% endfor %}
 
-                    <!-- Grid Display Name, Domisili, Nomor HP -->
+                    <!-- Grid: Display Name & Nomor HP berdampingan, Domisili selebar kartu (nama wilayah bisa panjang) -->
                     <div class="acc-fields">
-                        <div class="acc-fields__full">
+                        <div>
                             <label for="{{ form.display_name.id_for_label }}" class="acc-field-label acc-field-label--spaced">Display Name</label>
                             {{ form.display_name }}
                             <p class="acc-field-hint">Maksimal 15 karakter. Kosongkan jika ingin menampilkan @{{ request.user.username }}.</p>
@@ -107,11 +107,11 @@
                             {% for e in form.phone_number.errors %}<p class="acc-error acc-error--field">{{ e }}</p>{% endfor %}
                         </div>
 
-                        <div>
-                            <label for="{{ form.domicile.id_for_label }}" class="acc-field-label acc-field-label--spaced">Domisili <span class="acc-required">*</span></label>
-                            {{ form.domicile }}
-                            <p class="acc-field-hint">Kota/daerah tempat tinggal untuk lokasi ketemuan swap.</p>
-                            {% for e in form.domicile.errors %}<p class="acc-error acc-error--field">{{ e }}</p>{% endfor %}
+                        <div class="acc-fields__full">
+                            <label for="{{ form.domicile_code.id_for_label }}" class="acc-field-label acc-field-label--spaced">Domisili <span class="acc-required">*</span></label>
+                            {% include 'home/partials/location_input.html' with name=form.domicile_code.html_name input_id=form.domicile_code.id_for_label code=form.domicile_code.value display=form.domicile_label invalid=form.domicile_code.errors input_class='sw-input sw-input--line' placeholder='Ketik kota/kabupaten, mis. Depok' %}
+                            <p class="acc-field-hint">Kota/kabupaten tempat tinggal, dipilih dari daftar wilayah Indonesia.</p>
+                            {% for e in form.domicile_code.errors %}<p class="acc-error acc-error--field">{{ e }}</p>{% endfor %}
                         </div>
                     </div>
 
