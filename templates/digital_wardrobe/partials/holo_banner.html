@@ -31,6 +31,23 @@
             {% if subtitle %}
             <p class="sw-holo-banner__subtitle">{{ subtitle }}</p>
             {% endif %}
+            {% if summary_rows %}
+            <div class="mt-4 flex flex-wrap gap-3" aria-label="Ringkasan request aktif">
+                {% for row in summary_rows %}
+                <div class="inline-flex flex-wrap items-center gap-2.5 rounded-2xl border border-swNavy/10 bg-white px-4 py-3 text-xs text-swNavy shadow-[0_8px_18px_-14px_rgba(23,31,99,0.5)] sm:text-sm">
+                    <span class="mr-1 font-bold">{{ row.label }}</span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-[#DCEBFF] px-3 py-1.5 text-[#2B4C9B]">
+                        <span class="rounded-full bg-white/75 px-1.5 py-0.5 font-extrabold tabular-nums">{{ row.pending }}</span>
+                        <span class="font-semibold">Pending</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E4F3D5] px-3 py-1.5 text-[#3C6E2A]">
+                        <span class="rounded-full bg-white/75 px-1.5 py-0.5 font-extrabold tabular-nums">{{ row.awaiting }}</span>
+                        <span class="font-semibold">Awaiting exchange</span>
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
         {% if button_url and button_label %}
         <a href="{{ button_url }}" class="sw-holo-banner__button">
