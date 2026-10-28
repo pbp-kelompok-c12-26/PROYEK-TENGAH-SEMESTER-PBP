@@ -79,9 +79,10 @@ async function sendDelete() {
 
     try {
         // FormData ikut membawa checkbox ber-atribut form="bulk-delete-form" + token CSRF
-        const { response, data } = await postForm(form.action, new FormData(form));
+        const { response, data, denied } = await postForm(form.action, new FormData(form));
+        if (denied) failMessage = '';   // pesan 401/403/429 sudah ditampilkan oleh http.js
         if (!response.ok || !data?.ok) {
-            failMessage = data?.message || failMessage;
+            failMessage = failMessage && (data?.message || failMessage);
             throw new Error(failMessage);
         }
         const removed = new Set(data.removed.map(String));
@@ -98,7 +99,7 @@ async function sendDelete() {
         }, 450);
     } catch (error) {
         cards.forEach((card) => card.classList.remove('is-removing'));   // gagal: kembalikan semua
-        toast(failMessage, true);
+        if (failMessage) toast(failMessage, true);
         refresh();
     }
 }

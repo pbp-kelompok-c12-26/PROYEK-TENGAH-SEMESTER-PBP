@@ -1,8 +1,10 @@
 import json
 import shutil
 import tempfile
+from unittest import mock
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test import TestCase, override_settings
@@ -12,10 +14,19 @@ from django.urls import reverse
 from swap_requests.models import SwapRequest
 
 from .models import ClothingItem, Outfit
-from .views import BULK_DELETE_LIMIT
+from .views import BULK_DELETE_LIMIT, BULK_LIMIT, WRITE_LIMIT
 
 AJAX = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
 TEMP_MEDIA = tempfile.mkdtemp()
+# Penghitung rate limit disimpan di cache: pakai cache memori yang dikosongkan tiap test
+LOCMEM_CACHE = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'wardrobe-tests'}}
+
+
+@override_settings(CACHES=LOCMEM_CACHE)
+class WardrobeTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        cache.clear()
 
 # PNG 1x1 piksel untuk test foto
 PNG_1PX = (b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4'
@@ -23,7 +34,7 @@ PNG_1PX = (b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA)
-class BulkDeleteTests(TestCase):
+class BulkDeleteTests(WardrobeTestCase):
     """Hapus banyak pakaian sekaligus (views.item_bulk_delete + ClothingItem.objects.remove_many)."""
 
     @classmethod
@@ -32,6 +43,7 @@ class BulkDeleteTests(TestCase):
         shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
 
     def setUp(self):
+        super().setUp()
         self.user = User.objects.create_user('fanny', password='Password123!')
         self.other = User.objects.create_user('rico', password='Password123!')
         self.client.login(username='fanny', password='Password123!')
@@ -157,7 +169,9 @@ class BulkDeleteTests(TestCase):
     def test_login_required(self):
         item = self.make_item('Kaos')
         self.client.logout()
-        response = self.post([item.pk])
+        response = self.post([item.pk])                  # AJAX: 401 + pesan
+        self.assertEqual(response.status_code, 401)
+        response = self.post([item.pk], ajax=False)      # form biasa: ke halaman login
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('accounts:login'), response['Location'])
         self.assertTrue(ClothingItem.objects.filter(pk=item.pk).exists())
@@ -190,10 +204,11 @@ class BulkDeleteTests(TestCase):
         self.assertNotContains(response, 'id="bulk-delete-form"')
 
 
-class HtmxInteractionTests(TestCase):
+class HtmxInteractionTests(WardrobeTestCase):
     """Filter / pindah tab / hapus tanpa reload lewat HTMX (views.index, item_delete, outfit_delete)."""
 
     def setUp(self):
+        super().setUp()
         self.user = User.objects.create_user('fanny', password='Password123!')
         self.other = User.objects.create_user('rico', password='Password123!')
         self.client.login(username='fanny', password='Password123!')
@@ -292,10 +307,12 @@ class HtmxInteractionTests(TestCase):
         self.assertEqual(response.content, b'')
         self.assertIn('wardrobe:delete-failed', self.trigger(response))
 
-    def test_htmx_delete_other_users_item_is_404(self):
+    def test_htmx_delete_other_users_item_is_403(self):
         item = self.make_item('Blazer Rico', user=self.other)
-        response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]), **self.hx(f'item-{item.pk}'))
-        self.assertEqual(response.status_code, 404)
+        with self.assertLogs('swapdrobe.security', 'WARNING'):
+            response = self.client.post(reverse('digital_wardrobe:item_delete', args=[item.pk]), **self.hx(f'item-{item.pk}'))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['message'], 'Kamu tidak punya akses ke pakaian ini.')
         self.assertTrue(ClothingItem.objects.filter(pk=item.pk).exists())
 
     def test_delete_without_htmx_still_redirects(self):
@@ -314,3 +331,116 @@ class HtmxInteractionTests(TestCase):
     def test_cards_have_htmx_delete_hooks(self):
         item = self.make_item('Kaos Polos')
         self.assertContains(self.client.get(self.index), f'data-delete-card="item-{item.pk}"')
+
+
+class SecurityTests(WardrobeTestCase):
+    """Decorator keamanan buatan sendiri (digital_wardrobe/security.py)."""
+
+    def setUp(self):
+        super().setUp()
+        self.user = User.objects.create_user('fanny', password='Password123!')
+        self.other = User.objects.create_user('rico', password='Password123!')
+        self.client.login(username='fanny', password='Password123!')
+        self.theirs = ClothingItem.objects.create(
+            user=self.other, name='Jaket Rico', category='outerwear', size='L',
+            color='earth', condition='good', gender='unisex')
+        self.their_outfit = Outfit.objects.create(user=self.other, name='Outfit Rico')
+
+    # ---------- @owner_required: 403 + pesan jelas ----------
+    def test_other_users_item_pages_are_forbidden_with_clear_page(self):
+        urls = [reverse('digital_wardrobe:item_detail', args=[self.theirs.pk]),
+                reverse('digital_wardrobe:outfit_detail', args=[self.their_outfit.pk])]
+        for url in urls:
+            with self.subTest(url=url), self.assertLogs('swapdrobe.security', 'WARNING') as logs:
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 403)
+                self.assertTemplateUsed(response, 'digital_wardrobe/error.html')
+                self.assertContains(response, 'Kamu tidak punya akses', status_code=403)
+                self.assertContains(response, 'Kembali ke Lemari', status_code=403)
+                self.assertIn('user:', logs.output[0])
+
+    def test_other_users_data_cannot_be_changed(self):
+        cases = [
+            ('item_update', self.theirs.pk, {'name': 'Diubah'}),
+            ('item_delete', self.theirs.pk, {}),
+            ('outfit_update', self.their_outfit.pk, {'name': 'Diubah'}),
+            ('outfit_delete', self.their_outfit.pk, {}),
+        ]
+        for name, pk, data in cases:
+            with self.subTest(view=name), self.assertLogs('swapdrobe.security', 'WARNING'):
+                response = self.client.post(reverse(f'digital_wardrobe:{name}', args=[pk]), data, **AJAX)
+                self.assertEqual(response.status_code, 403)
+                self.assertFalse(response.json()['ok'])
+        self.theirs.refresh_from_db()
+        self.their_outfit.refresh_from_db()
+        self.assertEqual((self.theirs.name, self.theirs.is_deleted), ('Jaket Rico', False))
+        self.assertEqual(self.their_outfit.name, 'Outfit Rico')
+
+    def test_missing_item_is_404(self):
+        response = self.client.get(reverse('digital_wardrobe:item_detail', args=[999999]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_own_item_is_still_accessible(self):
+        mine = ClothingItem.objects.create(user=self.user, name='Kemeja', category='top', size='M',
+                                           color='neutral', condition='good', gender='unisex')
+        self.assertEqual(self.client.get(reverse('digital_wardrobe:item_detail', args=[mine.pk])).status_code, 200)
+
+    # ---------- @wardrobe_login_required ----------
+    def test_expired_session_on_ajax_returns_401_with_login_url(self):
+        self.client.logout()
+        response = self.client.get(reverse('digital_wardrobe:item_create'), **AJAX)
+        self.assertEqual(response.status_code, 401)
+        data = response.json()
+        self.assertEqual(data['message'], 'Sesi kamu sudah habis. Silakan masuk lagi.')
+        self.assertIn('next=/digital-wardrobe/', data['login_url'])
+
+    def test_expired_session_on_htmx_returns_401(self):
+        self.client.logout()
+        response = self.client.get(reverse('digital_wardrobe:index'),
+                                   HTTP_HX_REQUEST='true', HTTP_HX_TARGET='wardrobe-results')
+        self.assertEqual(response.status_code, 401)
+
+    def test_anonymous_page_visit_redirects_to_login(self):
+        self.client.logout()
+        response = self.client.get(reverse('digital_wardrobe:index'))
+        self.assertRedirects(response, f"{reverse('accounts:login')}?next=/digital-wardrobe/",
+                             fetch_redirect_response=False)
+
+    # ---------- @rate_limit ----------
+    def test_write_rate_limit(self):
+        url = reverse('digital_wardrobe:outfit_create')
+        for _ in range(WRITE_LIMIT):
+            self.assertEqual(self.client.post(url, {}, **AJAX).status_code, 400)   # form kosong, tapi dihitung
+        with self.assertLogs('swapdrobe.security', 'WARNING'):
+            response = self.client.post(url, {}, **AJAX)
+        self.assertEqual(response.status_code, 429)
+        self.assertGreaterEqual(int(response['Retry-After']), 1)
+        self.assertIn('Terlalu banyak permintaan', response.json()['message'])
+
+    def test_rate_limit_is_per_user_and_ignores_get(self):
+        url = reverse('digital_wardrobe:outfit_create')
+        for _ in range(WRITE_LIMIT + 5):
+            self.assertEqual(self.client.get(url, **AJAX).status_code, 200)   # membuka form tidak dihitung
+        for _ in range(WRITE_LIMIT):
+            self.client.post(url, {}, **AJAX)
+        self.client.login(username='rico', password='Password123!')
+        self.assertEqual(self.client.post(url, {}, **AJAX).status_code, 400)   # user lain punya kuota sendiri
+
+    def test_rate_limit_resets_in_next_window(self):
+        url = reverse('digital_wardrobe:item_bulk_delete')
+        with mock.patch('digital_wardrobe.security.time.time', return_value=1_000_000.0):
+            for _ in range(BULK_LIMIT):
+                self.client.post(url, {'items': ['1']}, **AJAX)
+            with self.assertLogs('swapdrobe.security', 'WARNING'):
+                self.assertEqual(self.client.post(url, {'items': ['1']}, **AJAX).status_code, 429)
+        with mock.patch('digital_wardrobe.security.time.time', return_value=1_000_060.0):
+            self.assertEqual(self.client.post(url, {'items': ['1']}, **AJAX).status_code, 200)
+
+    def test_rate_limited_page_request_shows_error_page(self):
+        url = reverse('digital_wardrobe:item_bulk_delete')
+        for _ in range(BULK_LIMIT):
+            self.client.post(url, {'items': ['1']})
+        with self.assertLogs('swapdrobe.security', 'WARNING'):
+            response = self.client.post(url, {'items': ['1']})
+        self.assertEqual(response.status_code, 429)
+        self.assertContains(response, 'Terlalu banyak permintaan', status_code=429)

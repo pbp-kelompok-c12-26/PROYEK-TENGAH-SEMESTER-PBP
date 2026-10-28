@@ -2,9 +2,11 @@
    - Header HX-Trigger dari server (views.hx_response):
        wardrobe:deleted       { kind, message, total }  -> toast, angka total, ambil ulang daftar kalau perlu
        wardrobe:delete-failed { message }               -> toast error
-   - Request gagal (koneksi putus / error server): kartu yang memudar dikembalikan.
+   - Request gagal (koneksi putus / error server / ditolak 401-403-429): kartu yang memudar dikembalikan
+     dan pesannya ditampilkan (lihat http.js: handleDenied).
    - Sebelum filter / pindah tab: mode "Pilih" dimatikan; sesudahnya bar hapus banyak disegarkan. */
 import { toast } from './toast.js';
+import { handleDenied } from './http.js';
 import { gridNeedsRefresh, refreshList, setTotal, updateItemCounters } from './cards.js';
 import * as bulkDelete from './bulk-delete.js';
 
@@ -30,9 +32,13 @@ export function init() {
     const restoreCards = () => {
         document.querySelectorAll('.wd-card.is-removing').forEach((card) => card.classList.remove('is-removing'));
     };
-    document.addEventListener('htmx:responseError', () => {
+    document.addEventListener('htmx:responseError', (event) => {
         restoreCards();
-        toast('Terjadi kesalahan di server. Coba lagi.', true);
+        const { xhr } = event.detail;
+        let data = null;
+        try { data = JSON.parse(xhr.responseText); } catch (error) { /* bukan JSON */ }
+        // 401 / 403 / 429 dari security.py: pesan jelas; selain itu pesan umum
+        if (!handleDenied(xhr.status, data)) toast('Terjadi kesalahan di server. Coba lagi.', true);
     });
     document.addEventListener('htmx:sendError', () => {
         restoreCards();

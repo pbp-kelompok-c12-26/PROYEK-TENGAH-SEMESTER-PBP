@@ -28,7 +28,8 @@ function show(html) {
 
 export async function open(url) {
     try {
-        const { data } = await getJson(url);
+        const { data, denied } = await getJson(url);
+        if (denied) return;   // pesan 401/403/429 sudah ditampilkan oleh http.js
         if (!data?.modal_html) {
             toast(data?.message || 'Gagal membuka form. Coba lagi.', true);
             return;
@@ -135,7 +136,8 @@ function bindForm(form) {
         const submit = form.querySelector('[data-submit]');
         submit.disabled = true;
         try {
-            const { data } = await postForm(form.action, new FormData(form));
+            const { data, denied } = await postForm(form.action, new FormData(form));
+            if (denied) return;   // form tetap terbuka supaya isian tidak hilang
             if (!data?.ok) {
                 if (data?.modal_html) show(data.modal_html);   // ada error: tampilkan form + pesan
                 else { close(); toast(data?.message || 'Gagal menyimpan.', true); }

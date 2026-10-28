@@ -1,7 +1,6 @@
 import json
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpResponse, JsonResponse
@@ -14,8 +13,12 @@ from django.views.decorators.http import require_POST
 
 from .forms import ClothingItemForm, OutfitForm
 from .models import ClothingItem, Outfit
+from .security import owner_required, rate_limit, wardrobe_login_required
 
 PAGE_SIZE = 12
+# Batas request yang mengubah data (decorator @rate_limit, lihat security.py)
+WRITE_LIMIT = 30      # tambah / edit / hapus per user per menit
+BULK_LIMIT = 10       # hapus banyak per user per menit
 BULK_DELETE_LIMIT = 50  # maksimal pakaian per sekali hapus banyak
 
 SORT_OPTIONS = {
@@ -82,7 +85,7 @@ def _auto_open_url(request):
 
 
 # R -> Read: halaman Lemari Digital (daftar pakaian + filter)
-@login_required
+@wardrobe_login_required
 def index(request):
     ClothingItem.objects.refresh_idle(request.user)  # is_idle selalu terbaru tiap lemari dibuka
     user_items = ClothingItem.objects.in_wardrobe(request.user)
@@ -170,13 +173,14 @@ def _listed_response(request, item):
 
 
 # Alamat lama daftar pakaian diarahkan ke halaman Lemari Digital
-@login_required
+@wardrobe_login_required
 def item_list(request):
     return redirect('digital_wardrobe:index')
 
 
 # R -> Read: detail 1 pakaian
-@login_required
+@wardrobe_login_required
+@owner_required(ClothingItem, 'pakaian')
 def item_detail(request, pk):
     item = get_object_or_404(ClothingItem, pk=pk, user=request.user)
     if item.is_deleted:
@@ -212,7 +216,8 @@ def _card(request, item):
 
 
 # C -> Create: menambahkan pakaian baru (modal, tanpa reload)
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
 def item_create(request):
     if request.method == 'POST':
         form = ClothingItemForm(request.POST, request.FILES)
@@ -239,7 +244,9 @@ def item_create(request):
 
 
 # U -> Update: mengubah informasi pakaian (modal)
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(ClothingItem, 'pakaian')
 def item_update(request, pk):
     item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
     if item.is_listed_for_swap:
@@ -275,8 +282,10 @@ def item_update(request, pk):
 
 
 # D -> Delete: menghapus pakaian dari wardrobe
-@login_required
+@wardrobe_login_required
 @require_POST
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(ClothingItem, 'pakaian')
 def item_delete(request, pk):
     item = get_object_or_404(ClothingItem.objects.active(), pk=pk, user=request.user)
 
@@ -317,8 +326,9 @@ def item_delete(request, pk):
 
 
 # D -> Delete banyak sekaligus (bulk delete) dari mode "Pilih" di Lemari Saya
-@login_required
+@wardrobe_login_required
 @require_POST
+@rate_limit('wardrobe-bulk', BULK_LIMIT)
 def item_bulk_delete(request):
     ids = {int(value) for value in request.POST.getlist('items') if value.isdigit()}
     if not ids:
@@ -408,7 +418,8 @@ def _outfit_modal(request, form, outfit=None):
 
 
 # C -> Create: membuat outfit dari maksimal 5 pakaian
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
 def outfit_create(request):
     if request.method == 'POST':
         form = OutfitForm(request.POST, user=request.user)
@@ -446,7 +457,8 @@ def outfit_create(request):
 
 
 # R -> Read: detail outfit
-@login_required
+@wardrobe_login_required
+@owner_required(Outfit, 'outfit')
 def outfit_detail(request, pk):
     outfit = get_object_or_404(Outfit.objects.prefetch_related('items'), pk=pk, user=request.user)
     outfit_items = outfit_items_for(outfit)
@@ -464,7 +476,9 @@ def outfit_detail(request, pk):
 
 
 # U -> Update: mengubah informasi / susunan outfit
-@login_required
+@wardrobe_login_required
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(Outfit, 'outfit')
 def outfit_update(request, pk):
     outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
     if request.method == 'POST':
@@ -492,8 +506,10 @@ def outfit_update(request, pk):
 
 
 # D -> Delete: menghapus outfit (pakaian di dalamnya tetap ada di lemari)
-@login_required
+@wardrobe_login_required
 @require_POST
+@rate_limit('wardrobe-write', WRITE_LIMIT)
+@owner_required(Outfit, 'outfit')
 def outfit_delete(request, pk):
     outfit = get_object_or_404(Outfit, pk=pk, user=request.user)
     name = outfit.name
