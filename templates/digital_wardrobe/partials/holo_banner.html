@@ -12,6 +12,7 @@
    eyebrow       Teks kecil di atas judul            'PAKAI LAGI, BAGI CERITA BARU'
    subtitle      Kalimat penjelas di bawah judul     'Kelola pakaian kamu untuk ditukar.'
    button_url    Link tombol putih di kanan          (lihat contoh di bawah)
+   button_modal  (opsional) isi apa saja agar link dibuka sebagai pop-up form (static/js/form_modal.js)
    button_label  Teks tombol                         '+ Tambahkan pakaian'
 
  Contoh lengkap dengan tombol (simpan URL ke variabel dulu pakai "as"):
@@ -50,7 +51,7 @@
             {% endif %}
         </div>
         {% if button_url and button_label %}
-        <a href="{{ button_url }}" class="sw-holo-banner__button">
+        <a href="{{ button_url }}" class="sw-holo-banner__button"{% if button_modal %} data-form-modal{% endif %}>
             {{ button_label }}
         </a>
         {% endif %}

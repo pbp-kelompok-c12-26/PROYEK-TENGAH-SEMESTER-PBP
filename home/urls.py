@@ -9,4 +9,5 @@ urlpatterns = [
     path('liked/<int:listing_id>/toggle/', views.toggle_like, name='toggle_like'),
     path('onboarding/', views.onboarding, name='onboarding'),
     path('onboarding/skip/', views.onboarding_skip, name='onboarding_skip'),
+    path('lokasi/', views.location_data, name='location_data'),
 ]

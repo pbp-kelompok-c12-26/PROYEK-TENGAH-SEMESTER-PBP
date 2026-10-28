@@ -9,7 +9,7 @@
 {% block content %}
 <div class="cal-page">
     {% url 'outfit_calendar:schedule_create' as add_url %}
-    {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='PLANNER' title='Kalender Outfit' subtitle='Rencanakan outfit harianmu dari koleksi Digital Wardrobe.' button_url=add_url button_label='+ Jadwalkan Outfit' %}
+    {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='PLANNER' title='Kalender Outfit' subtitle='Rencanakan outfit harianmu dari koleksi Digital Wardrobe.' button_url=add_url button_modal=True button_label='+ Jadwalkan Outfit' %}
 
     {% include 'outfit_calendar/_messages.html' %}
 
@@ -55,7 +55,7 @@
                 </a>
                 {% endwith %}
                 {% else %}
-                <a href="{% url 'outfit_calendar:schedule_create' %}?date={{ day.date|date:'Y-m-d' }}"
+                <a href="{% url 'outfit_calendar:schedule_create' %}?date={{ day.date|date:'Y-m-d' }}" data-form-modal
                    class="cal-day cal-day--empty{% if not day.in_month %} is-outside{% endif %}{% if day.is_today %} is-today{% endif %}">
                     <span class="cal-day__num">{{ day.date.day }}</span>
                     <span class="cal-day__add">+ Jadwal</span>

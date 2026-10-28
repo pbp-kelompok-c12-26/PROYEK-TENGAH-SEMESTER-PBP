@@ -181,116 +181,63 @@ dialog.ifs-dialog::backdrop {
 
 /* =========================================================
    Form tambah / edit item swap (items_for_swap/form.html)
-   (sebelumnya ditulis di <style> dalam template)
+   Form-nya kini tampil sebagai pop-up dengan gaya bersama .sw-fmodal
+   (static/css/components.css). Di sini hanya pop-up konfirmasi publish.
    ========================================================= */
-.ifs-form {
-    max-width: 900px;
-    margin: 24px auto;
-    padding: 24px;
-    border-radius: 24px;
-    background: linear-gradient(135deg, #e88fa0, #fbe9d0 50%, #9fb0cc);
+/* Pop-up konfirmasi publish */
+dialog.ifs-publish-dialog {
+    width: calc(100% - 2rem);
+    max-width: 26rem;
+    margin: auto;
+    border-radius: 1.5rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+    box-shadow: 0 24px 48px -20px rgb(23 31 99 / 0.45);
 }
 
-.ifs-form h1 {
-    color: #00007a;
-    font-size: 1.6rem;
-    margin: 0 0 16px;
+dialog.ifs-publish-dialog::backdrop {
+    background-color: rgb(23 31 99 / 0.4);
 }
 
-.ifs-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+.ifs-publish-dialog h3 {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    font-weight: 800;
+    color: var(--sw-navy);
 }
 
-@media (max-width: 700px) {
-    .ifs-cols {
-        grid-template-columns: 1fr;
-    }
+.ifs-publish-dialog p {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.375rem;
+    color: var(--sw-slate);
 }
 
-.ifs-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
+.ifs-publish-dialog .ifs-dialog__actions {
+    margin-top: 1.25rem;
+    gap: 0.625rem;
 }
 
-.ifs-card h2 {
-    color: #00007a;
-    font-size: 1.1rem;
-    margin: 0 0 12px;
+.ifs-publish-dialog__cancel,
+.ifs-publish-dialog__ok {
+    height: 2.75rem;
+    border-radius: 9999px;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
 }
 
-.ifs-card label {
-    display: block;
-    font-weight: 600;
-    font-size: .8rem;
-    color: #00007a;
-    margin: 12px 0 6px;
+.ifs-publish-dialog__cancel {
+    border: 1px solid rgb(23 31 99 / 0.2);
+    color: var(--sw-navy);
 }
 
-.ifs-card input,
-.ifs-card select,
-.ifs-card textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    border: 1px solid #e5e5e5;
-    border-radius: 12px;
+.ifs-publish-dialog__cancel:hover {
+    background-color: var(--sw-cream);
 }
 
-.ifs-preview {
-    background: #f1f1f5;
-    border-radius: 12px;
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: .8rem;
-    padding: 12px;
-}
-
-.ifs-preview img {
-    width: 100%;
-    border-radius: 12px;
-    display: block;
-}
-
-.ifs-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-/* Tombol besar di form (namanya beda dari .ifs-btn di halaman daftar) */
-.ifs-form-btn {
-    padding: 10px 24px;
-    border-radius: 12px;
-    border: 0;
-    font-weight: 600;
-    color: #fff;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.ifs-form-btn.red {
-    background: #d0114f;
-}
-
-.ifs-form-btn.green {
-    background: #16a34a;
-}
-
-.ifs-form-btn.grey {
-    background: #eee;
-    color: #555;
-}
-
-.ifs-error {
-    color: #d0114f;
-    font-size: .8rem;
+.ifs-publish-dialog__ok {
+    color: var(--sw-white);
 }
 
 /* =========================================================

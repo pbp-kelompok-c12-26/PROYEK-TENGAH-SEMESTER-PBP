@@ -56,7 +56,7 @@
     </section>
 
     <div class="cal-actions">
-        <a href="{% url 'outfit_calendar:schedule_update' schedule.pk %}" class="cal-btn cal-btn--outline">Edit jadwal</a>
+        <a href="{% url 'outfit_calendar:schedule_update' schedule.pk %}" data-form-modal class="cal-btn cal-btn--outline">Edit jadwal</a>
         <button type="button" onclick="document.getElementById('delete-dialog').showModal()" class="cal-actions__delete">Hapus jadwal</button>
     </div>
 </div>

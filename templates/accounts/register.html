@@ -94,7 +94,11 @@
                         <span class="acc-register__required">*</span>
                     </label>
 
-                    {{ field }}
+                    {% if field.name == 'domicile_code' %}
+                        {% include 'home/partials/location_input.html' with name=field.html_name input_id=field.id_for_label code=field.value display=form.domicile_label invalid=field.errors placeholder='Ketik kota/kabupaten, mis. Depok' %}
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
 
                     {% if field.help_text %}
                         <div class="acc-register__help">
