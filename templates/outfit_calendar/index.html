@@ -81,3 +81,32 @@
     </div>
 </div>
 {% endblock %}
+
+
+{% block scripts %}
+<script>
+// Ganti bulan tanpa reload: ambil halaman bulan tujuan pakai fetch(),
+// lalu yang diganti cuma kotak kalendernya (.cal-month).
+document.addEventListener('click', async (event) => {
+    const link = event.target.closest('.cal-month__nav, .cal-month .cal-link');
+    if (!link) return;
+    event.preventDefault();
+
+    const calendar = document.querySelector('.cal-month');
+    calendar.style.opacity = '0.5';
+    try {
+        const response = await fetch(link.href);
+        if (!response.ok) throw new Error(response.status);
+        const html = await response.text();
+        const page = new DOMParser().parseFromString(html, 'text/html');
+        calendar.replaceWith(page.querySelector('.cal-month'));
+        history.pushState({}, '', link.href);
+    } catch (error) {
+        window.location.href = link.href;  // kalau gagal, pindah halaman biasa
+    }
+});
+
+// Tombol Back/Forward browser: muat ulang supaya bulan sesuai URL
+window.addEventListener('popstate', () => window.location.reload());
+</script>
+{% endblock %}
