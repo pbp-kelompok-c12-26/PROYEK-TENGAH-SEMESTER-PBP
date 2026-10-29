@@ -437,7 +437,10 @@ def bulk_delete(request):
         processed = 0
         with transaction.atomic():
             swaps = list(_base_qs().visible_to(request.user).filter(pk__in=selected_ids)
-                         .exclude(status=SwapRequest.AWAITING).select_for_update())
+                         .exclude(status=SwapRequest.AWAITING)
+                         # Tidak perlu join item/pengguna untuk menghapus; hindari
+                         # mengunci sisi nullable dari LEFT JOIN di PostgreSQL.
+                         .select_related(None).select_for_update())
             for swap in swaps:
                 if _delete_swap_for_party(swap, request.user):
                     processed += 1
