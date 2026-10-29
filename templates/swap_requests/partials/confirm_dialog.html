@@ -18,25 +18,34 @@ Tambahkan atribut data-confirm="Teks pertanyaan" (dan opsional data-confirm-yes=
     if (!dialog) return;
     const okBtn = dialog.querySelector('[data-confirm-ok]');
     let pending = null;
-    document.querySelectorAll('form[data-confirm]').forEach((form) => {
-        form.addEventListener('submit', (e) => {
-            if (form.dataset.confirmed === '1') return;
-            e.preventDefault();
-            pending = { form, submitter: e.submitter };
-            dialog.querySelector('[data-confirm-text]').textContent = form.dataset.confirm;
-            okBtn.textContent = form.dataset.confirmYes || 'Ya, lanjutkan';
-            const danger = form.dataset.confirmDanger === '1';
-            okBtn.classList.toggle('sw-btn-holo', !danger);
-            okBtn.classList.toggle('sr-dialog__ok--danger', danger);  // tombol merah untuk aksi berbahaya
-            dialog.showModal();
-        });
-    });
+    // Tangkap sebelum event mencapai handler submit HTMX di form. Kalau hanya
+    // preventDefault pada fase bubble, HTMX bisa mengirim request lebih dulu.
+    document.addEventListener('submit', (e) => {
+        const form = e.target.closest('form[data-confirm]');
+        if (!form) return;
+        if (form.dataset.confirmed === '1') {
+            delete form.dataset.confirmed;
+            return;
+        }
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        pending = { form, submitter: e.submitter };
+        dialog.querySelector('[data-confirm-text]').textContent = form.dataset.confirm;
+        okBtn.textContent = form.dataset.confirmYes || 'Ya, lanjutkan';
+        const danger = form.dataset.confirmDanger === '1';
+        okBtn.classList.toggle('sw-btn-holo', !danger);
+        okBtn.classList.toggle('sr-dialog__ok--danger', danger);
+        dialog.showModal();
+    }, true);
     dialog.querySelector('[data-confirm-cancel]').addEventListener('click', () => dialog.close());
     okBtn.addEventListener('click', () => {
         if (!pending) return;
-        pending.form.dataset.confirmed = '1';
+        const { form, submitter } = pending;
+        pending = null;
+        form.dataset.confirmed = '1';
         dialog.close();
-        pending.form.requestSubmit(pending.submitter || undefined);
+        if (submitter) form.requestSubmit(submitter);
+        else form.requestSubmit();
     });
 })();
 </script>

@@ -1,0 +1,12 @@
+<div id="sr-detail-root" class="sr-detail">
+    <section class="sr-panel">
+        {% include 'swap_requests/partials/messages.html' %}
+        <h1 class="sr-panel__title">Permintaan Swap</h1>
+        <p class="sr-message-text">{% if delete_failed %}Request tidak dapat dihapus selama menunggu pertukaran. Muat kembali detail untuk melihat status terbaru.{% else %}Aksi sudah diproses sesuai status request.{% endif %}</p>
+        {% if delete_failed %}
+        <a href="{% url 'swap_requests:detail' swap.pk %}" class="sr-btn sr-btn--holo sw-btn-holo">Kembali ke detail request</a>
+        {% else %}
+        <a href="{% url 'swap_requests:index' %}?tab={{ tab }}" class="sr-btn sr-btn--holo sw-btn-holo">Kembali ke Permintaan Swap</a>
+        {% endif %}
+    </section>
+</div>

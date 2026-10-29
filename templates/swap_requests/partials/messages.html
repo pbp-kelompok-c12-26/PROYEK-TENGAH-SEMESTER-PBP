@@ -1,5 +1,5 @@
 {% if messages %}
-<div class="sr-messages">
+<div class="sr-messages" role="status" aria-live="polite">
     {% for message in messages %}
     <div class="sr-message{% if message.tags == 'error' %} sr-message--error{% endif %}">{{ message }}</div>
     {% endfor %}
