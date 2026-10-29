@@ -119,11 +119,16 @@
         if (title) {
             title.id = title.id || 'sw-fmodal-title';
             overlay.setAttribute('aria-labelledby', title.id);
+        } else if (content.getAttribute('aria-labelledby')) {
+            overlay.setAttribute('aria-labelledby', content.getAttribute('aria-labelledby'));
         }
         // Fokus ke field yang error, atau field pertama
         const errorField = slot.querySelector('.sw-ffield__error')?.closest('.sw-ffield');
         const first = (errorField || slot).querySelector('input:not([type="hidden"]):not([disabled]), select, textarea');
         if (first) first.focus({ preventScroll: true });
+        else if (content.hasAttribute('data-modal-success')) {
+            slot.querySelector('[data-modal-success]')?.focus({ preventScroll: true });
+        }
         overlay.scrollTop = 0;
     }
 
@@ -162,7 +167,16 @@
                 credentials: 'same-origin',
             });
             if (response.redirected) {
-                window.location.assign(response.url);   // berhasil: ke halaman tujuan view
+                const html = await response.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                if (doc.querySelector('[data-modal-content][data-modal-success]')) {
+                    // Swap request berhasil: tampilkan konfirmasi di modal yang sama,
+                    // tanpa meninggalkan halaman katalog/form asal.
+                    currentUrl = response.url;
+                    await render(html, response.url);
+                    return;
+                }
+                window.location.assign(response.url);   // redirect sukses fitur lain
                 return;
             }
             await render(await response.text(), response.url);   // ada error: tampilkan lagi

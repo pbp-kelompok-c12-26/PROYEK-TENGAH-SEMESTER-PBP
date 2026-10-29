@@ -1,0 +1,279 @@
+/* Tema Pink: lapisan warna latar saja; tipografi dan warna teks tetap dari tema standar. */
+:root {
+    --sw-theme-pink-berry: #d5306d;
+    --sw-theme-pink-mist: #ff90b7;
+    --sw-theme-pink-page: #f6d8e1;
+    --sw-theme-pink-surface: #fff7f6;
+    --sw-theme-pink-raised: #fff0f2;
+    --sw-theme-pink-soft: #f5cbd8;
+    --sw-theme-pink-hover: #f1cbd7;
+    --sw-theme-pink-border: #e4b3c3;
+}
+
+html[data-theme="pink"] {
+    --sw-cream: var(--sw-theme-pink-page);
+    --sw-blush: var(--sw-theme-pink-soft);
+    --sw-lilac: #f5e6f0;
+}
+
+html[data-theme="pink"] .sw-page {
+    background-color: var(--sw-theme-pink-page);
+    background-image: linear-gradient(125deg, #f2cbd8 0%, #f8dce2 38%, #ffe4d2 72%, #f2c9dc 100%);
+}
+
+html[data-theme="pink"] .sw-header,
+html[data-theme="pink"] .sw-account__menu,
+html[data-theme="pink"] .sw-auth-dialog,
+html[data-theme="pink"] .sw-holo-banner__button,
+html[data-theme="pink"] .sw-holo-summary,
+html[data-theme="pink"] :is(
+    .acc-listing, .acc-identity, .acc-stat, .acc-empty, .acc-delete-dialog,
+    .acc-form-card, .acc-hero__btn, .acc-btn--save, .acc-infobox, .cal-card,
+    .home-card, .home-filter, .home-empty, .home-liked-empty,
+    .home-liked-hero__link, .home-slide__btn-white, .home-collage,
+    .home-polaroid, .home-sticker--like-new, .home-onb-card,
+    .home-welcome__point, .home-welcome__tag, .home-onb-back,
+    .ifs-table, .ifs-card, .ifs-photo-card, .ifs-spec, .ifs-about,
+    .ifs-other, .sr-filter:not(.is-active), .sr-list, .sr-panel,
+    .sr-form__panel, .sr-sent__card, .sr-action--edit, .sr-btn--white,
+    .sr-confirm__value, .sr-contact, .wd-empty, .wd-card, .wd-btn-more,
+    .wd-dialog__panel, .wd-modal__alert, .wd-panel, .wd-spec, .wd-note,
+    .wd-pick__info, .wd-outfit-items__empty, .wd-tile
+) {
+    border-color: var(--sw-theme-pink-border);
+    background-color: var(--sw-theme-pink-surface);
+}
+
+html[data-theme="pink"] .sw-header {
+    box-shadow: 0 1px 0 rgb(175 63 95 / 0.16);
+}
+
+html[data-theme="pink"] .sw-footer__card {
+    background-color: #a83e63;
+}
+
+html[data-theme="pink"] .sw-nav {
+    border-color: var(--sw-theme-pink-border);
+}
+
+html[data-theme="pink"] .sw-account__toggle,
+html[data-theme="pink"] .sw-account__head,
+html[data-theme="pink"] .sw-auth-dialog__divider {
+    border-color: var(--sw-theme-pink-border);
+}
+
+html[data-theme="pink"] :is(
+    .sw-page input:not([type="checkbox"]):not([type="radio"]),
+    .sw-page select, .sw-page textarea, .sw-input,
+    .home-search__input, .home-sort__select, .home-input, .home-select,
+    .ifs-search input, .ifs-search select, .ifs-card input, .ifs-card select,
+    .ifs-card textarea, .wd-search__input, .wd-select, .wd-input,
+    .wd-textarea, .cal-input, .sr-confirm__select, .sr-input, .sr-textarea,
+    .acc-login form input, .acc-register form input, .acc-register form select,
+    .acc-register form textarea
+) {
+    border-color: var(--sw-theme-pink-border);
+    background-color: var(--sw-theme-pink-raised);
+    transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+html[data-theme="pink"] :is(
+    [role="listbox"], [role="option"], .location-autocomplete__list,
+    .location-autocomplete__option
+) {
+    border-color: var(--sw-theme-pink-border);
+    background-color: #fff5f5;
+}
+
+html[data-theme="pink"] :is([role="option"], .location-autocomplete__option):hover,
+html[data-theme="pink"] [role="option"][aria-selected="true"] {
+    background-color: var(--sw-theme-pink-soft);
+}
+
+html[data-theme="pink"] :is(.sw-input:focus, .home-input:focus, .ifs-card :is(input, select, textarea):focus, .sr-form :is(input, select, textarea):focus, .wd-form :is(input, select, textarea):focus) {
+    background-color: #fffdfc;
+    border-color: #d788a7;
+}
+
+/* Info surfaces and empty frames use the warmer blush / caramel side of the palette. */
+html[data-theme="pink"] :is(
+    .ifs-info, .ifs-preview, .ifs-has-request, .sr-note, .sr-callout--info,
+    .sr-callout--contact, .sr-confirm__box, .sr-form__notice,
+    .cal-form__notice, .acc-form-alert, .acc-login-error, .acc-privacy,
+    .acc-danger__box, .wd-info
+) {
+    background-color: #fce9ed;
+    border-color: #e9bdc9;
+}
+
+html[data-theme="pink"] :is(
+    .acc-listing__photo, .ifs-thumb, .ifs-photo-card__img, .ifs-other__photo,
+    .sr-thumb, .sr-party__photo, .cal-day__thumbs, .cal-worn__photo,
+    .wd-card__photo, .wd-detail__photo, .wd-tile__photo
+) {
+    background-color: #f4dcdd;
+}
+
+html[data-theme="pink"] .home-polaroid__pic--mint,
+html[data-theme="pink"] .home-collage__cell--3 {
+    background-color: #f4e3c9;
+}
+
+html[data-theme="pink"] .home-collage__cell--2 {
+    background-color: #f0dce9;
+}
+
+html[data-theme="pink"] .home-collage__cell--5 {
+    background-color: #f5dfc9;
+}
+
+html[data-theme="pink"] .wd-stat {
+    background-color: rgb(255 247 246 / 0.94);
+}
+
+html[data-theme="pink"] .sw-holo-summary__count,
+html[data-theme="pink"] .wd-pick__check {
+    background-color: rgb(255 245 244 / 0.94);
+}
+
+html[data-theme="pink"] .wd-modal__close:hover {
+    background-color: rgb(251 224 224 / 0.8);
+}
+
+html[data-theme="pink"] .sw-account__link:hover,
+html[data-theme="pink"] .sw-icon-btn:hover,
+html[data-theme="pink"] .sw-nav__link:not(.is-active):hover {
+    background-color: var(--sw-theme-pink-hover);
+}
+
+/* Compact theme switch beside the like and profile actions. */
+.sw-theme-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 3.25rem;
+    height: 1.875rem;
+    flex: 0 0 auto;
+    align-items: center;
+    border: 1px solid #ded9e6;
+    border-radius: 9999px;
+    background-color: #f0edf5;
+    padding: 0.125rem;
+    cursor: pointer;
+    transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.sw-theme-toggle__thumb {
+    display: grid;
+    width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border-radius: 9999px;
+    background-color: #fff;
+    color: #171f63;
+    box-shadow: 0 1px 4px rgb(23 31 99 / 0.18);
+    transform: translateX(0);
+    transition: transform 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.sw-theme-toggle__thumb svg {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.sw-theme-toggle__pink,
+.sw-theme-toggle[aria-checked="true"] .sw-theme-toggle__sun {
+    display: none;
+}
+
+.sw-theme-toggle:hover {
+    border-color: #c5b9d9;
+    background-color: #e5e0ef;
+}
+
+.sw-theme-toggle:active .sw-theme-toggle__thumb {
+    transform: scale(0.94);
+}
+
+.sw-theme-toggle[aria-checked="true"] {
+    border-color: #d788a7;
+    background: linear-gradient(100deg, var(--sw-theme-pink-berry), var(--sw-theme-pink-mist));
+}
+
+.sw-theme-toggle[aria-checked="true"] .sw-theme-toggle__thumb {
+    background-color: #fff9f7;
+    color: var(--sw-theme-pink-berry);
+    transform: translateX(1.375rem);
+}
+
+.sw-theme-toggle[aria-checked="true"]:active .sw-theme-toggle__thumb {
+    transform: translateX(1.375rem) scale(0.94);
+}
+
+.sw-theme-toggle[aria-checked="true"] .sw-theme-toggle__pink {
+    display: block;
+}
+
+/* Match the saved theme immediately, before the footer script syncs ARIA state. */
+html[data-theme="pink"] .sw-theme-toggle {
+    border-color: #d788a7;
+    background: linear-gradient(100deg, var(--sw-theme-pink-berry), var(--sw-theme-pink-mist));
+}
+
+html[data-theme="pink"] .sw-theme-toggle__thumb {
+    color: var(--sw-theme-pink-berry);
+    transform: translateX(1.375rem);
+}
+
+html[data-theme="pink"] .sw-theme-toggle__sun {
+    display: none;
+}
+
+html[data-theme="pink"] .sw-theme-toggle__pink {
+    display: block;
+}
+
+.sw-theme-toggle[aria-checked="true"]:hover {
+    border-color: #c95d82;
+    background: linear-gradient(100deg, #bd285d, #ec78a2);
+}
+
+.sw-theme-toggle:focus-visible {
+    outline: 3px solid rgb(96 99 180 / 0.42);
+    outline-offset: 2px;
+}
+
+html[data-theme="pink"] .sw-theme-toggle:focus-visible {
+    outline-color: rgb(213 48 109 / 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sw-theme-toggle,
+    .sw-theme-toggle__thumb,
+    html[data-theme="pink"] :is(input, select, textarea) {
+        transition: none;
+    }
+}
+
+@media (max-width: 360px) {
+    .sw-theme-toggle {
+        width: 3rem;
+        height: 1.75rem;
+    }
+
+    .sw-theme-toggle__thumb {
+        width: 1.375rem;
+        height: 1.375rem;
+    }
+
+    .sw-theme-toggle[aria-checked="true"] .sw-theme-toggle__thumb {
+        transform: translateX(1.25rem);
+    }
+
+    html[data-theme="pink"] .sw-theme-toggle__thumb {
+        transform: translateX(1.25rem);
+    }
+
+    .sw-theme-toggle[aria-checked="true"]:active .sw-theme-toggle__thumb {
+        transform: translateX(1.25rem) scale(0.94);
+    }
+}

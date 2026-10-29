@@ -13,4 +13,5 @@ urlpatterns = [
     path('<int:pk>/respond/', views.respond, name='respond'),
     path('<int:pk>/confirm/', views.confirm, name='confirm'),
     path('<int:pk>/delete/', views.delete, name='delete'),
+    path('bulk-delete/', views.bulk_delete, name='bulk_delete'),
 ]

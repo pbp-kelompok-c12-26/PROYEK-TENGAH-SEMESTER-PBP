@@ -26,7 +26,7 @@ class MeetingLocationMixin:
 
 
 class ItemForSwapForm(MeetingLocationMixin, forms.Form):
-    """Create: pilih baju dari lemari + kab/kota + detail tempat + deskripsi (semua wajib)."""
+    """Create: pilih baju dari lemari + lokasi bertemu; deskripsi opsional."""
     clothing_item = forms.ModelChoiceField(
         queryset=ClothingItem.objects.none(),
         label='Tambahkan pakaian', empty_label='Pilih pakaian',
@@ -38,6 +38,7 @@ class ItemForSwapForm(MeetingLocationMixin, forms.Form):
     )
     reason = forms.CharField(
         label='Deskripsi',
+        required=False,
         widget=forms.Textarea(attrs={
             'rows': 4,
             'placeholder': 'Ceritakan tentang pakaian ini, apa keinginan penukaranmu, dan lainnya...',
@@ -61,7 +62,7 @@ class ItemForSwapForm(MeetingLocationMixin, forms.Form):
 
 
 class ItemForSwapEditForm(MeetingLocationMixin, forms.ModelForm):
-    """Update: hanya lokasi & deskripsi (semua wajib). Bajunya tidak bisa diganti."""
+    """Update: lokasi wajib diisi; deskripsi opsional. Bajunya tidak bisa diganti."""
     meeting_city_code = LocationField(label='Kota/kabupaten bertemu')
 
     class Meta:
@@ -82,7 +83,7 @@ class ItemForSwapEditForm(MeetingLocationMixin, forms.ModelForm):
         self.fields['meeting_city_code'].initial = listing.meeting_city_code
         # Di model boleh kosong (data lama), tetapi di form wajib diisi
         self.fields['meeting_place'].required = True
-        self.fields['reason'].required = True
+        self.fields['reason'].required = False
         if not listing.meeting_city_code and not listing.meeting_place:
             # Listing lama (lokasi masih teks bebas): tampilkan teks lamanya sebagai detail tempat
             # supaya tidak hilang; pemilik cukup memilih kab/kota dari daftar.

@@ -49,7 +49,7 @@ Kartu katalog. Butuh `item` (ClothingItem). Opsional dari Items for Swap: `listi
            class="home-card__btn">
             Lihat detail
         </a>
-        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}" data-form-modal{% if not request.user.is_authenticated %} data-auth-required{% endif %}
+        <a href="{% url 'swap_requests:create' %}?item={{ listing.clothing_item_id }}" data-form-modal{% if not request.user.is_authenticated %} data-auth-required{% endif %}
            class="home-card__swap sw-btn-holo">
             Ajukan swap
         </a>

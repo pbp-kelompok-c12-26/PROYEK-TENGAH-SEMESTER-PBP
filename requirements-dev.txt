@@ -2,3 +2,4 @@
 # Pasang dengan: pip install -r requirements-dev.txt
 -r requirements.txt
 coverage>=7.6
+selenium>=4.20  # functional test: digital_wardrobe/tests_functional.py (butuh Google Chrome)

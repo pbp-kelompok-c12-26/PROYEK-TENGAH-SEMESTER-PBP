@@ -19,12 +19,8 @@ Parameter: `listing` (ItemForSwap), `owner_profile` (UserProfile).
                 {{ item.name }}
             </a>
             <div class="acc-listing__tags">
-                {% if listing.is_reserved %}
-                <span class="acc-tag acc-tag--reserved">Reserved</span>
-                {% else %}
                 <span class="acc-tag acc-tag--available">Available</span>
                 <span class="acc-tag acc-tag--requests">{{ listing.request_count|default:0 }} request(s)</span>
-                {% endif %}
             </div>
         </div>
         <p class="acc-listing__meta">{{ item.get_category_display }} · {{ item.size_label }} · {{ item.get_condition_display }}</p>
@@ -51,16 +47,10 @@ Parameter: `listing` (ItemForSwap), `owner_profile` (UserProfile).
            class="acc-listing__btn acc-listing__btn--detail">
             Lihat detail
         </a>
-        {% if not listing.is_reserved %}
-        <a href="{% url 'swap_requests:create' %}?item={{ item.pk }}" data-form-modal
+        <a href="{% url 'swap_requests:create' %}?item={{ listing.clothing_item_id }}" data-form-modal
            class="acc-listing__btn acc-listing__btn--swap sw-btn-holo">
             Ajukan swap
         </a>
-        {% else %}
-        <span class="acc-listing__btn acc-listing__btn--busy">
-            Sedang ditukar
-        </span>
-        {% endif %}
     </div>
     {% else %}
     <div class="acc-listing__actions-own">

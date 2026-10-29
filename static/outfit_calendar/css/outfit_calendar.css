@@ -331,6 +331,7 @@
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     font-size: 10px;
     font-weight: 600;
     line-height: 1.25;

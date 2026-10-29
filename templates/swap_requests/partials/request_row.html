@@ -2,6 +2,13 @@
 Satu baris request: [avatar] [pakaian A] ⇄ [pakaian B] teks, status, tombol Detail.
 {% endcomment %}
 <article class="sr-row">
+    {% if bulk_select %}
+    <label class="sr-bulk-check" data-sr-row-select hidden title="Pilih request {{ swap.code }}">
+        <input type="checkbox" name="swap_ids" value="{{ swap.pk }}" data-sr-bulk-checkbox
+            aria-label="Pilih request {{ swap.code }}"
+            {% if swap.status == 'awaiting_exchange' %}disabled title="Awaiting exchange tidak dapat dihapus"{% endif %}>
+    </label>
+    {% endif %}
     <div class="sr-row__main sr-row__main--pair">
         {% include 'swap_requests/partials/avatar.html' with person=person %}
         {% include 'swap_requests/partials/thumb.html' with item=give_item name=give_name %}
