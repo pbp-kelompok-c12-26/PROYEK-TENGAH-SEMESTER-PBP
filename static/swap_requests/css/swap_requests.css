@@ -484,6 +484,7 @@
 
 /* Satu baris request / satu kelompok pakaian */
 .sr-row {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -494,6 +495,19 @@
     transition-property: box-shadow;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
+}
+
+.sr-row__notification {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1;
+}
+
+@media (max-width: 639px) {
+    .sr-row--has-notification {
+        padding-top: 2rem;
+    }
 }
 
 .sr-row:hover {

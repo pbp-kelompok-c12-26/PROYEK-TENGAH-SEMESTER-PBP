@@ -1,7 +1,8 @@
 {% comment %}
 Satu baris request: [avatar] [pakaian A] ⇄ [pakaian B] teks, status, tombol Detail.
 {% endcomment %}
-<article class="sr-row">
+<article class="sr-row{% if swap.unread_notification_count %} sr-row--has-notification{% endif %}">
+    {% if swap.unread_notification_count %}<span class="sw-nav__badge sr-row__notification" title="Perubahan belum dilihat" aria-label="{{ swap.unread_notification_count }} perubahan belum dilihat">{{ swap.unread_notification_count }}</span>{% endif %}
     {% if bulk_select %}
     <label class="sr-bulk-check" data-sr-row-select hidden title="Pilih request {{ swap.code }}">
         <input type="checkbox" name="swap_ids" value="{{ swap.pk }}" data-sr-bulk-checkbox

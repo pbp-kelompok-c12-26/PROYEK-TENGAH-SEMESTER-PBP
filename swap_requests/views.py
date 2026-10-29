@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -85,11 +85,16 @@ def _index_context(user, tab, status, filters):
 
     groups, outgoing = [], []
     if tab == 'masuk':
-        qs = _base_qs().filter(owner=user, owner_hidden=False)
+        qs = _base_qs().filter(owner=user, owner_hidden=False).annotate(
+            unread_notification_count=Count(
+                'notifications',
+                filter=Q(notifications__recipient=user, notifications__read_at__isnull=True),
+            ),
+        )
         if status:
             qs = qs.filter(status=status)
         grouped = OrderedDict()
-        for swap in qs:
+        for swap in qs.order_by('-created_at', '-pk'):
             key = swap.requested_item_id or f'deleted-{swap.requested_item_name}'
             grouped.setdefault(key, []).append(swap)
         for swaps in grouped.values():
@@ -106,6 +111,7 @@ def _index_context(user, tab, status, filters):
                 'item': swaps[0].requested_item,
                 'name': swaps[0].requested_item_name,
                 'total': len(swaps),
+                'unread_count': sum(s.unread_notification_count for s in swaps),
                 'requests': swaps,
                 'summary': ' · '.join(f'{counts[s]} {dict(SwapRequest.STATUS_CHOICES)[s].lower()}'
                                       for s in STATUS_PRIORITY if counts[s]),
@@ -114,10 +120,15 @@ def _index_context(user, tab, status, filters):
                 'top_style': SwapRequest.STATUS_STYLES[top],
             })
     else:
-        qs = _base_qs().filter(requester=user, requester_hidden=False)
+        qs = _base_qs().filter(requester=user, requester_hidden=False).annotate(
+            unread_notification_count=Count(
+                'notifications',
+                filter=Q(notifications__recipient=user, notifications__read_at__isnull=True),
+            ),
+        )
         if status:
             qs = qs.filter(status=status)
-        outgoing = list(qs)
+        outgoing = list(qs.order_by('-created_at', '-pk'))
         for swap in outgoing:
             swap.tanggal = format_tanggal(swap.created_at)
 
@@ -129,7 +140,9 @@ def _index_context(user, tab, status, filters):
 
 
 def _item_requests_context(user, item_id):
-    request_qs = _base_qs().filter(owner=user, owner_hidden=False, requested_item_id=item_id)
+    request_qs = _base_qs().filter(
+        owner=user, owner_hidden=False, requested_item_id=item_id,
+    ).order_by('-created_at', '-pk')
     swaps = list(request_qs)
     item = get_object_or_404(ClothingItem, pk=item_id) if not swaps else swaps[0].requested_item
     if item.user_id != user.pk and not swaps:
@@ -158,7 +171,6 @@ def _party_summary(user):
 @login_required(login_url='accounts:login')
 def index(request):
     SwapRequest.objects.sync_availability()
-    SwapRequest.objects.mark_seen_by(request.user)
     tab, status, filters = _index_state(request.GET)
     template = ('swap_requests/partials/index_content.html'
                 if _is_htmx(request) else 'swap_requests/index.html')
@@ -459,7 +471,6 @@ def bulk_delete(request):
             context = _item_requests_context(request.user, int(item_id))
             if context is not None:
                 return render(request, 'swap_requests/partials/item_requests_content.html', context)
-        SwapRequest.objects.mark_seen_by(request.user)
         _, status, filters = _index_state(request.POST)
         return render(request, 'swap_requests/partials/index_content.html',
                       _index_context(request.user, tab, status, filters))
