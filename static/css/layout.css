@@ -479,8 +479,16 @@
 
 @media (min-width: 768px) {
     .sw-footer__top {
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 0.8fr);
         align-items: flex-start;
+        gap: 2rem;
+    }
+
+    .sw-footer__top > .sw-footer__cols {
+        grid-template-columns: repeat(2, max-content);
+        justify-content: center;
+        column-gap: 8rem;
     }
 }
 

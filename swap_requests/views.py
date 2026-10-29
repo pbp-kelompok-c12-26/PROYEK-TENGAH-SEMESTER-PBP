@@ -43,62 +43,49 @@ def _get_for_user(request, pk):
     return get_object_or_404(_base_qs().visible_to(request.user), pk=pk)
 
 
-def _party_summary(user):
-    """Data ringkas pemilik pakaian yang ditampilkan pada overview request."""
-    profile = UserProfile.for_user(user)
-    return {
-        'profile': profile,
-        'wardrobe_count': ClothingItem.objects.in_wardrobe(user).count(),
-        'likes_count': LikedSwapItem.objects.filter(listing__user=user).count(),
-        'completed_swap_count': SwapRequest.objects.filter(
-            Q(requester=user) | Q(owner=user), status=SwapRequest.COMPLETED,
-        ).count(),
-    }
+def _is_htmx(request):
+    return request.headers.get('HX-Request') == 'true'
 
 
-# R: daftar request (tab Request masuk / Request kamu)
-@login_required(login_url='accounts:login')
-def index(request):
-    SwapRequest.objects.sync_availability()
-    SwapRequest.objects.mark_seen_by(request.user)
+def _index_state(params):
+    tab = 'kamu' if params.get('tab') == 'kamu' else 'masuk'
+    filters = OUTGOING_FILTERS if tab == 'kamu' else INCOMING_FILTERS
+    status = params.get('status', '')
+    if status not in dict(filters):
+        status = ''
+    return tab, status, filters
+
+
+def _index_context(user, tab, status, filters):
     active_statuses = (SwapRequest.PENDING, SwapRequest.AWAITING)
     incoming_active_counts = Counter(
         SwapRequest.objects.filter(
-            owner=request.user,
-            owner_hidden=False,
-            status__in=active_statuses,
+            owner=user, owner_hidden=False, status__in=active_statuses,
         ).values_list('status', flat=True)
     )
     outgoing_active_counts = Counter(
         SwapRequest.objects.filter(
-            requester=request.user,
-            requester_hidden=False,
-            status__in=active_statuses,
+            requester=user, requester_hidden=False, status__in=active_statuses,
         ).values_list('status', flat=True)
     )
     request_summary_rows = [
         {
-            'label': 'Masuk aktif',
+            'label': 'Masuk aktif :',
             'pending': incoming_active_counts.get(SwapRequest.PENDING, 0),
             'awaiting': incoming_active_counts.get(SwapRequest.AWAITING, 0),
             'total': sum(incoming_active_counts.values()),
         },
         {
-            'label': 'Keluar aktif',
+            'label': 'Keluar aktif :',
             'pending': outgoing_active_counts.get(SwapRequest.PENDING, 0),
             'awaiting': outgoing_active_counts.get(SwapRequest.AWAITING, 0),
             'total': sum(outgoing_active_counts.values()),
         },
     ]
-    tab = 'kamu' if request.GET.get('tab') == 'kamu' else 'masuk'
-    filters = OUTGOING_FILTERS if tab == 'kamu' else INCOMING_FILTERS
-    status = request.GET.get('status', '')
-    if status not in dict(filters):
-        status = ''
 
     groups, outgoing = [], []
     if tab == 'masuk':
-        qs = _base_qs().filter(owner=request.user, owner_hidden=False)
+        qs = _base_qs().filter(owner=user, owner_hidden=False)
         if status:
             qs = qs.filter(status=status)
         grouped = OrderedDict()
@@ -127,37 +114,69 @@ def index(request):
                 'top_style': SwapRequest.STATUS_STYLES[top],
             })
     else:
-        qs = _base_qs().filter(requester=request.user, requester_hidden=False)
+        qs = _base_qs().filter(requester=user, requester_hidden=False)
         if status:
             qs = qs.filter(status=status)
         outgoing = list(qs)
-        for s in outgoing:
-            s.tanggal = format_tanggal(s.created_at)
+        for swap in outgoing:
+            swap.tanggal = format_tanggal(swap.created_at)
 
-    return render(request, 'swap_requests/index.html', {
+    return {
         'tab': tab, 'status': status, 'filters': filters,
         'groups': groups, 'outgoing': outgoing,
         'request_summary_rows': request_summary_rows,
-    })
+    }
+
+
+def _item_requests_context(user, item_id):
+    request_qs = _base_qs().filter(owner=user, owner_hidden=False, requested_item_id=item_id)
+    swaps = list(request_qs)
+    item = get_object_or_404(ClothingItem, pk=item_id) if not swaps else swaps[0].requested_item
+    if item.user_id != user.pk and not swaps:
+        return None
+    for swap in swaps:
+        swap.tanggal = format_tanggal(swap.created_at)
+    accepted = [swap for swap in swaps if swap.status in (SwapRequest.AWAITING, SwapRequest.COMPLETED)]
+    others = [swap for swap in swaps if swap not in accepted]
+    return {'item': item, 'accepted': accepted, 'others': others}
+
+
+def _party_summary(user):
+    """Data ringkas pemilik pakaian yang ditampilkan pada overview request."""
+    profile = UserProfile.for_user(user)
+    return {
+        'profile': profile,
+        'wardrobe_count': ClothingItem.objects.in_wardrobe(user).count(),
+        'likes_count': LikedSwapItem.objects.filter(listing__user=user).count(),
+        'completed_swap_count': SwapRequest.objects.filter(
+            Q(requester=user) | Q(owner=user), status=SwapRequest.COMPLETED,
+        ).count(),
+    }
+
+
+# R: daftar request (tab Request masuk / Request kamu)
+@login_required(login_url='accounts:login')
+def index(request):
+    SwapRequest.objects.sync_availability()
+    SwapRequest.objects.mark_seen_by(request.user)
+    tab, status, filters = _index_state(request.GET)
+    template = ('swap_requests/partials/index_content.html'
+                if _is_htmx(request) else 'swap_requests/index.html')
+    return render(request, template, _index_context(request.user, tab, status, filters))
 
 
 # R: semua request untuk satu pakaian milikku
 @login_required(login_url='accounts:login')
 def item_requests(request, item_id):
     SwapRequest.objects.sync_availability()
-    request_qs = _base_qs().filter(owner=request.user, owner_hidden=False, requested_item_id=item_id)
-    request_qs.mark_seen_by(request.user)
-    swaps = list(request_qs)
-    item = get_object_or_404(ClothingItem, pk=item_id) if not swaps else swaps[0].requested_item
-    if item.user_id != request.user.pk and not swaps:
+    SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
+                               requested_item_id=item_id).mark_seen_by(request.user)
+    context = _item_requests_context(request.user, item_id)
+    if context is None:
         return redirect('swap_requests:index')
-    for s in swaps:
-        s.tanggal = format_tanggal(s.created_at)
-    accepted = [s for s in swaps if s.status in (SwapRequest.AWAITING, SwapRequest.COMPLETED)]
-    others = [s for s in swaps if s not in accepted]
-    return render(request, 'swap_requests/item_requests.html', {
-        'item': item, 'accepted': accepted, 'others': others,
-    })
+    template = ('swap_requests/partials/item_requests_content.html'
+                if _is_htmx(request) else 'swap_requests/item_requests.html')
+    return render(request, template, context)
 
 
 # C: ajukan swap untuk pakaian orang lain (?item=<id pakaian>)
@@ -224,11 +243,7 @@ def sent(request, pk):
 
 
 # R: detail (tampilan beda untuk pengirim & pemilik pakaian)
-@login_required(login_url='accounts:login')
-def detail(request, pk):
-    SwapRequest.objects.sync_availability()
-    swap = _get_for_user(request, pk)
-    swap.mark_seen_by(request.user)
+def _detail_context(request, swap):
     role = swap.role_of(request.user)
     me_requester = role == 'requester'
     show_confirmations = (
@@ -254,7 +269,7 @@ def detail(request, pk):
         f"{get_summary['profile'].name} akan memberikan ke kamu"
         if me_requester else f"{get_summary['profile'].name} menawarkan"
     )
-    return render(request, 'swap_requests/detail.html', {
+    return {
         'swap': swap,
         'role': role,
         'other': swap.other_party(request.user),
@@ -280,7 +295,22 @@ def detail(request, pk):
         'can_edit': swap.can_edit(request.user),
         'can_respond': swap.can_respond(request.user),
         'requested_listing': requested_listing,
-    })
+    }
+
+
+def _render_detail_update(request, pk):
+    SwapRequest.objects.sync_availability()
+    swap = _get_for_user(request, pk)
+    swap.mark_seen_by(request.user)
+    return render(request, 'swap_requests/partials/detail_update.html', _detail_context(request, swap))
+
+
+@login_required(login_url='accounts:login')
+def detail(request, pk):
+    SwapRequest.objects.sync_availability()
+    swap = _get_for_user(request, pk)
+    swap.mark_seen_by(request.user)
+    return render(request, 'swap_requests/detail.html', _detail_context(request, swap))
 
 
 # U: edit request (hanya pengirim, selama Pending)
@@ -318,6 +348,8 @@ def respond(request, pk):
     elif request.POST.get('action') == 'reject':
         swap.reject(actor=request.user)
         messages.success(request, 'Swap request ditolak.')
+    if _is_htmx(request):
+        return _render_detail_update(request, pk)
     return redirect('swap_requests:detail', pk=pk)
 
 
@@ -337,6 +369,8 @@ def confirm(request, pk):
             messages.success(request, 'Pertukaran dibatalkan. Request lain untuk pakaian ini tetap bisa diproses.')
         else:
             messages.success(request, 'Pilihan tersimpan. Menunggu pihak lain memilih Selesai swap.')
+    if _is_htmx(request):
+        return _render_detail_update(request, pk)
     return redirect('swap_requests:detail', pk=pk)
 
 
@@ -347,10 +381,20 @@ def delete(request, pk):
     swap = _get_for_user(request, pk)
     if not swap.can_delete:
         messages.error(request, 'Request yang sedang menunggu pertukaran tidak bisa dihapus.')
+        if _is_htmx(request):
+            return render(request, 'swap_requests/partials/delete_result.html', {
+                'tab': 'kamu' if swap.requester_id == request.user.pk else 'masuk',
+                'delete_failed': True,
+                'swap': swap,
+            })
         return redirect('swap_requests:detail', pk=pk)
     role = _delete_swap_for_party(swap, request.user)
     tab = 'kamu' if role == 'requester' else 'masuk'
     messages.success(request, 'Swap request dihapus dari daftar kamu.')
+    if _is_htmx(request):
+        return render(request, 'swap_requests/partials/delete_result.html', {
+            'tab': tab, 'delete_failed': False,
+        })
     return redirect(f"{reverse('swap_requests:index')}?tab={tab}")
 
 
@@ -389,20 +433,33 @@ def bulk_delete(request):
     tab = 'masuk' if request.POST.get('tab') == 'masuk' else 'kamu'
     if not selected_ids:
         messages.info(request, 'Pilih request yang ingin dihapus terlebih dahulu.')
-        return _bulk_delete_redirect(request, tab)
-
-    processed = 0
-    with transaction.atomic():
-        swaps = list(_base_qs().visible_to(request.user).filter(pk__in=selected_ids)
-                     .exclude(status=SwapRequest.AWAITING).select_for_update())
-        for swap in swaps:
-            if _delete_swap_for_party(swap, request.user):
-                processed += 1
-
-    if processed:
-        messages.success(request, f'{processed} swap request diproses sesuai statusnya.')
     else:
-        messages.info(request, 'Tidak ada request terpilih yang bisa dihapus. Awaiting exchange tidak dapat dihapus.')
+        processed = 0
+        with transaction.atomic():
+            swaps = list(_base_qs().visible_to(request.user).filter(pk__in=selected_ids)
+                         .exclude(status=SwapRequest.AWAITING).select_for_update())
+            for swap in swaps:
+                if _delete_swap_for_party(swap, request.user):
+                    processed += 1
+
+        if processed:
+            messages.success(request, f'{processed} swap request diproses sesuai statusnya.')
+        else:
+            messages.info(request, 'Tidak ada request terpilih yang bisa dihapus. Awaiting exchange tidak dapat dihapus.')
+
+    if _is_htmx(request):
+        SwapRequest.objects.sync_availability()
+        item_id = request.POST.get('item_id', '')
+        if tab == 'masuk' and item_id.isdigit():
+            SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
+                                       requested_item_id=item_id).mark_seen_by(request.user)
+            context = _item_requests_context(request.user, int(item_id))
+            if context is not None:
+                return render(request, 'swap_requests/partials/item_requests_content.html', context)
+        SwapRequest.objects.mark_seen_by(request.user)
+        _, status, filters = _index_state(request.POST)
+        return render(request, 'swap_requests/partials/index_content.html',
+                      _index_context(request.user, tab, status, filters))
     return _bulk_delete_redirect(request, tab)
 
 

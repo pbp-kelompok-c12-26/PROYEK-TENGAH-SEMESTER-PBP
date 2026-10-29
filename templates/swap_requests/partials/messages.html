@@ -1,7 +1,1 @@
-{% if messages %}
-<div class="sr-messages">
-    {% for message in messages %}
-    <div class="sr-message{% if message.tags == 'error' %} sr-message--error{% endif %}">{{ message }}</div>
-    {% endfor %}
-</div>
-{% endif %}
+{% include 'digital_wardrobe/partials/messages.html' %}

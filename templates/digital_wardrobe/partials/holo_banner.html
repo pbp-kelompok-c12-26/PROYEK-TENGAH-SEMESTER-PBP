@@ -36,7 +36,12 @@
             <div class="sw-holo-banner__summary" aria-label="Ringkasan request aktif">
                 {% for row in summary_rows %}
                 <div class="sw-holo-summary">
+                    {% if summary_show_total %}
+                    <span class="sw-holo-summary__total">{{ row.total }}</span>
                     <span class="sw-holo-summary__label">{{ row.label }}</span>
+                    {% else %}
+                    <span class="sw-holo-summary__label">{{ row.label }}</span>
+                    {% endif %}
                     <span class="sw-holo-summary__pill sw-holo-summary__pill--pending">
                         <span class="sw-holo-summary__count">{{ row.pending }}</span>
                         <span class="sw-holo-summary__text">Pending</span>

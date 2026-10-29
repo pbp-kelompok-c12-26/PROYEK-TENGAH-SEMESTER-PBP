@@ -44,6 +44,72 @@
     margin-bottom: 0px;
 }
 
+.sw-holo-summary__total {
+    color: var(--sw-navy);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Toast dari komponen bersama Lemari Digital, ditampilkan pada halaman Swap Request. */
+#wardrobe-toast.wd-toast-stack {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    z-index: 70;
+    display: flex;
+    width: calc(100% - 2rem);
+    max-width: 28rem;
+    transform: translate(-50%, 0);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+#wardrobe-toast .wd-toast {
+    width: 100%;
+    border-radius: 0.75rem;
+    background-color: var(--sw-navy);
+    padding: 0.75rem 1rem;
+    color: var(--sw-white);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    animation: sr-toast-in 180ms ease-out, sr-toast-out 220ms ease-in 3.78s forwards;
+}
+
+#wardrobe-toast .wd-toast--error {
+    background-color: var(--sw-berry);
+}
+
+@keyframes sr-toast-in {
+    from { opacity: 0; transform: translateY(0.5rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sr-toast-out {
+    to { opacity: 0; transform: translateY(0.35rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #wardrobe-toast .wd-toast { animation: none; }
+}
+
+.sr-detail-state {
+    display: contents;
+}
+
+.sr-detail-state > :not([hidden]) ~ :not([hidden]),
+.sr-detail-state > :first-child {
+    margin-top: 1rem;
+}
+
+.sr-index-list > :not([hidden]) ~ :not([hidden]),
+.sr-item-list-content > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem;
+}
+
 .sr-message {
     border-radius: 0.75rem;
     background-color: var(--sw-navy);
@@ -434,6 +500,17 @@
     box-shadow: 0 10px 24px -14px rgba(23,31,99,0.35);
 }
 
+.sr-optimistic-removal {
+    pointer-events: none;
+    opacity: 0.45;
+    transform: scale(0.99);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.sr-optimistic-hidden {
+    display: none !important;
+}
+
 @media (min-width: 640px) {
     .sr-row {
         flex-direction: row;
@@ -708,6 +785,11 @@
 .sr-row.is-selected {
     border-color: rgb(96 99 180 / 0.42);
     background: #fcfaff;
+}
+
+.sr-respond form.htmx-request button,
+.sr-confirm__form.htmx-request button {
+    opacity: 0.7;
 }
 
 .sr-bulk-option__text {

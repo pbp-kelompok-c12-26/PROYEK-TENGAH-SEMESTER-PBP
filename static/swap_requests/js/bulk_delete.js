@@ -1,5 +1,12 @@
 (() => {
-    document.querySelectorAll('[data-sr-bulk-form]').forEach((form) => {
+    function init(root = document) {
+        const forms = [];
+        if (root.matches?.('[data-sr-bulk-form]')) forms.push(root);
+        root.querySelectorAll?.('[data-sr-bulk-form]').forEach((form) => forms.push(form));
+
+        forms.forEach((form) => {
+        if (form.dataset.srBulkInitialized === 'true') return;
+        form.dataset.srBulkInitialized = 'true';
         const checkboxes = [...form.querySelectorAll('[data-sr-bulk-checkbox]')];
         const selectable = checkboxes.filter((checkbox) => !checkbox.disabled);
         const toggle = form.querySelector('[data-sr-selection-toggle]');
@@ -71,6 +78,8 @@
         });
         selectable.forEach((checkbox) => checkbox.addEventListener('change', updateSelection));
 
+        // Capture dan hentikan event agar HTMX tidak memproses form sebelum
+        // pengguna mengonfirmasi penghapusan di dialog.
         form.addEventListener('submit', (event) => {
             if (confirmedSubmit) {
                 confirmedSubmit = false;
@@ -79,6 +88,7 @@
             const selectedCount = selectable.filter((checkbox) => checkbox.checked).length;
             if (!selectedCount) {
                 event.preventDefault();
+                event.stopImmediatePropagation();
                 return;
             }
 
@@ -88,8 +98,9 @@
                 ? 'Request Pending yang masuk akan ditolak; status lain hanya dihapus dari daftar kamu.'
                 : 'Request Pending yang kamu kirim akan dihapus untuk kedua pihak; status lain hanya dihapus dari daftar kamu.';
             event.preventDefault();
+            event.stopImmediatePropagation();
             dialog.showModal();
-        });
+        }, true);
 
         dialogCancel.addEventListener('click', () => dialog.close());
         dialogAccept.addEventListener('click', () => {
@@ -102,5 +113,9 @@
         });
 
         setSelectionMode(false);
-    });
+        });
+    }
+
+    init();
+    document.addEventListener('htmx:load', (event) => init(event.detail?.elt || document));
 })();
