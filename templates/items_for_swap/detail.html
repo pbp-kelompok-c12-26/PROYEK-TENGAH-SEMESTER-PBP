@@ -134,7 +134,6 @@
                 <h2 class="ifs-others__title">Pakaian lain dari {{ listing.user.profile.name|default:listing.user.username }}</h2>
                 <p class="ifs-others__text">Lihat penawaran lain dari pengguna ini.</p>
             </div>
-            <a href="{% url 'accounts:public_profile' listing.user.username %}" class="ifs-others__profile">Lihat profil @{{ listing.user.username }} &rarr;</a>
         </div>
         <div class="ifs-others__grid">
             {% for other in others %}
