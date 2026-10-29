@@ -200,6 +200,11 @@
     color: var(--sw-white);
 }
 
+.sr-status--returned {
+    background-color: #FFF0B8;
+    color: #725400;
+}
+
 
 /* ---------- Tautan ke profil publik ---------- */
 .sr-link {

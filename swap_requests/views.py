@@ -5,8 +5,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import urlencode
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -56,6 +58,32 @@ def _index_state(params):
     return tab, status, filters
 
 
+def _cycle_scope(params):
+    """Parse token siklus dari tautan folder; tanpa token tetap kompatibel dengan URL lama."""
+    if 'cycle' not in params:
+        return None
+    value = str(params.get('cycle', '')).strip()
+    if not value:
+        return None
+    if value == 'legacy':
+        return value
+    listing_id, separator, posted_at = value.partition(':')
+    if len(value) <= 64 and listing_id.isdigit() and separator and posted_at:
+        return value
+    raise Http404
+
+
+def _filter_cycle_scope(queryset, cycle_scope):
+    if cycle_scope == 'legacy':
+        return queryset.filter(
+            Q(requested_listing_cycle_key__isnull=True)
+            | Q(requested_listing_cycle_key=''),
+        )
+    if cycle_scope:
+        return queryset.filter(requested_listing_cycle_key=cycle_scope)
+    return queryset
+
+
 def _index_context(user, tab, status, filters):
     active_statuses = (SwapRequest.PENDING, SwapRequest.AWAITING)
     incoming_active_counts = Counter(
@@ -95,7 +123,12 @@ def _index_context(user, tab, status, filters):
             qs = qs.filter(status=status)
         grouped = OrderedDict()
         for swap in qs.order_by('-created_at', '-pk'):
-            key = swap.requested_item_id or f'deleted-{swap.requested_item_name}'
+            if swap.requested_listing_cycle_key:
+                key = ('cycle', swap.requested_item_id, swap.requested_listing_cycle_key)
+            elif swap.requested_item_id:
+                key = ('legacy', swap.requested_item_id)
+            else:
+                key = ('deleted', swap.requested_item_name)
             grouped.setdefault(key, []).append(swap)
         for swaps in grouped.values():
             counts = Counter(s.status for s in swaps)
@@ -107,17 +140,22 @@ def _index_context(user, tab, status, filters):
                 top = SwapRequest.PENDING
             else:
                 top = SwapRequest.REJECTED
+            returned_to_wardrobe = any(s.requested_listing_returned_to_wardrobe for s in swaps)
+            display_status = SwapRequest.REJECTED if returned_to_wardrobe else top
             groups.append({
                 'item': swaps[0].requested_item,
                 'name': swaps[0].requested_item_name,
+                'cycle_param': swaps[0].requested_listing_cycle_key or 'legacy',
                 'total': len(swaps),
                 'unread_count': sum(s.unread_notification_count for s in swaps),
                 'requests': swaps,
                 'summary': ' · '.join(f'{counts[s]} {dict(SwapRequest.STATUS_CHOICES)[s].lower()}'
                                       for s in STATUS_PRIORITY if counts[s]),
-                'top_status': top,
-                'top_label': dict(SwapRequest.STATUS_CHOICES)[top],
-                'top_style': SwapRequest.STATUS_STYLES[top],
+                'top_status': display_status,
+                'top_label': ('Dikembalikan ke lemari' if returned_to_wardrobe
+                              else dict(SwapRequest.STATUS_CHOICES)[top]),
+                'top_style': ('sr-status--returned' if returned_to_wardrobe
+                              else SwapRequest.STATUS_STYLES[display_status]),
             })
     else:
         qs = _base_qs().filter(requester=user, requester_hidden=False).annotate(
@@ -139,10 +177,11 @@ def _index_context(user, tab, status, filters):
     }
 
 
-def _item_requests_context(user, item_id):
+def _item_requests_context(user, item_id, cycle_scope=None):
     request_qs = _base_qs().filter(
         owner=user, owner_hidden=False, requested_item_id=item_id,
     ).order_by('-created_at', '-pk')
+    request_qs = _filter_cycle_scope(request_qs, cycle_scope)
     swaps = list(request_qs)
     item = get_object_or_404(ClothingItem, pk=item_id) if not swaps else swaps[0].requested_item
     if item.user_id != user.pk and not swaps:
@@ -151,7 +190,10 @@ def _item_requests_context(user, item_id):
         swap.tanggal = format_tanggal(swap.created_at)
     accepted = [swap for swap in swaps if swap.status in (SwapRequest.AWAITING, SwapRequest.COMPLETED)]
     others = [swap for swap in swaps if swap not in accepted]
-    return {'item': item, 'accepted': accepted, 'others': others}
+    return {
+        'item': item, 'accepted': accepted, 'others': others,
+        'cycle_param': cycle_scope if cycle_scope is not None else '',
+    }
 
 
 def _party_summary(user):
@@ -181,9 +223,14 @@ def index(request):
 @login_required(login_url='accounts:login')
 def item_requests(request, item_id):
     SwapRequest.objects.sync_availability()
-    SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
-                               requested_item_id=item_id).mark_seen_by(request.user)
-    context = _item_requests_context(request.user, item_id)
+    cycle_scope = _cycle_scope(request.GET)
+    request_qs = _filter_cycle_scope(
+        SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
+                                   requested_item_id=item_id),
+        cycle_scope,
+    )
+    request_qs.mark_seen_by(request.user)
+    context = _item_requests_context(request.user, item_id, cycle_scope)
     if context is None:
         return redirect('swap_requests:index')
     template = ('swap_requests/partials/item_requests_content.html'
@@ -196,6 +243,7 @@ def item_requests(request, item_id):
 def create(request):
     item_id = request.GET.get('item', '')
     requested_item = None
+    listing = None
     if item_id.isdigit():
         existing = SwapRequest.objects.filter(
             requester=request.user,
@@ -232,7 +280,9 @@ def create(request):
         if existing:
             messages.info(request, 'Kamu sudah memiliki request aktif untuk pakaian ini. Lanjutkan dari detail request tersebut.')
             return redirect('swap_requests:detail', pk=existing.pk)
-        swap = form.save()
+        swap = form.save(commit=False)
+        swap.requested_listing_cycle_key = listing.cycle_key
+        swap.save()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # Form Ajukan Swap dibuka di modal dari Jelajahi. Kembalikan isi
             # konfirmasi langsung agar modal sukses tampil di atas halaman asal.
@@ -263,10 +313,17 @@ def _detail_context(request, swap):
         or (swap.status == SwapRequest.REJECTED
             and bool(swap.requester_confirmation or swap.owner_confirmation))
     )
-    requested_listing = ItemForSwap.objects.filter(
-        clothing_item_id=swap.requested_item_id,
-        user=swap.owner,
-    ).order_by('-posted_at').first() if swap.requested_item_id else None
+    requested_listing = None
+    if swap.requested_item_id and swap.requested_listing_cycle_key:
+        listing_id = swap.requested_listing_cycle_key.partition(':')[0]
+        if listing_id.isdigit():
+            candidate = ItemForSwap.objects.filter(
+                pk=int(listing_id),
+                clothing_item_id=swap.requested_item_id,
+                user=swap.owner,
+            ).first()
+            if candidate and candidate.cycle_key == swap.requested_listing_cycle_key:
+                requested_listing = candidate
     requester_summary = _party_summary(swap.requester)
     owner_summary = _party_summary(swap.owner)
     created_at_local = timezone.localtime(
@@ -443,6 +500,8 @@ def bulk_delete(request):
         value for value in request.POST.getlist('swap_ids') if value.isdigit()
     ))
     tab = 'masuk' if request.POST.get('tab') == 'masuk' else 'kamu'
+    item_id = request.POST.get('item_id', '')
+    cycle_scope = _cycle_scope(request.POST) if tab == 'masuk' and item_id.isdigit() else None
     if not selected_ids:
         messages.info(request, 'Pilih request yang ingin dihapus terlebih dahulu.')
     else:
@@ -464,11 +523,14 @@ def bulk_delete(request):
 
     if _is_htmx(request):
         SwapRequest.objects.sync_availability()
-        item_id = request.POST.get('item_id', '')
         if tab == 'masuk' and item_id.isdigit():
-            SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
-                                       requested_item_id=item_id).mark_seen_by(request.user)
-            context = _item_requests_context(request.user, int(item_id))
+            request_qs = _filter_cycle_scope(
+                SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
+                                           requested_item_id=item_id),
+                cycle_scope,
+            )
+            request_qs.mark_seen_by(request.user)
+            context = _item_requests_context(request.user, int(item_id), cycle_scope)
             if context is not None:
                 return render(request, 'swap_requests/partials/item_requests_content.html', context)
         _, status, filters = _index_state(request.POST)
@@ -481,7 +543,11 @@ def _bulk_delete_redirect(request, tab):
     if tab == 'masuk':
         item_id = request.POST.get('item_id', '')
         if item_id.isdigit():
-            return redirect('swap_requests:item_requests', item_id=int(item_id))
+            url = reverse('swap_requests:item_requests', kwargs={'item_id': int(item_id)})
+            cycle_scope = _cycle_scope(request.POST)
+            if cycle_scope:
+                url = f'{url}?{urlencode({"cycle": cycle_scope})}'
+            return redirect(url)
     status = request.POST.get('status', '')
     filters = OUTGOING_FILTERS if tab == 'kamu' else INCOMING_FILTERS
     query = f'?tab={tab}'

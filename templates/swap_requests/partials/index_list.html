@@ -62,7 +62,7 @@
                     </div>
                     <div class="sr-row__side">
                         {% include 'swap_requests/partials/status_badge.html' with label=g.top_label style=g.top_style %}
-                        {% if g.item %}<a href="{% url 'swap_requests:item_requests' g.item.pk %}" class="sr-btn-all sw-btn-holo">Lihat semua request</a>{% endif %}
+                        {% if g.item %}<a href="{% url 'swap_requests:item_requests' g.item.pk %}?cycle={{ g.cycle_param|urlencode }}" class="sr-btn-all sw-btn-holo">Lihat semua request</a>{% endif %}
                     </div>
                 </article>
                 {% endfor %}
