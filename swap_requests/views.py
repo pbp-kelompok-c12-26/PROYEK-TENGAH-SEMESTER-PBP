@@ -70,13 +70,13 @@ def _index_context(user, tab, status, filters):
     )
     request_summary_rows = [
         {
-            'label': 'Masuk aktif',
+            'label': 'Masuk aktif :',
             'pending': incoming_active_counts.get(SwapRequest.PENDING, 0),
             'awaiting': incoming_active_counts.get(SwapRequest.AWAITING, 0),
             'total': sum(incoming_active_counts.values()),
         },
         {
-            'label': 'Keluar aktif',
+            'label': 'Keluar aktif :',
             'pending': outgoing_active_counts.get(SwapRequest.PENDING, 0),
             'awaiting': outgoing_active_counts.get(SwapRequest.AWAITING, 0),
             'total': sum(outgoing_active_counts.values()),

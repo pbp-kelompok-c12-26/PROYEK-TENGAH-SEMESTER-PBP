@@ -1,3 +1,5 @@
+import { toast } from '../../digital_wardrobe/js/toast.js';
+
 /* Interaksi HTMX khusus Swap Request: feedback, pencegahan klik ganda, dan rollback visual. */
 (() => {
     if (window.SwapRequestInteractions) return;
@@ -10,20 +12,22 @@
     }
 
     function showError(message) {
-        let stack = document.querySelector('.sr-messages');
-        if (!stack) {
-            stack = document.createElement('div');
-            stack.className = 'sr-messages';
-            stack.setAttribute('role', 'status');
-            stack.setAttribute('aria-live', 'polite');
-            const host = document.querySelector('.sr-page, .sr-detail') || document.body;
-            host.prepend(stack);
-        }
-        const alert = document.createElement('div');
-        alert.className = 'sr-message sr-message--error';
-        alert.textContent = message;
-        stack.replaceChildren(alert);
+        toast(message, true);
     }
+
+    function initServerToasts(root = document) {
+        const toasts = [];
+        if (root.matches?.('#wardrobe-toast [data-toast]')) toasts.push(root);
+        root.querySelectorAll?.('#wardrobe-toast [data-toast]').forEach((item) => toasts.push(item));
+        toasts.forEach((item) => {
+            if (item.dataset.srDismissInitialized === 'true') return;
+            item.dataset.srDismissInitialized = 'true';
+            window.setTimeout(() => item.remove(), 4000);
+        });
+    }
+
+    initServerToasts();
+    document.addEventListener('htmx:load', (event) => initServerToasts(event.detail?.elt || document));
 
     function clearOptimisticState() {
         document.querySelectorAll('.sr-optimistic-removal').forEach((node) => {

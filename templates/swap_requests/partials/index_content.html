@@ -1,6 +1,6 @@
 {% url 'home:index' as explore_url %}
 <div class="sr-page" id="sr-index-content">
-    {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='PERMINTAAN SWAP' title='Kelola Pertukaranmu' subtitle='Pantau permintaan swap masuk dan pengajuanmu di satu tempat.' button_url=explore_url button_label='→ Jelajahi pakaian' summary_rows=request_summary_rows %}
+    {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='PERMINTAAN SWAP' title='Kelola Pertukaranmu' subtitle='Pantau permintaan swap masuk dan pengajuanmu di satu tempat.' button_url=explore_url button_label='→ Jelajahi pakaian' summary_rows=request_summary_rows summary_show_total=True %}
     {% include 'swap_requests/partials/messages.html' %}
     {% include 'swap_requests/partials/index_list.html' %}
 </div>
