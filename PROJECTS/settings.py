@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 import tempfile
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 from pathlib import Path
 # Load environment variables from .env file
@@ -22,16 +23,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+# PRODUCTION=True hanya di PWS (environment variable). Di laptop tidak perlu diisi.
+PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q$#4$b26*jp1sp=6*v+n9=(h4hvo4)lhwc$&x_yt#kxlw6_p05'
+# Kunci asli disimpan di environment variable SECRET_KEY (PWS), tidak di repo yang publik.
+# Kunci cadangan di bawah HANYA untuk development di laptop.
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-local-development-only')
+if PRODUCTION and not os.getenv('SECRET_KEY'):
+    raise ImproperlyConfigured('Environment variable SECRET_KEY wajib diisi di production (PWS).')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# Otomatis: True di laptop (pesan error lengkap), False di PWS (detail error tidak ditampilkan).
+DEBUG = not PRODUCTION
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "stephanie-revalina-swapdrobe.pws.cs.ui.ac.id",]
 # Wajib untuk HTTPS (Django 4+): domain yang boleh mengirim form POST
 CSRF_TRUSTED_ORIGINS = ["https://stephanie-revalina-swapdrobe.pws.cs.ui.ac.id"]
-PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
 
 
 # Application definition
