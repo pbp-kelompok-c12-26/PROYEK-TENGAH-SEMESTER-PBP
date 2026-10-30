@@ -1,0 +1,106 @@
+<div id="sr-detail-state" class="sr-detail-state">
+    <section class="sr-panel sr-panel--stack">
+        <div class="sr-status-head">
+            <h2 class="sr-panel__heading">Status Request</h2>
+            {% include 'swap_requests/partials/status_badge.html' with swap=swap %}
+        </div>
+        <p class="sr-status-note">{{ swap.status_note }}</p>
+
+        {% if not requested_listing %}
+        <span class="sr-listing-link sr-listing-link--gone" aria-disabled="true">Detail item untuk swap sudah tidak tersedia</span>
+        {% else %}
+        <a href="{% url 'items_for_swap:detail' requested_listing.pk %}" class="sr-listing-link sr-listing-link--active">
+            Lihat detail item untuk swap <span aria-hidden="true">&rarr;</span>
+        </a>
+        {% endif %}
+
+        {% if role == 'owner' and swap.status == 'pending' %}
+        <div class="sr-callout sr-callout--info" role="status">
+            <svg class="sr-callout__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+            <div>
+                <p class="sr-callout__title">{{ other_profile.name }} sudah menyetujui pakaian yang ia tawarkan.</p>
+                <p class="sr-callout__line">Persetujuanmu akan melengkapi kesepakatan kedua pihak. Untuk mengatur pertukaran, nomor telepon akan tersedia setelah kamu menyetujui request ini.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if swap.status == 'awaiting_exchange' %}
+        <div class="sr-callout sr-callout--contact">
+            <svg class="sr-callout__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+            <div>
+                <p>Hubungi <a href="{% url 'accounts:public_profile' other.username %}" class="sr-link sr-link--bold">{{ other_profile.name }}</a> untuk mengatur waktu dan tempat pertukaran.</p>
+                <div class="sr-contact">
+                    <p class="sr-contact__title">Kontak untuk pertukaran</p>
+                    <p>{{ other_profile.name }}:
+                        {% if other_profile.phone_number %}<a href="tel:{{ other_profile.phone_number }}">{{ other_profile.phone_number }}</a>
+                        {% else %}<span class="sr-contact__empty">Belum menambahkan nomor telepon.</span>{% endif %}
+                    </p>
+                    <p>Kamu:
+                        {% if my_profile.phone_number %}<a href="tel:{{ my_profile.phone_number }}">{{ my_profile.phone_number }}</a>
+                        {% else %}
+                        <span class="sr-contact__empty">Nomor telepon belum diisi.</span>
+                        <a href="{% url 'accounts:edit_profile' %}" class="sr-callout__cta">Lengkapi profil</a>
+                        {% endif %}
+                    </p>
+                </div>
+                {% if not other_profile.phone_number %}<p class="sr-callout__note">Minta {{ other_profile.name }} melengkapi nomor telepon di profilnya agar kamu bisa menghubunginya.</p>{% endif %}
+                {% if other.email %}<p class="sr-callout__line">Email: <a href="mailto:{{ other.email }}">{{ other.email }}</a></p>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if can_respond %}
+        <div class="sr-respond">
+            <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" hx-post="{% url 'swap_requests:respond' swap.pk %}"
+                  hx-target="#sr-detail-state" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this"
+                  data-sr-hx-action data-sr-optimistic-status="rejected" data-confirm="Tolak request {{ swap.code }} dari @{{ other.username }}?" data-confirm-yes="Ya, tolak" data-confirm-danger="1">
+                {% csrf_token %}
+                <button type="submit" name="action" value="reject" class="sr-respond__reject">Tolak swap</button>
+            </form>
+            <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" hx-post="{% url 'swap_requests:respond' swap.pk %}"
+                  hx-target="#sr-detail-state" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this"
+                  data-sr-hx-action data-sr-optimistic-status="awaiting_exchange" data-confirm="Setujui swap ini? Request lain tetap pada statusnya, tetapi tidak bisa diterima selama salah satu pakaian masih dalam pertukaran ini." data-confirm-yes="Ya, setujui">
+                {% csrf_token %}
+                <button type="submit" name="action" value="accept" class="sr-respond__accept">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
+                    Setujui swap
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </section>
+
+    {% if show_confirmations %}
+    <section class="sr-panel sr-panel--stack">
+        <div>
+            <h2 class="sr-panel__heading">Konfirmasi Penyelesaian</h2>
+            <p class="sr-confirm__hint">Swap selesai setelah kalian berdua memilih <b>Selesai swap</b>. Kalau salah satu dari kalian memilih <b>Batalkan swap</b>, pertukaran langsung dibatalkan.</p>
+        </div>
+        <div class="sr-confirm__box">
+            <div class="sr-confirm__row">
+                {% include 'swap_requests/partials/avatar.html' with person=request.user profile=my_profile size='sm' %}
+                {% if swap.status == 'awaiting_exchange' %}
+                <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" hx-post="{% url 'swap_requests:confirm' swap.pk %}"
+                      hx-target="#sr-detail-state" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this"
+                      data-sr-hx-action class="sr-confirm__form" data-confirm="Simpan pilihanmu? Memilih Batalkan swap langsung membatalkan pertukaran ini." data-confirm-yes="Ya, simpan">
+                    {% csrf_token %}
+                    <select name="choice" required class="sr-confirm__select">
+                        <option value="">Pilih opsi</option>
+                        {% for value, label in confirm_choices %}<option value="{{ value }}" {% if my_confirmation == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    <button type="submit" class="sr-confirm__save sw-btn-holo">Simpan</button>
+                </form>
+                {% else %}
+                <p class="sr-confirm__value">Kamu: {% if my_confirmation == 'done' %}Selesai swap{% elif my_confirmation == 'cancel' %}Batalkan swap{% else %}–{% endif %}</p>
+                {% endif %}
+            </div>
+            <div class="sr-confirm__row">
+                <p class="sr-confirm__value">
+                    <span><a href="{% url 'accounts:public_profile' other.username %}" class="sr-user-link">@{{ other.username }}</a>: {% if other_confirmation == 'done' %}Selesai swap{% elif other_confirmation == 'cancel' %}Batalkan swap{% else %}<span class="sr-confirm__waiting">menunggu pilihan…</span>{% endif %}</span>
+                </p>
+                {% include 'swap_requests/partials/avatar.html' with person=other profile=other_profile size='sm' %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</div>

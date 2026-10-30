@@ -1,0 +1,5 @@
+{% load static %}
+{# Gunakan HTMX lokal yang sudah dipakai Lemari Digital; aksi Swap Request tetap dikelola modul ini. #}
+<script src="{% static 'digital_wardrobe/vendor/htmx-2.0.4.min.js' %}" defer></script>
+<script src="{% static 'swap_requests/js/bulk_delete.js' %}" defer></script>
+<script src="{% static 'swap_requests/js/interactions.js' %}" type="module"></script>

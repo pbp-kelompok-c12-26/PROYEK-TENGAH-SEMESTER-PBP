@@ -1,0 +1,5 @@
+{% include 'swap_requests/partials/overview_panel.html' with oob=True %}
+<div id="sr-detail-feedback" hx-swap-oob="outerHTML">
+    {% include 'swap_requests/partials/messages.html' %}
+</div>
+{% include 'swap_requests/partials/detail_state.html' %}

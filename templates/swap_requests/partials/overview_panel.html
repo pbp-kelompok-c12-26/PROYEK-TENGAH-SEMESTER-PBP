@@ -1,0 +1,8 @@
+<section id="sr-detail-overview" class="sr-panel sr-panel--overview"{% if oob %} hx-swap-oob="outerHTML"{% endif %}>
+    <h2 class="sr-panel__title">Overview Pertukaran</h2>
+    <div class="sr-overview">
+        {% include 'swap_requests/partials/overview_item.html' with item=get_item name=get_name person=other person_profile=get_profile stats=get_stats caption=get_caption %}
+        <svg class="sr-overview__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>
+        {% include 'swap_requests/partials/overview_item.html' with item=give_item name=give_name person=request.user person_profile=give_profile stats=give_stats caption=give_caption %}
+    </div>
+</section>

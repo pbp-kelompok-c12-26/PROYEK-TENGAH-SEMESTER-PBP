@@ -1,0 +1,36 @@
+<div id="sr-item-list-content" class="sr-item-list-content">
+    {% include 'swap_requests/partials/messages.html' %}
+    {% if accepted or others %}
+    <form method="post" action="{% url 'swap_requests:bulk_delete' %}" hx-post="{% url 'swap_requests:bulk_delete' %}"
+          hx-target="#sr-item-list-content" hx-swap="outerHTML" hx-sync="this:drop" hx-indicator="this"
+          class="sr-bulk-form" data-sr-bulk-form>
+        {% csrf_token %}
+        <input type="hidden" name="tab" value="masuk">
+        <input type="hidden" name="item_id" value="{{ item.pk }}">
+        <input type="hidden" name="cycle" value="{{ cycle_param }}">
+        {% include 'swap_requests/partials/bulk_toolbar.html' %}
+
+        {% if accepted %}
+        <section class="sr-list">
+            <div class="sr-list__head">
+                <h2 class="sr-list__title">Request yang kamu terima</h2>
+                <p class="sr-list__text">Pertukaran yang sedang berjalan atau sudah selesai.</p>
+            </div>
+            {% for s in accepted %}
+            {% include 'swap_requests/partials/request_row.html' with swap=s person=s.requester give_item=s.requested_item give_name=s.requested_item_name get_item=s.offered_item get_name=s.offered_item_name heading=s.requester.username|add:' menawarkan pakaian:' to_label='dari' bulk_select=True %}
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <section class="sr-list">
+            {% for s in others %}
+            {% include 'swap_requests/partials/request_row.html' with swap=s person=s.requester give_item=s.requested_item give_name=s.requested_item_name get_item=s.offered_item get_name=s.offered_item_name heading=s.requester.username|add:' menawarkan pakaian:' to_label='dari' bulk_select=True %}
+            {% empty %}
+            <p class="sr-list__empty">Belum ada request lain untuk pakaian ini.</p>
+            {% endfor %}
+        </section>
+    </form>
+    {% else %}
+    <section class="sr-list"><p class="sr-list__empty">Belum ada request untuk pakaian ini.</p></section>
+    {% endif %}
+</div>

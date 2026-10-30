@@ -59,13 +59,20 @@
         document.body.classList.add('sw-no-scroll');
     }
 
-    function close() {
-        if (!overlay || overlay.hidden) return;
+    function close(restoreFocus = true) {
+        if (!overlay) return;
+        const wasOpen = !overlay.hidden;
         overlay.hidden = true;
         slot.replaceChildren();
         document.body.classList.remove('sw-no-scroll');
         currentUrl = null;
-        if (lastTrigger && document.contains(lastTrigger)) lastTrigger.focus();
+        if (restoreFocus && wasOpen && lastTrigger && document.contains(lastTrigger)) lastTrigger.focus();
+    }
+
+    function navigate(url) {
+        // Jangan tinggalkan overlay pada state loading saat halaman tujuan dibuka.
+        close(false);
+        window.location.assign(url);
     }
 
     function setLoading(text = 'Memuat form...') {
@@ -106,7 +113,7 @@
         const doc = new DOMParser().parseFromString(html, 'text/html');
         const content = doc.querySelector('[data-modal-content]');
         if (!content) {
-            window.location.assign(url);   // halaman bukan form pop-up: buka seperti biasa
+            navigate(url);   // halaman bukan form pop-up: buka seperti biasa
             return;
         }
         await loadStyles(doc, url);
@@ -145,12 +152,12 @@
             });
             if (response.redirected || !response.ok) {
                 // mis. belum login, request sudah ada, atau tidak ada pakaian yang bisa ditawarkan
-                window.location.assign(response.redirected ? response.url : url);
+                navigate(response.redirected ? response.url : url);
                 return;
             }
             await render(await response.text(), response.url);
         } catch (error) {
-            window.location.assign(url);
+            navigate(url);
         }
     }
 
@@ -176,7 +183,7 @@
                     await render(html, response.url);
                     return;
                 }
-                window.location.assign(response.url);   // redirect sukses fitur lain
+                navigate(response.url);   // redirect sukses fitur lain
                 return;
             }
             await render(await response.text(), response.url);   // ada error: tampilkan lagi
@@ -194,6 +201,13 @@
         if (trigger.hasAttribute('data-auth-required')) return;   // tamu: biarkan pop-up login yang muncul
         event.preventDefault();
         open(trigger.href, trigger);
+    });
+
+    // Bersihkan state modal sebelum halaman masuk cache browser, dan sebagai
+    // pengaman saat halaman dipulihkan lewat tombol Back/Forward.
+    window.addEventListener('pagehide', () => close(false));
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) close(false);
     });
 
     window.SwFormModal = { open, close };
