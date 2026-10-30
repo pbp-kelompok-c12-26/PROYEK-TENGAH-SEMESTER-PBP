@@ -39,6 +39,21 @@ class SwapRequestQuerySet(models.QuerySet):
             swap.save(update_fields=['status', 'responded_at', 'updated_at'])
         return active.count()
 
+    def mark_listing_returned(self, listing):
+        """Simpan siklus listing pada request lama lalu tandai bahwa listing dikembalikan."""
+        related = self.filter(
+            owner_id=listing.user_id,
+            requested_item_id=listing.clothing_item_id,
+            created_at__gte=listing.posted_at,
+        )
+        related.filter(
+            Q(requested_listing_cycle_key__isnull=True)
+            | Q(requested_listing_cycle_key=''),
+        ).update(requested_listing_cycle_key=listing.cycle_key)
+        return related.filter(
+            requested_listing_cycle_key=listing.cycle_key,
+        ).update(requested_listing_returned_to_wardrobe=True)
+
     def visible_to(self, user):
         return self.filter(
             Q(requester=user, requester_hidden=False)
@@ -89,6 +104,9 @@ class SwapRequest(models.Model):
     # Pakaian milik owner yang diminta, dan pakaian milik requester yang ditawarkan.
     # SET_NULL + snapshot nama supaya riwayat tetap ada walau pakaian dihapus.
     requested_item = models.ForeignKey(ClothingItem, on_delete=models.SET_NULL, null=True, blank=True, related_name='incoming_swap_requests')
+    # Snapshot identitas listing; tidak memakai FK agar siklus tetap tersimpan setelah listing dihapus.
+    requested_listing_cycle_key = models.CharField(max_length=64, null=True, blank=True, db_index=True)
+    requested_listing_returned_to_wardrobe = models.BooleanField(default=False)
     offered_item = models.ForeignKey(ClothingItem, on_delete=models.SET_NULL, null=True, blank=True, related_name='outgoing_swap_requests')
     requested_item_name = models.CharField(max_length=100)
     offered_item_name = models.CharField(max_length=100)

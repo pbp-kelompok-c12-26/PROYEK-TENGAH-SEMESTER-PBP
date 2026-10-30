@@ -7,6 +7,7 @@
 {% block content %}
 
 <div class="ifs">
+  {% include 'items_for_swap/partials/messages.html' %}
   {% url 'items_for_swap:add' as add_url %}
   {% include 'digital_wardrobe/partials/holo_banner.html' with eyebrow='ITEM SWAP SAYA' title='Item untuk Swap' subtitle='Kelola pakaian kamu untuk ditukar dengan orang lain.' button_url=add_url button_modal=True button_label='+ Tambahkan pakaian dari lemari untuk ditukar' %}
 

@@ -79,6 +79,11 @@ class ItemForSwap(models.Model):
         return self.status == self.AVAILABLE
 
     @property
+    def cycle_key(self):
+        """Identitas unik siklus listing yang tetap membedakan listing lama yang terhapus."""
+        return f'{self.pk}:{self.posted_at.isoformat()}'
+
+    @property
     def photo_url(self):
         return get_photo_url(self.clothing_item)
 
@@ -174,6 +179,12 @@ class ItemForSwap(models.Model):
 def reset_listed_flag(sender, instance, **kwargs):
     """Listing available dihapus (lewat view maupun admin) -> baju kembali ke lemari."""
     if instance.status == ItemForSwap.AVAILABLE:
+        # Tandai request dari siklus listing ini sebelum sinkronisasi menolak request aktif.
+        if ClothingItem.objects.filter(pk=instance.clothing_item_id).exists():
+            manager = ItemForSwap._swap_request_manager()
+            mark_returned = getattr(manager, 'mark_listing_returned', None)
+            if mark_returned:
+                mark_returned(instance)
         ClothingItem.objects.filter(pk=instance.clothing_item_id).update(is_listed_for_swap=False)
         manager = ItemForSwap._swap_request_manager()
         sync = getattr(manager, 'sync_availability', None)

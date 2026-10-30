@@ -69,9 +69,9 @@
 #wardrobe-toast .wd-toast {
     width: 100%;
     border-radius: 0.75rem;
-    background-color: var(--sw-navy);
+    background-color: #83E7FF;
     padding: 0.75rem 1rem;
-    color: var(--sw-white);
+    color: var(--sw-navy);
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.25rem;
@@ -80,7 +80,8 @@
 }
 
 #wardrobe-toast .wd-toast--error {
-    background-color: var(--sw-berry);
+    background-color: #83E7FF;
+    color: var(--sw-navy);
 }
 
 @keyframes sr-toast-in {
@@ -198,6 +199,11 @@
 .sr-status--completed {
     background-color: #3E8E4E;
     color: var(--sw-white);
+}
+
+.sr-status--returned {
+    background-color: #FFF0B8;
+    color: #725400;
 }
 
 
@@ -484,6 +490,7 @@
 
 /* Satu baris request / satu kelompok pakaian */
 .sr-row {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -494,6 +501,19 @@
     transition-property: box-shadow;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
+}
+
+.sr-row__notification {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 1;
+}
+
+@media (max-width: 639px) {
+    .sr-row--has-notification {
+        padding-top: 2rem;
+    }
 }
 
 .sr-row:hover {

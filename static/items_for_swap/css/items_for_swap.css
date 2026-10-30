@@ -20,6 +20,38 @@
    Halaman Item Swap Saya (items_for_swap/index.html)
    (sebelumnya ditulis di <style> dalam template)
    ========================================================= */
+.wd-toast-stack {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    z-index: 70;
+    display: flex;
+    width: calc(100% - 2rem);
+    max-width: 28rem;
+    transform: translate(-50%, 0);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.wd-toast {
+    width: 100%;
+    border-radius: 0.75rem;
+    background-color: #83E7FF;
+    padding: 0.75rem 1rem;
+    color: var(--sw-navy);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.wd-toast--error {
+    background-color: #83E7FF;
+    color: var(--sw-navy);
+}
+
 .ifs {
     max-width: 1200px;
     margin: 0 auto;
@@ -41,17 +73,32 @@
 }
 
 .ifs-tabs a {
+    position: relative;
     font-size: 1.3rem;
     font-weight: 600;
-    color: #777;
+    color: var(--sw-slate);
     text-decoration: none;
     padding-bottom: 4px;
 }
 
+.ifs-tabs a:not(.on):hover {
+    color: var(--sw-navy);
+}
+
 /* Tab yang sedang dibuka */
 .ifs-tabs a.on {
-    color: #3a5fa8;
-    border-bottom: 2px solid #3a5fa8;
+    color: var(--sw-navy);
+}
+
+.ifs-tabs a.on::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 9999px;
+    background-image: linear-gradient(to right, var(--sw-berry), var(--sw-holo-lilac), var(--sw-holo-blue));
+    content: "";
 }
 
 .ifs-search {

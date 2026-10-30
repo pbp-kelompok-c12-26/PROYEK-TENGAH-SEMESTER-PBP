@@ -7,6 +7,7 @@
         {% csrf_token %}
         <input type="hidden" name="tab" value="masuk">
         <input type="hidden" name="item_id" value="{{ item.pk }}">
+        <input type="hidden" name="cycle" value="{{ cycle_param }}">
         {% include 'swap_requests/partials/bulk_toolbar.html' %}
 
         {% if accepted %}

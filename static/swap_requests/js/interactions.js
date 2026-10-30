@@ -84,7 +84,7 @@ import { toast } from '../../digital_wardrobe/js/toast.js';
                 const row = checkbox.closest('.sr-bulk-option, .sr-row');
                 row?.classList.add('sr-optimistic-removal');
             });
-        } else if (form.action.includes('/delete/')) {
+        } else if ((form.getAttribute('action') || '').includes('/delete/')) {
             document.querySelector('#sr-detail-root')?.classList.add('sr-optimistic-removal');
         }
     });

@@ -33,7 +33,8 @@
             {% include 'swap_requests/partials/bulk_toolbar.html' %}
             <section class="sr-list">
                 {% for g in groups %}
-                <article class="sr-row">
+                <article class="sr-row{% if g.unread_count %} sr-row--has-notification{% endif %}">
+                    {% if g.unread_count %}<span class="sw-nav__badge sr-row__notification" title="Perubahan belum dilihat" aria-label="{{ g.unread_count }} perubahan belum dilihat">{{ g.unread_count }}</span>{% endif %}
                     <div class="sr-row__main">
                         {% include 'swap_requests/partials/thumb.html' with item=g.item name=g.name size='lg' %}
                         <div class="sr-row__text">
@@ -61,7 +62,7 @@
                     </div>
                     <div class="sr-row__side">
                         {% include 'swap_requests/partials/status_badge.html' with label=g.top_label style=g.top_style %}
-                        {% if g.item %}<a href="{% url 'swap_requests:item_requests' g.item.pk %}" class="sr-btn-all sw-btn-holo">Lihat semua request</a>{% endif %}
+                        {% if g.item %}<a href="{% url 'swap_requests:item_requests' g.item.pk %}?cycle={{ g.cycle_param|urlencode }}" class="sr-btn-all sw-btn-holo">Lihat semua request</a>{% endif %}
                     </div>
                 </article>
                 {% endfor %}
