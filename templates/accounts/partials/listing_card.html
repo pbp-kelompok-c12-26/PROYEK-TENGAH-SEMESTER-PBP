@@ -48,6 +48,7 @@ Parameter: `listing` (ItemForSwap), `owner_profile` (UserProfile).
             Lihat detail
         </a>
         <a href="{% url 'swap_requests:create' %}?item={{ listing.clothing_item_id }}" data-form-modal
+           {% if not request.user.is_authenticated %}data-auth-required{% endif %}
            class="acc-listing__btn acc-listing__btn--swap sw-btn-holo">
             Ajukan swap
         </a>
