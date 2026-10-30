@@ -743,7 +743,7 @@ body.wd-no-scroll {
 .wd-toast {
     width: 100%;
     border-radius: 0.75rem;
-    background-color: var(--sw-navy);
+    background-color: #83E7FF;
     padding-left: 1rem;
     padding-right: 1rem;
     padding-top: 0.75rem;
@@ -751,12 +751,13 @@ body.wd-no-scroll {
     font-size: 0.875rem;
     line-height: 1.25rem;
     font-weight: 500;
-    color: var(--sw-white);
+    color: var(--sw-navy);
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 .wd-toast--error {
-    background-color: var(--sw-berry);
+    background-color: #83E7FF;
+    color: var(--sw-navy);
 }
 
 

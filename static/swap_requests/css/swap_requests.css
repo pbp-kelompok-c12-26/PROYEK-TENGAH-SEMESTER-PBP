@@ -69,9 +69,9 @@
 #wardrobe-toast .wd-toast {
     width: 100%;
     border-radius: 0.75rem;
-    background-color: var(--sw-navy);
+    background-color: #83E7FF;
     padding: 0.75rem 1rem;
-    color: var(--sw-white);
+    color: var(--sw-navy);
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.25rem;
@@ -80,7 +80,8 @@
 }
 
 #wardrobe-toast .wd-toast--error {
-    background-color: var(--sw-berry);
+    background-color: #83E7FF;
+    color: var(--sw-navy);
 }
 
 @keyframes sr-toast-in {
