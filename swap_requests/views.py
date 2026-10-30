@@ -150,12 +150,12 @@ def _index_context(user, tab, status, filters):
                 'unread_count': sum(s.unread_notification_count for s in swaps),
                 'requests': swaps,
                 'summary': ' · '.join(f'{counts[s]} {dict(SwapRequest.STATUS_CHOICES)[s].lower()}'
-                                      for s in STATUS_PRIORITY if counts[s]),
+                                    for s in STATUS_PRIORITY if counts[s]),
                 'top_status': display_status,
                 'top_label': ('Dikembalikan ke lemari' if returned_to_wardrobe
-                              else dict(SwapRequest.STATUS_CHOICES)[top]),
+                            else dict(SwapRequest.STATUS_CHOICES)[top]),
                 'top_style': ('sr-status--returned' if returned_to_wardrobe
-                              else SwapRequest.STATUS_STYLES[display_status]),
+                            else SwapRequest.STATUS_STYLES[display_status]),
             })
     else:
         qs = _base_qs().filter(requester=user, requester_hidden=False).annotate(
@@ -226,7 +226,7 @@ def item_requests(request, item_id):
     cycle_scope = _cycle_scope(request.GET)
     request_qs = _filter_cycle_scope(
         SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
-                                   requested_item_id=item_id),
+                                requested_item_id=item_id),
         cycle_scope,
     )
     request_qs.mark_seen_by(request.user)
@@ -256,10 +256,10 @@ def create(request):
             return redirect('swap_requests:detail', pk=existing.pk)
         # `item` is the ClothingItem ID used by the catalogue card and listing detail.
         listing = (ItemForSwap.objects.available()
-                   .filter(clothing_item_id=item_id,
-                           clothing_item__deleted_at__isnull=True,
-                           clothing_item__is_listed_for_swap=True)
-                   .select_related('clothing_item__user').first())
+                .filter(clothing_item_id=item_id,
+                        clothing_item__deleted_at__isnull=True,
+                        clothing_item__is_listed_for_swap=True)
+                .select_related('clothing_item__user').first())
         requested_item = listing.clothing_item if listing else None
     if requested_item is None:
         messages.error(request, 'Pakaian yang ingin kamu tukar tidak ditemukan atau sudah tidak tersedia.')
@@ -508,10 +508,10 @@ def bulk_delete(request):
         processed = 0
         with transaction.atomic():
             swaps = list(_base_qs().visible_to(request.user).filter(pk__in=selected_ids)
-                         .exclude(status=SwapRequest.AWAITING)
-                         # Tidak perlu join item/pengguna untuk menghapus; hindari
-                         # mengunci sisi nullable dari LEFT JOIN di PostgreSQL.
-                         .select_related(None).select_for_update())
+                        .exclude(status=SwapRequest.AWAITING)
+                        # Tidak perlu join item/pengguna untuk menghapus; hindari
+                        # mengunci sisi nullable dari LEFT JOIN di PostgreSQL.
+                        .select_related(None).select_for_update())
             for swap in swaps:
                 if _delete_swap_for_party(swap, request.user):
                     processed += 1
@@ -526,7 +526,7 @@ def bulk_delete(request):
         if tab == 'masuk' and item_id.isdigit():
             request_qs = _filter_cycle_scope(
                 SwapRequest.objects.filter(owner=request.user, owner_hidden=False,
-                                           requested_item_id=item_id),
+                                        requested_item_id=item_id),
                 cycle_scope,
             )
             request_qs.mark_seen_by(request.user)
@@ -535,7 +535,7 @@ def bulk_delete(request):
                 return render(request, 'swap_requests/partials/item_requests_content.html', context)
         _, status, filters = _index_state(request.POST)
         return render(request, 'swap_requests/partials/index_content.html',
-                      _index_context(request.user, tab, status, filters))
+                    _index_context(request.user, tab, status, filters))
     return _bulk_delete_redirect(request, tab)
 
 
