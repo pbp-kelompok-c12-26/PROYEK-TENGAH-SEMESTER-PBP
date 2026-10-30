@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import BooleanField, Exists, OuterRef, Q, Value
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -128,12 +128,11 @@ def delete_account(request):
     return redirect("accounts:login")
 
 
-@login_required(login_url='accounts:login')
 def public_profile(request, username):
     target_user = get_object_or_404(User, username=username, is_active=True)
     target_profile = UserProfile.for_user(target_user)
 
-    swap_listings = list(
+    swap_listings = (
         ItemForSwap.objects.available()
         .filter(
             user=target_user,
@@ -141,12 +140,18 @@ def public_profile(request, username):
             clothing_item__is_listed_for_swap=True,
         )
         .select_related('clothing_item', 'user')
-        .annotate(
+    )
+    if request.user.is_authenticated:
+        swap_listings = swap_listings.annotate(
             is_liked=Exists(
                 LikedSwapItem.objects.filter(user=request.user, listing_id=OuterRef('pk'))
             )
         )
-    )
+    else:
+        swap_listings = swap_listings.annotate(
+            is_liked=Value(False, output_field=BooleanField()),
+        )
+    swap_listings = list(swap_listings)
 
     completed_swap_count = SwapRequest.objects.filter(
         Q(requester=target_user) | Q(owner=target_user),
@@ -158,7 +163,7 @@ def public_profile(request, username):
     return render(request, "accounts/public_profile.html", {
         "target_user": target_user,
         "target_profile": target_profile,
-        "is_own_profile": request.user.pk == target_user.pk,
+        "is_own_profile": request.user.is_authenticated and request.user.pk == target_user.pk,
         "swap_count": len(swap_listings),
         "completed_swap_count": completed_swap_count,
         "likes_received_count": likes_received_count,
