@@ -235,6 +235,7 @@
 
 .sw-account__menu {
     position: absolute;
+    z-index: 60;
     right: 0px;
     margin-top: 0.5rem;
     width: 20rem;
@@ -256,6 +257,12 @@
     padding-right: 1rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
+    transition: background-color 150ms ease;
+}
+
+.sw-account__head:hover,
+.sw-account__head:focus-visible {
+    background-color: var(--sw-blush);
 }
 
 .sw-account__stripe {
