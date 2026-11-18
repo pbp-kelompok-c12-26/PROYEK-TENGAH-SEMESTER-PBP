@@ -87,7 +87,7 @@
 
             <div class="wd-detail__actions">
                 {# Kalau pakaian dipakai swap request aktif, tombol Hapus & Edit dikunci (class is-locked + atribut disabled) #}
-                <button type="button" {% if not swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ outfit_count }}"{% endif %}
+                <button type="button" {% if not swap_request_locked %}data-delete-url="{% url 'digital_wardrobe:item_delete' item.pk %}" data-delete-api-url="{% url 'digital_wardrobe_api:item-detail' item.pk %}" data-delete-name="{{ item.name }}" data-delete-outfits="{{ outfit_count }}"{% endif %}
                         {% if swap_request_locked %}disabled title="Batalkan swap request aktif terlebih dahulu" aria-describedby="swap-request-lock-note"{% endif %}
                         class="wd-btn wd-btn--wide {% if swap_request_locked %}is-locked{% else %}wd-btn--danger{% endif %}">
                     Hapus

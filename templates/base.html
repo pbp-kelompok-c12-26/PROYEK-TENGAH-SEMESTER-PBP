@@ -276,6 +276,7 @@
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json',
+                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
                     },
                 });
                 if (!response.ok) throw new Error('Like request failed');

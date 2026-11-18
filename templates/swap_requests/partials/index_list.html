@@ -24,7 +24,7 @@
 
     {% if tab == 'masuk' %}
         {% if groups %}
-        <form method="post" action="{% url 'swap_requests:bulk_delete' %}" hx-post="{% url 'swap_requests:bulk_delete' %}"
+        <form method="post" action="{% url 'swap_requests:bulk_delete' %}" data-sr-api-url="{% url 'swap_requests_api:request-bulk-delete' %}" hx-post="{% url 'swap_requests:bulk_delete' %}"
               hx-target="#sr-index-content" hx-swap="outerHTML" hx-sync="this:drop" hx-indicator="this"
               class="sr-bulk-form" data-sr-bulk-form>
             {% csrf_token %}
@@ -78,7 +78,7 @@
         {% endif %}
     {% else %}
         {% if outgoing %}
-        <form method="post" action="{% url 'swap_requests:bulk_delete' %}" hx-post="{% url 'swap_requests:bulk_delete' %}"
+        <form method="post" action="{% url 'swap_requests:bulk_delete' %}" data-sr-api-url="{% url 'swap_requests_api:request-bulk-delete' %}" hx-post="{% url 'swap_requests:bulk_delete' %}"
               hx-target="#sr-index-content" hx-swap="outerHTML" hx-sync="this:drop" hx-indicator="this"
               class="sr-bulk-form" data-sr-bulk-form>
             {% csrf_token %}

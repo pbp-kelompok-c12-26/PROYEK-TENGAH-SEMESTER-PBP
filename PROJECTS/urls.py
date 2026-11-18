@@ -11,6 +11,11 @@ urlpatterns = [
     path('items-for-swap/', include('items_for_swap.urls')),
     path('swap-requests/', include('swap_requests.urls')),
     path('outfit-calendar/', include('outfit_calendar.urls')),
+    path('api/digital-wardrobe/', include('digital_wardrobe.api_urls')),
+    path('api/items-for-swap/', include('items_for_swap.api_urls')),
+    path('api/swap-requests/', include('swap_requests.api_urls')),
+    path('api/outfit-calendar/', include('outfit_calendar.api_urls')),
+    path('api/home/', include('home.api_urls')),
 
     # Menyajikan foto upload (media); dipakai juga saat DEBUG = False
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

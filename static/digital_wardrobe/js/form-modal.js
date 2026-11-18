@@ -2,7 +2,7 @@
    Pemicu: tombol ber-atribut data-open-modal="<url form>".
    Server: views.item_create/item_update/outfit_create/outfit_update membalas JSON
    { ok, modal_html | card_html, pk?, kind?, total_items?, total_outfits?, message }. */
-import { getJson, postForm } from './http.js';
+import { getJson, sendForm } from './http.js';
 import { toast } from './toast.js';
 
 const MAX_SIZE = 5 * 1024 * 1024;   // sama dengan batas di forms.py
@@ -100,30 +100,35 @@ function setTotals(data, kind) {
         .forEach((el) => { el.textContent = total; });
 }
 
-function applySaved(data) {
-    const kind = data.kind || 'item';
-    if (data.pk) {
-        // Edit: ganti kartu di grid, atau muat ulang halaman detail
-        const card = document.getElementById(`${kind}-${data.pk}`);
-        if (!card) {
-            window.location.reload();
-            return;
-        }
-        card.outerHTML = data.card_html;
-        toast(data.message);
-        return;
+function apiErrorMessage(data) {
+    if (!data) return 'Gagal menyimpan. Coba lagi.';
+    if (data.detail) return Array.isArray(data.detail) ? data.detail.join(' ') : data.detail;
+    return Object.entries(data)
+        .map(([field, errors]) => `${field}: ${(Array.isArray(errors) ? errors : [errors]).join(' ')}`)
+        .join(' ') || 'Gagal menyimpan. Coba lagi.';
+}
+
+function showApiErrors(form, data) {
+    const message = apiErrorMessage(data);
+    let alert = form.querySelector('[data-api-errors]');
+    if (!alert) {
+        alert = document.createElement('div');
+        alert.className = 'wd-modal__alert';
+        alert.dataset.apiErrors = '';
+        form.querySelector('.wd-modal__head')?.insertAdjacentElement('afterend', alert);
     }
-    // Tambah: kartu baru langsung muncul di grid tanpa reload
-    const grid = document.getElementById(`${kind}-grid`);
-    if (!grid) {
-        window.location.href = data.redirect || getRoot().dataset.indexUrl;
-        return;
+    alert.textContent = message;
+    toast(message, true);
+}
+
+function apiFormData(form) {
+    const data = new FormData(form);
+    if (form.dataset.apiKind === 'outfit') {
+        const selected = data.getAll('items');
+        data.delete('items');
+        selected.forEach((id) => data.append('item_ids', id));
     }
-    grid.insertAdjacentHTML('afterbegin', data.card_html);
-    grid.hidden = false;
-    document.getElementById(`${kind}-empty-state`)?.remove();
-    setTotals(data, kind);
-    toast(data.message);
+    return data;
 }
 
 function bindForm(form) {
@@ -136,15 +141,20 @@ function bindForm(form) {
         const submit = form.querySelector('[data-submit]');
         submit.disabled = true;
         try {
-            const { data, denied } = await postForm(form.action, new FormData(form));
+            const { response, data, denied } = await sendForm(
+                form.dataset.apiUrl || form.action,
+                form.dataset.apiMethod || 'POST',
+                apiFormData(form),
+            );
             if (denied) return;   // form tetap terbuka supaya isian tidak hilang
-            if (!data?.ok) {
-                if (data?.modal_html) show(data.modal_html);   // ada error: tampilkan form + pesan
-                else { close(); toast(data?.message || 'Gagal menyimpan.', true); }
+            if (!response.ok) {
+                showApiErrors(form, data);
                 return;
             }
             close();
-            applySaved(data);
+            // Serializer menjadi satu-satunya kontrak tulis. Muat ulang agar
+            // kartu/kolase yang sudah dirender server tetap identik dengan UI lama.
+            window.location.reload();
         } catch (error) {
             toast('Gagal menyimpan. Periksa koneksi lalu coba lagi.', true);
         } finally {

@@ -9,23 +9,14 @@
    - toast & angka total diurus htmx-events.js (event wardrobe:deleted / wardrobe:delete-failed).
    Di halaman detail (tanpa kartu) form dikirim biasa lalu server redirect ke Lemari. */
 
+import { sendForm } from './http.js';
+import { toast } from './toast.js';
+
 // Elemen dicari ulang setiap dipakai: HTMX bisa mengganti isi <body> (tombol Back / riwayat)
 const getModal = () => document.getElementById('delete-modal');
 let lastTrigger = null;
 let pendingCardId = '';
-
-function deleteWithHtmx(form) {
-    const card = pendingCardId && document.getElementById(pendingCardId);
-    if (!card || !window.htmx) return false;
-    card.classList.add('is-removing');   // optimistic UI
-    window.htmx.ajax('POST', form.action, {
-        source: card,
-        target: card,
-        swap: 'outerHTML swap:250ms',
-        headers: { 'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value },
-    });
-    return true;
-}
+let pendingApiUrl = '';
 
 function setText(modal, selector, value) {
     const el = modal.querySelector(selector);
@@ -35,8 +26,9 @@ function setText(modal, selector, value) {
 function open(trigger) {
     const modal = getModal();
     if (!modal) return;
-    const { deleteUrl, deleteName, deleteKind = 'item', deleteCard = '' } = trigger.dataset;
+    const { deleteUrl, deleteApiUrl = '', deleteName, deleteKind = 'item', deleteCard = '' } = trigger.dataset;
     pendingCardId = deleteCard;
+    pendingApiUrl = deleteApiUrl;
     const outfitCount = parseInt(trigger.dataset.deleteOutfits, 10) || 0;
     const upcoming = parseInt(trigger.dataset.deleteUpcoming, 10) || 0;
     const history = parseInt(trigger.dataset.deleteHistory, 10) || 0;
@@ -80,11 +72,22 @@ export function init() {
         }
         if (event.target.closest('[data-close-delete]')) close();
     });
-    document.addEventListener('submit', (event) => {
-        if (!event.target.matches('[data-delete-form]') || !pendingCardId) return;   // halaman detail: kirim form biasa
+    document.addEventListener('submit', async (event) => {
+        if (!event.target.matches('[data-delete-form]') || !pendingApiUrl) return;
         event.preventDefault();
         getModal().hidden = true;
-        if (!deleteWithHtmx(event.target)) event.target.submit();
+        const form = event.target;
+        const card = pendingCardId && document.getElementById(pendingCardId);
+        card?.classList.add('is-removing');
+        try {
+            const { response, data, denied } = await sendForm(pendingApiUrl, 'DELETE', new FormData(form));
+            if (denied) return;
+            if (!response.ok) throw new Error(data?.detail || 'Gagal menghapus data.');
+            window.location.assign(document.getElementById('modal-root')?.dataset.indexUrl || '/digital-wardrobe/');
+        } catch (error) {
+            card?.classList.remove('is-removing');
+            toast(error.message || 'Gagal menghapus data.', true);
+        }
     });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') close();

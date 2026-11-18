@@ -20,7 +20,7 @@
             <p class="wd-detail__date">Dibuat pada: {{ added_label }} · {{ outfit_items|length }} pakaian</p>
         </div>
         <div class="wd-outfit-head__actions">
-            <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit" data-delete-upcoming="{{ upcoming_total }}" data-delete-history="{{ history_total }}"
+            <button type="button" data-delete-url="{% url 'digital_wardrobe:outfit_delete' outfit.pk %}" data-delete-api-url="{% url 'digital_wardrobe_api:outfit-detail' outfit.pk %}" data-delete-name="{{ outfit.name }}" data-delete-kind="outfit" data-delete-upcoming="{{ upcoming_total }}" data-delete-history="{{ history_total }}"
                     class="wd-btn wd-btn--wide wd-btn--danger">
                 Hapus
             </button>
