@@ -1,7 +1,9 @@
 <div class="wd-modal" role="dialog" aria-modal="true" aria-labelledby="wardrobe-modal-title">
     <div class="wd-dialog__backdrop" data-close-modal></div>
 
-    <form action="{{ action_url }}" method="post" novalidate data-item-form data-max-items="{{ max_items }}" class="wd-modal__panel wd-modal__panel--outfit">
+    <form action="{{ action_url }}" method="post" novalidate data-item-form data-max-items="{{ max_items }}"
+          data-api-kind="outfit" data-api-url="{% if outfit %}{% url 'digital_wardrobe_api:outfit-detail' outfit.pk %}{% else %}{% url 'digital_wardrobe_api:outfit-list' %}{% endif %}"
+          data-api-method="{% if outfit %}PATCH{% else %}POST{% endif %}" class="wd-modal__panel wd-modal__panel--outfit">
         <div class="wd-modal__glow wd-modal__glow--left" aria-hidden="true"></div>
         {% csrf_token %}
 

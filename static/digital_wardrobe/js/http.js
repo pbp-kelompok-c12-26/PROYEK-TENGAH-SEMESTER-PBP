@@ -31,8 +31,12 @@ export function handleDenied(status, data) {
     return true;
 }
 
-async function send(url, options) {
-    const response = await fetch(url, { credentials: 'same-origin', ...options, headers: AJAX_HEADERS });
+async function send(url, options = {}) {
+    const response = await fetch(url, {
+        credentials: 'same-origin',
+        ...options,
+        headers: { ...AJAX_HEADERS, ...(options.headers || {}) },
+    });
     const data = await readJson(response);
     return { response, data, denied: handleDenied(response.status, data) };
 }
@@ -44,4 +48,11 @@ export function getJson(url) {
 /** Kirim form (FormData sudah membawa csrfmiddlewaretoken dari {% csrf_token %}). */
 export function postForm(url, formData) {
     return send(url, { method: 'POST', body: formData });
+}
+
+/** Kirim FormData ke endpoint DRF; token CSRF dikirim sebagai header untuk POST/PATCH/DELETE. */
+export function sendForm(url, method, formData = new FormData()) {
+    const token = formData.get('csrfmiddlewaretoken');
+    const headers = token ? { 'X-CSRFToken': token } : {};
+    return send(url, { method, body: formData, headers });
 }

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 
     'digital_wardrobe',
     'accounts',
@@ -59,6 +60,17 @@ INSTALLED_APPS = [
     'outfit_calendar',
     'home'
 ]
+
+# API SwapDrobe memakai sesi Django yang sama dengan halaman web.  Dengan
+# SessionAuthentication, DRF meminta token CSRF untuk semua request unsafe.
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

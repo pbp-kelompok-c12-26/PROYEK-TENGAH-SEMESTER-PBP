@@ -1,6 +1,6 @@
 {% comment %}Tombol like untuk kartu dan gambar detail Items for Swap.{% endcomment %}
 {% if listing.status == 'available' and listing.user_id != request.user.id or listing.is_liked %}
-<form method="post" action="{% url 'home:toggle_like' listing.pk %}"
+<form method="post" action="{% url 'home_api:like-toggle' listing.pk %}"
       data-like-toggle data-liked="{{ listing.is_liked|yesno:'true,false' }}"
       {% if not request.user.is_authenticated %}data-auth-required{% endif %}
       data-item-name="{{ item.name }}"

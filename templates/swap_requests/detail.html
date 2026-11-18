@@ -21,7 +21,7 @@
         <div class="sr-detail__head-actions">
             {% if swap.can_delete %}
             <form method="post" action="{% url 'swap_requests:delete' swap.pk %}"
-                  hx-post="{% url 'swap_requests:delete' swap.pk %}" hx-target="#sr-detail-root" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this" data-sr-hx-action
+                  hx-post="{% url 'swap_requests:delete' swap.pk %}" data-sr-api-url="{% url 'swap_requests_api:request-detail' swap.pk %}" data-sr-api-method="DELETE" hx-target="#sr-detail-root" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this" data-sr-hx-action
                   data-confirm="{% if swap.status == 'pending' and role == 'owner' %}Request akan ditolak dan dihapus dari daftar masukmu. Pengirim tetap melihat status Rejected.{% elif swap.status == 'pending' and role == 'requester' %}Ajuan ini akan dihapus untuk kamu dan penerima.{% else %}Request akan dihapus dari daftarmu saja.{% endif %}"
                   data-confirm-yes="Ya, lanjutkan" data-confirm-danger="1">
                 {% csrf_token %}

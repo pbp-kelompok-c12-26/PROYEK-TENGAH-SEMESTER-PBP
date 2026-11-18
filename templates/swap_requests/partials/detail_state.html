@@ -51,13 +51,13 @@
 
         {% if can_respond %}
         <div class="sr-respond">
-            <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" hx-post="{% url 'swap_requests:respond' swap.pk %}"
+            <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" data-sr-api-url="{% url 'swap_requests_api:request-respond' swap.pk %}" hx-post="{% url 'swap_requests:respond' swap.pk %}"
                   hx-target="#sr-detail-state" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this"
                   data-sr-hx-action data-sr-optimistic-status="rejected" data-confirm="Tolak request {{ swap.code }} dari @{{ other.username }}?" data-confirm-yes="Ya, tolak" data-confirm-danger="1">
                 {% csrf_token %}
                 <button type="submit" name="action" value="reject" class="sr-respond__reject">Tolak swap</button>
             </form>
-            <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" hx-post="{% url 'swap_requests:respond' swap.pk %}"
+            <form method="post" action="{% url 'swap_requests:respond' swap.pk %}" data-sr-api-url="{% url 'swap_requests_api:request-respond' swap.pk %}" hx-post="{% url 'swap_requests:respond' swap.pk %}"
                   hx-target="#sr-detail-state" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this"
                   data-sr-hx-action data-sr-optimistic-status="awaiting_exchange" data-confirm="Setujui swap ini? Request lain tetap pada statusnya, tetapi tidak bisa diterima selama salah satu pakaian masih dalam pertukaran ini." data-confirm-yes="Ya, setujui">
                 {% csrf_token %}
@@ -80,7 +80,7 @@
             <div class="sr-confirm__row">
                 {% include 'swap_requests/partials/avatar.html' with person=request.user profile=my_profile size='sm' %}
                 {% if swap.status == 'awaiting_exchange' %}
-                <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" hx-post="{% url 'swap_requests:confirm' swap.pk %}"
+                <form method="post" action="{% url 'swap_requests:confirm' swap.pk %}" data-sr-api-url="{% url 'swap_requests_api:request-confirm' swap.pk %}" hx-post="{% url 'swap_requests:confirm' swap.pk %}"
                       hx-target="#sr-detail-state" hx-swap="outerHTML" hx-sync="#sr-detail-root:drop" hx-indicator="this"
                       data-sr-hx-action class="sr-confirm__form" data-confirm="Simpan pilihanmu? Memilih Batalkan swap langsung membatalkan pertukaran ini." data-confirm-yes="Ya, simpan">
                     {% csrf_token %}

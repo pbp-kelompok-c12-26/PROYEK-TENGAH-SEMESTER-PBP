@@ -15,6 +15,43 @@ import { toast } from '../../digital_wardrobe/js/toast.js';
         toast(message, true);
     }
 
+    function resetBusy(form) {
+        form?._srBusyControls?.forEach(({ button, disabled, html }) => {
+            button.disabled = disabled;
+            button.innerHTML = html;
+        });
+        if (form) {
+            delete form._srBusyControls;
+            delete form.dataset.srBusy;
+            form.removeAttribute('aria-busy');
+        }
+    }
+
+    // Aksi tulis Swap Request memakai endpoint DRF; HTMX tetap dipertahankan
+    // sebagai fallback markup lama jika atribut API tidak tersedia.
+    document.addEventListener('htmx:beforeRequest', (event) => {
+        const form = getForm(event.detail.elt);
+        const apiUrl = form?.dataset.srApiUrl;
+        if (!form || !apiUrl) return;
+        event.preventDefault();
+        const token = new FormData(form).get('csrfmiddlewaretoken');
+        const headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+        if (token) headers['X-CSRFToken'] = token;
+        fetch(apiUrl, {
+            method: form.dataset.srApiMethod || 'POST',
+            body: form.dataset.srApiMethod === 'DELETE' ? null : new FormData(form),
+            credentials: 'same-origin', headers,
+        }).then(async (response) => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.detail || 'Aksi belum berhasil diproses.');
+            window.location.reload();
+        }).catch((error) => {
+            resetBusy(form);
+            clearOptimisticState();
+            showError(error.message);
+        });
+    }, true);
+
     function initServerToasts(root = document) {
         const toasts = [];
         if (root.matches?.('#wardrobe-toast [data-toast]')) toasts.push(root);

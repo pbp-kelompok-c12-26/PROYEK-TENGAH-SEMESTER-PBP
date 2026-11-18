@@ -9,7 +9,7 @@
    3. Optimistic UI: kartu langsung memudar, lalu hilang kalau server berhasil.
       Yang dilewati server (mis. sedang dipakai swap request) atau gagal dikembalikan.
    Elemen dicari ulang setiap kali dipakai, jadi tetap jalan setelah grid diganti (filter tanpa reload). */
-import { postForm } from './http.js';
+import { sendForm } from './http.js';
 import { toast } from './toast.js';
 import { gridNeedsRefresh, refreshList, removeCard, updateItemCounters } from './cards.js';
 
@@ -79,7 +79,9 @@ async function sendDelete() {
 
     try {
         // FormData ikut membawa checkbox ber-atribut form="bulk-delete-form" + token CSRF
-        const { response, data, denied } = await postForm(form.action, new FormData(form));
+        const { response, data, denied } = await sendForm(
+            form.dataset.apiUrl || form.action, 'POST', new FormData(form),
+        );
         if (denied) failMessage = '';   // pesan 401/403/429 sudah ditampilkan oleh http.js
         if (!response.ok || !data?.ok) {
             failMessage = failMessage && (data?.message || failMessage);
